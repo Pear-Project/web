@@ -60,16 +60,21 @@ jobs:
             '{generated_at:$generated_at, total_all_time:$total_all_time, last_30d:$last_30d, last_24h:$last_24h, by_file:$by_file, daily:$daily, by_country:$by_country, by_referrer:$by_referrer, by_hour:$by_hour}' \
             > assets/data/download-stats.json
 
+      - name: Render trend chart PNG (for WhatsApp / anywhere a plain image is needed)
+        run: |
+          pip install --quiet matplotlib
+          python3 .github/scripts/render_chart.py
+
       - name: Commit and push if changed
         run: |
           git config user.name "pearOS build bot"
           git config user.email "actions@users.noreply.github.com"
 
-          if git diff --quiet -- assets/data/download-stats.json; then
+          if git diff --quiet -- assets/data/download-stats.json assets/data/download-chart.png; then
             echo "Stats unchanged, nothing to commit."
             exit 0
           fi
 
-          git add assets/data/download-stats.json
+          git add assets/data/download-stats.json assets/data/download-chart.png
           git commit -m "Sync download stats"
           git push origin HEAD:main
