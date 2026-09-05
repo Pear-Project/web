@@ -48,6 +48,11 @@ lines.append(f"Total (all-time): *{stats.get('total_all_time', 0)}*")
 lines.append(f"Last 30 days: *{stats.get('last_30d', 0)}*")
 lines.append(f"Last 24 hours: *{stats.get('last_24h', 0)}*")
 
+friend_all_time = stats.get("friend_all_time", 0)
+friend_last_24h = stats.get("friend_last_24h", 0)
+if friend_all_time:
+    lines.append(f"Friends & family link: *{friend_all_time}* all-time (*{friend_last_24h}* in last 24h)")
+
 if by_edition:
     lines.append("")
     lines.append("*By edition:*")

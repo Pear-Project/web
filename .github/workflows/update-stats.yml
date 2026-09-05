@@ -46,12 +46,20 @@ jobs:
           by_referrer=$(query "SELECT blob4 AS referrer, count() AS downloads FROM pearos_downloads GROUP BY blob4 ORDER BY downloads DESC LIMIT 10" | jq -c '[.data[]? | {referrer: .referrer, downloads: (.downloads | tonumber)}]')
           by_hour=$(query "SELECT toHour(timestamp) AS hour, count() AS downloads FROM pearos_downloads GROUP BY hour ORDER BY hour" | jq -c '[.data[]? | {hour: (.hour | tonumber), downloads: (.downloads | tonumber)}]')
 
+          # Friends/family link usage, tracked separately -- a sudden spike
+          # here (especially in the last 24h) is the tell that the static
+          # FRIENDS_TOKEN leaked out to a forum somewhere instead of staying
+          # with the people it was actually given to.
+          friend_all_time=$(query "SELECT count() AS downloads FROM pearos_downloads WHERE blob2 = 'friend'" | jq -r '.data[0].downloads // 0')
+          friend_last_24h=$(query "SELECT count() AS downloads FROM pearos_downloads WHERE blob2 = 'friend' AND timestamp > NOW() - INTERVAL '1' DAY" | jq -r '.data[0].downloads // 0')
+
           echo "All-time: $total_all_time, last 30d: $last_30d, last 24h: $last_24h"
           echo "By file: $by_file"
           echo "Daily: $daily"
           echo "By country: $by_country"
           echo "By referrer: $by_referrer"
           echo "By hour: $by_hour"
+          echo "Friend link -- all-time: $friend_all_time, last 24h: $friend_last_24h"
 
           jq -n \
             --arg generated_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -63,7 +71,9 @@ jobs:
             --argjson by_country "$by_country" \
             --argjson by_referrer "$by_referrer" \
             --argjson by_hour "$by_hour" \
-            '{generated_at:$generated_at, total_all_time:$total_all_time, last_30d:$last_30d, last_24h:$last_24h, by_file:$by_file, daily:$daily, by_country:$by_country, by_referrer:$by_referrer, by_hour:$by_hour}' \
+            --argjson friend_all_time "$friend_all_time" \
+            --argjson friend_last_24h "$friend_last_24h" \
+            '{generated_at:$generated_at, total_all_time:$total_all_time, last_30d:$last_30d, last_24h:$last_24h, by_file:$by_file, daily:$daily, by_country:$by_country, by_referrer:$by_referrer, by_hour:$by_hour, friend_all_time:$friend_all_time, friend_last_24h:$friend_last_24h}' \
             > assets/data/download-stats.json
 
       - name: Render trend chart PNG (for WhatsApp / anywhere a plain image is needed)
