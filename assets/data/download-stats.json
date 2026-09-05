@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-05T18:17:01Z",
-  "total_all_time": 19,
-  "last_30d": 19,
-  "last_24h": 19,
+  "generated_at": "2026-09-05T18:22:26Z",
+  "total_all_time": 20,
+  "last_30d": 20,
+  "last_24h": 20,
   "by_file": [
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
@@ -13,8 +13,8 @@
     {
       "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
       "tier": "free",
-      "downloads": "11",
-      "bytes": 36948217856
+      "downloads": "12",
+      "bytes": 40307146752
     },
     {
       "file": "iso/health.check",
@@ -26,7 +26,30 @@
   "daily": [
     {
       "date": "2026-09-05",
-      "downloads": 19
+      "tier": "free",
+      "downloads": 20
+    }
+  ],
+  "by_country": [
+    {
+      "country": "",
+      "downloads": 20
+    }
+  ],
+  "by_referrer": [
+    {
+      "referrer": "",
+      "downloads": 20
+    }
+  ],
+  "by_hour": [
+    {
+      "hour": 17,
+      "downloads": 11
+    },
+    {
+      "hour": 18,
+      "downloads": 9
     }
   ]
 }
