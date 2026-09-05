@@ -1,13 +1,11 @@
 name: WhatsApp status report
 
-# Fires whenever assets/data/download-stats.json actually changes (i.e. the
-# daily stats-sync workflow just committed fresh numbers), not on every push
-# to main -- otherwise every unrelated content commit would spam WhatsApp.
+# Runs on its own daily schedule, decoupled from update-stats.yml (which runs
+# at 00:00 UTC) -- this reads whatever numbers that run already committed,
+# and just controls what time the WhatsApp message actually goes out.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "assets/data/download-stats.json"
+  schedule:
+    - cron: "0 11 * * *" # 11:00 UTC = 13:00 Romania time
   workflow_dispatch:
 
 jobs:
@@ -16,9 +14,6 @@ jobs:
     steps:
       - name: Checking out source code
         uses: actions/checkout@v4
-
-      - name: Give GitHub Pages a moment to redeploy the chart image
-        run: sleep 20
 
       - name: Check site statuses
         run: |
