@@ -52,7 +52,7 @@
       + '<p>Uncap maximum Cloudflare CDN download speeds and directly fund full-time development, updates, and infrastructure for pearOS.</p>'
       + '<div class="pos-amt-row">'
       + '<button type="button" class="pos-amt-btn" data-amount="299">$2.99</button>'
-      + '<button type="button" class="pos-amt-btn recommended" data-amount="499"><span class="pos-badge">Popular</span>$4.99</button>'
+      + '<button type="button" class="pos-amt-btn recommended selected" data-amount="499"><span class="pos-badge">Popular</span>$4.99</button>'
       + '<button type="button" class="pos-amt-btn" data-amount="999">$9.99</button>'
       + '</div>'
       + '<div class="pos-custom-row">'
@@ -87,15 +87,20 @@
       overlay.hidden=false;
 
       var amtBtns=body.querySelectorAll('.pos-amt-btn');
+      var selectedAmount=499; // matches the preset marked "selected" in pickerHtml()
       amtBtns.forEach(function(btn){
         btn.addEventListener('click',function(){
           amtBtns.forEach(function(b){ b.classList.remove('selected'); });
           btn.classList.add('selected');
-          startCheckout(parseInt(btn.getAttribute('data-amount'),10));
+          selectedAmount=parseInt(btn.getAttribute('data-amount'),10);
+          startCheckout(selectedAmount);
         });
       });
       body.querySelector('#pos-custom-go').addEventListener('click',function(){
         var input=body.querySelector('#pos-custom-amount');
+        // Empty custom field -- go with whichever preset is currently
+        // selected instead of silently doing nothing.
+        if(input.value.trim()===''){ startCheckout(selectedAmount); return; }
         var dollars=parseFloat(input.value);
         if(!Number.isFinite(dollars)||dollars<0){ input.focus(); return; }
         startCheckout(Math.round(dollars*100));
