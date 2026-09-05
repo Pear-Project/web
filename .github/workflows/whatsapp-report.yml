@@ -1,0 +1,72 @@
+name: WhatsApp status report
+
+# Fires whenever assets/data/download-stats.json actually changes (i.e. the
+# daily stats-sync workflow just committed fresh numbers), not on every push
+# to main -- otherwise every unrelated content commit would spam WhatsApp.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "assets/data/download-stats.json"
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking out source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute stats and send WhatsApp report
+        env:
+          WHATSER_APPKEY: ${{ secrets.WHATSER_APPKEY }}
+          WHATSER_AUTHKEY: ${{ secrets.WHATSER_AUTHKEY }}
+          WHATSER_TO: ${{ secrets.WHATSER_TO }}
+          WHATSER_TEMPLATE_ID: ${{ secrets.WHATSER_TEMPLATE_ID }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          status_site() {
+            curl -s --max-time 5 "$1" >/dev/null && echo "Online" || echo "Down"
+          }
+
+          S1=$(status_site "https://pearos.xyz")
+          S2=$(status_site "https://eqane.com")
+          S3=$(status_site "https://itpgog-valcea.com")
+          S4=$(status_site "https://alex.pearos.xyz")
+          S5=$(status_site "https://pear-software.com")
+          S6=$(status_site "https://crm.pear-software.com")
+
+          NEW_JSON=$(cat assets/data/download-stats.json)
+
+          OLD_JSON='{}'
+          if [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            OLD_JSON=$(git show "$BEFORE_SHA":assets/data/download-stats.json 2>/dev/null || echo '{}')
+          fi
+
+          NEW_D=$(echo "$NEW_JSON" | jq '.total_all_time // 0')
+          OLD_D=$(echo "$OLD_JSON" | jq '.total_all_time // 0')
+          DIFF_D=$((NEW_D - OLD_D))
+          [ "$DIFF_D" -lt 0 ] && DIFF_D=0
+
+          NICECORE=$(echo "$NEW_JSON" | jq '[.by_file[]? | select(.file | test("NiceC0re";"i")) | (.downloads|tonumber)] | add // 0')
+          DEBIAN=$(echo "$NEW_JSON" | jq '[.by_file[]? | select(.file | test("Goldwing";"i")) | (.downloads|tonumber)] | add // 0')
+
+          echo "Downloads: $NEW_D (+$DIFF_D) | NiceC0re: $NICECORE | Debian: $DEBIAN"
+
+          curl --location --request POST "https://whatser.xyz/api/create-message" \
+            --form "appkey=$WHATSER_APPKEY" \
+            --form "authkey=$WHATSER_AUTHKEY" \
+            --form "to=$WHATSER_TO" \
+            --form "template_id=$WHATSER_TEMPLATE_ID" \
+            --form "variables[{1}]=$S1" \
+            --form "variables[{2}]=$S2" \
+            --form "variables[{3}]=$S3" \
+            --form "variables[{4}]=$S4" \
+            --form "variables[{5}]=$S5" \
+            --form "variables[{6}]=$S6" \
+            --form "variables[{7}]=$NEW_D" \
+            --form "variables[{8}]=$DIFF_D" \
+            --form "variables[{9}]=$NICECORE" \
+            --form "variables[{10}]=$DEBIAN"
