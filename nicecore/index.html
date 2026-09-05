@@ -163,7 +163,7 @@
     var tbody=document.getElementById('nicecore-versions-table');
     if(!tbody) return;
     var COPY_ICON='<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy size-3"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>';
-    fetch('../assets/data/nicecore-versions.json').then(function(r){return r.json();}).then(function(versions){
+    fetch('../assets/data/nicecore-versions.json', {cache: 'no-store'}).then(function(r){return r.json();}).then(function(versions){
       tbody.innerHTML=versions.map(function(v){
         var available=v.status==='Available';
         var badgeColor=available?'var(--chart-3)':'var(--muted-foreground)';
@@ -320,7 +320,7 @@
   function init(){
     var links=document.querySelectorAll('[data-download-link]');
     if(!links.length) return;
-    fetch('../assets/data/nicecore-versions.json').then(function(r){return r.json();}).then(function(versions){
+    fetch('../assets/data/nicecore-versions.json', {cache: 'no-store'}).then(function(r){return r.json();}).then(function(versions){
       var url=versions&&versions[0]&&versions[0].download;
       if(!url) return;
       links.forEach(function(el){

@@ -599,7 +599,7 @@
   function init(){
     var links=document.querySelectorAll('[data-download-link]');
     if(!links.length) return;
-    fetch('./assets/data/nicecore-versions.json').then(function(r){return r.json();}).then(function(versions){
+    fetch('./assets/data/nicecore-versions.json', {cache: 'no-store'}).then(function(r){return r.json();}).then(function(versions){
       var url=versions&&versions[0]&&versions[0].download;
       if(!url) return;
       links.forEach(function(el){
