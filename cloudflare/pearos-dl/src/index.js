@@ -160,13 +160,20 @@ async function handleDownload(request, env, url) {
 
   let unlocked = false;
   let validSigned = false;
+  // Analytics label -- distinct from `unlocked` (which only controls speed).
+  // A friends/family download is full-speed but isn't a donation; conflating
+  // it with "paid" would make it look like real revenue in the stats/report.
+  let accessTier = "free";
   if (exp && sig) {
     const expNum = parseInt(exp, 10);
     if (Number.isFinite(expNum) && expNum > Date.now() / 1000) {
       const expected = await sign(url.pathname, expNum, tier, env.HMAC_SECRET);
       if (timingSafeEqual(expected, sig)) {
         validSigned = true;
-        if (tier === "paid") unlocked = true;
+        if (tier === "paid") {
+          unlocked = true;
+          accessTier = "paid";
+        }
       }
     }
   }
@@ -180,6 +187,7 @@ async function handleDownload(request, env, url) {
     if (friendKey && timingSafeEqual(friendKey, env.FRIENDS_TOKEN)) {
       unlocked = true;
       validSigned = true;
+      accessTier = "friend";
     }
   }
 
@@ -295,7 +303,7 @@ async function handleDownload(request, env, url) {
       }
     }
     env.DOWNLOADS.writeDataPoint({
-      blobs: [key, unlocked ? "paid" : "free", country, referrerHost],
+      blobs: [key, accessTier, country, referrerHost],
       doubles: [totalSize],
       indexes: [key],
     });
