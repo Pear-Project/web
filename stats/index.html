@@ -289,7 +289,10 @@
     if(/Goldwing/i.test(file)) return 'Debian (Goldwing)';
     if(/bsd/i.test(file)) return 'BSD';
     if(/aarch64|raspberry/i.test(file)) return 'aarch64';
-    return file.split('/').pop();
+    // Anything that isn't a recognized edition's .iso (health-check probes,
+    // stray objects, etc.) is left out of the table rather than shown as a
+    // confusing raw filename row.
+    return /\.iso$/i.test(file) ? file.split('/').pop() : null;
   }
   function fmt(n){
     if(typeof n!=='number') return '—';
@@ -303,6 +306,7 @@
     var byEdition={};
     (stats.by_file||[]).forEach(function(row){
       var name=editionName(row.file);
+      if(!name) return;
       if(!byEdition[name]) byEdition[name]={free:0,paid:0};
       byEdition[name][row.tier==='paid'?'paid':'free']+=Number(row.downloads)||0;
     });
