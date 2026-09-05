@@ -23,13 +23,14 @@
     if (sessionStorage.getItem(DISMISS_KEY) === '1') return;
   } catch (e) { /* storage disabled: just run the checks every time */ }
 
-  // Resolve paths off this script's own <script src>, not hardcoded
-  // absolute ones -- works whether the site is deployed at a domain root
-  // or served from a subfolder (e.g. a local /newpearos/ dev copy), and
-  // regardless of how deep the including page is.
-  var thisScript = document.currentScript;
-  var ASSETS_BASE = thisScript ? new URL('.', thisScript.src).href : 'assets/';
-  var SITE_ROOT = new URL('..', ASSETS_BASE).href;
+  // Resolved off a per-page NC_ASSETS_PREFIX (the same "../" depth each page
+  // already uses for its own CSS/asset links) rather than <script src> --
+  // this runs inline now (see below), so there's no script tag to read a src
+  // from. Still works whether the site is deployed at a domain root or a
+  // subfolder (e.g. a local /newpearos/ dev copy).
+  var PREFIX = (typeof NC_ASSETS_PREFIX === 'string') ? NC_ASSETS_PREFIX : '';
+  var SITE_ROOT = new URL(PREFIX, document.baseURI).href;
+  var ASSETS_BASE = new URL(PREFIX + 'assets/', document.baseURI).href;
 
   // The wall's own critical display/position rules are set as an INLINE
   // style on the element itself (not just in the <style> tag below), so
