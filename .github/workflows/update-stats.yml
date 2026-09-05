@@ -17,6 +17,12 @@ jobs:
     steps:
       - name: Checking out source code
         uses: actions/checkout@v4
+        with:
+          # A push made with the default GITHUB_TOKEN does NOT trigger other
+          # workflows (GitHub's anti-loop safeguard) -- this repo's
+          # whatsapp-report.yml is path-filtered on this workflow's own
+          # commit, so it needs a real PAT here to fire correctly.
+          token: ${{ secrets.WEB_REPO_PAT }}
 
       - name: Query Analytics Engine
         env:
