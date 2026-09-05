@@ -5,6 +5,7 @@
 (function(){
   var STRIPE_PK='pk_live_51NGnKkKJo0lESPTlDtEcHw0Vz9REWIUofe2yc2eGflq2P4397lFszSR9IOZm5VIRns0gVovA9lGUr7nW5XPIJwhj008SkTtvca';
   var CHECKOUT_ENDPOINT='https://iso.pearos.xyz/checkout';
+  var FREEPOINT_ENDPOINT='https://iso.pearos.xyz/freepoint';
 
   var CSS='\
 .pos-modal-overlay{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:20px}\
@@ -116,7 +117,7 @@
       body.querySelector('#pos-skip-btn').addEventListener('click',function(){
         var href=pendingHref;
         closeModal();
-        window.open(href,'_blank','noopener');
+        openFreeDownload(href);
       });
     }
 
@@ -124,11 +125,26 @@
       return href.split('/').pop().split('?')[0];
     }
 
+    // Every /iso/ download now requires a valid signed URL (free or paid) --
+    // this mints the free-tier one (still throttled) instead of opening the
+    // raw, unsigned .iso URL directly.
+    function openFreeDownload(href){
+      fetch(FREEPOINT_ENDPOINT,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({file:fileFromHref(href)})
+      }).then(function(r){ return r.json(); }).then(function(data){
+        window.open((data&&data.url)||href,'_blank','noopener');
+      }).catch(function(){
+        window.open(href,'_blank','noopener');
+      });
+    }
+
     function startCheckout(amountCents,onError){
       if(amountCents<=0){
         var href=pendingHref;
         closeModal();
-        window.open(href,'_blank','noopener');
+        openFreeDownload(href);
         return;
       }
       if(amountCents<100){
