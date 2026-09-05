@@ -25,6 +25,7 @@
 .pos-go-btn{font-family:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--primary);background:var(--primary);color:var(--primary-foreground);padding:8px 16px;font-size:13px;font-weight:600}\
 .pos-go-btn:hover{opacity:.9}\
 .pos-skip{display:block;text-align:center;font-size:.8rem;color:var(--muted-foreground);text-decoration:underline;cursor:pointer;background:none;border:0;font-family:inherit;width:100%;padding:4px}\
+.pos-error{color:#e11d48;font-size:.8rem;margin:-6px 0 12px}\
 .pos-loading{padding:60px 20px;text-align:center;color:var(--muted-foreground);font-size:14px}\
 ';
 
@@ -59,6 +60,7 @@
       + '<input type="number" min="0" step="0.01" inputmode="decimal" class="pos-custom-input" id="pos-custom-amount" placeholder="Custom $"/>'
       + '<button type="button" class="pos-go-btn" id="pos-custom-go">Go</button>'
       + '</div>'
+      + '<p class="pos-error" id="pos-error" hidden></p>'
       + '<button type="button" class="pos-skip" id="pos-skip-btn">No thanks, download free (2 MB/s)</button>'
       + '</div>';
   }
@@ -86,24 +88,30 @@
       body.innerHTML=pickerHtml();
       overlay.hidden=false;
 
+      var errorEl=body.querySelector('#pos-error');
+      function showError(msg){ errorEl.textContent=msg; errorEl.hidden=false; }
+      function clearError(){ errorEl.hidden=true; }
+
       var amtBtns=body.querySelectorAll('.pos-amt-btn');
       var selectedAmount=499; // matches the preset marked "selected" in pickerHtml()
       amtBtns.forEach(function(btn){
         btn.addEventListener('click',function(){
+          clearError();
           amtBtns.forEach(function(b){ b.classList.remove('selected'); });
           btn.classList.add('selected');
           selectedAmount=parseInt(btn.getAttribute('data-amount'),10);
-          startCheckout(selectedAmount);
+          startCheckout(selectedAmount,showError);
         });
       });
       body.querySelector('#pos-custom-go').addEventListener('click',function(){
+        clearError();
         var input=body.querySelector('#pos-custom-amount');
         // Empty custom field -- go with whichever preset is currently
         // selected instead of silently doing nothing.
-        if(input.value.trim()===''){ startCheckout(selectedAmount); return; }
+        if(input.value.trim()===''){ startCheckout(selectedAmount,showError); return; }
         var dollars=parseFloat(input.value);
         if(!Number.isFinite(dollars)||dollars<0){ input.focus(); return; }
-        startCheckout(Math.round(dollars*100));
+        startCheckout(Math.round(dollars*100),showError);
       });
       body.querySelector('#pos-skip-btn').addEventListener('click',function(){
         var href=pendingHref;
@@ -116,15 +124,15 @@
       return href.split('/').pop().split('?')[0];
     }
 
-    function startCheckout(amountCents){
+    function startCheckout(amountCents,onError){
       if(amountCents<=0){
         var href=pendingHref;
         closeModal();
         window.open(href,'_blank','noopener');
         return;
       }
-      if(amountCents<50){
-        alert('Minimum card amount is $0.50. Choose "download free" instead for no charge.');
+      if(amountCents<100){
+        if(onError) onError('Minimum card amount is $1.00. Choose "download free" instead for no charge.');
         return;
       }
       body.innerHTML='<div class="pos-loading">Loading checkout…</div>';

@@ -82,7 +82,7 @@ async function handleCheckout(request, env) {
   }
 
   const amountCents = Math.round(Number(body && body.amount_cents));
-  if (!Number.isFinite(amountCents) || amountCents < 50 || amountCents > 100000000) {
+  if (!Number.isFinite(amountCents) || amountCents < 100 || amountCents > 100000000) {
     return json({ error: "invalid_amount" }, 400, request, env);
   }
 
