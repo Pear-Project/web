@@ -60,8 +60,11 @@ countries = [c for c in stats.get("by_country", []) if c.get("country")]
 if countries:
     lines.append("")
     lines.append("*Top countries:*")
-    for c in countries[:8]:
+    for c in countries[:3]:
         lines.append(f"{c['country']}: *{c['downloads']}*")
+    other_total = sum(c["downloads"] for c in countries[3:])
+    if other_total:
+        lines.append(f"Other: *{other_total}*")
 
 referrers = [r for r in stats.get("by_referrer", []) if r.get("referrer")]
 if referrers:
