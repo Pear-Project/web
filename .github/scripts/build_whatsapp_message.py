@@ -20,12 +20,19 @@ with open("assets/data/download-stats.json") as f:
     stats = json.load(f)
 
 by_edition = defaultdict(lambda: {"free": 0, "paid": 0})
+total_paid = 0
+total_free = 0
 for row in stats.get("by_file", []):
     name = edition_name(row["file"])
     if not name:
         continue
+    n = int(row.get("downloads", 0))
     tier = "paid" if row.get("tier") == "paid" else "free"
-    by_edition[name][tier] += int(row.get("downloads", 0))
+    by_edition[name][tier] += n
+    if tier == "paid":
+        total_paid += n
+    else:
+        total_free += n
 
 lines = []
 lines.append("*pearOS — Daily Report*")
@@ -47,6 +54,11 @@ lines.append("*Downloads:*")
 lines.append(f"Total (all-time): *{stats.get('total_all_time', 0)}*")
 lines.append(f"Last 30 days: *{stats.get('last_30d', 0)}*")
 lines.append(f"Last 24 hours: *{stats.get('last_24h', 0)}*")
+
+conversion_total = total_paid + total_free
+if conversion_total:
+    pct = total_paid / conversion_total * 100
+    lines.append(f"Paid conversion: *{pct:.2f}%* ({total_paid} paid of {conversion_total})")
 
 friend_all_time = stats.get("friend_all_time", 0)
 friend_last_24h = stats.get("friend_last_24h", 0)
