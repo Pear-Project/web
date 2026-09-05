@@ -214,8 +214,18 @@ async function handleDownload(request, env, url) {
   // bytes served) and not on a mid-file range resume (would double-count
   // a single browser download that retries/resumes partway through).
   if (env.DOWNLOADS && /\.iso$/i.test(key) && (!isRangeRequest || rangeStart === 0)) {
+    const country = (request.cf && request.cf.country) || "XX";
+    let referrerHost = "direct";
+    const referer = request.headers.get("referer");
+    if (referer) {
+      try {
+        referrerHost = new URL(referer).hostname;
+      } catch {
+        // malformed Referer header, leave as "direct"
+      }
+    }
     env.DOWNLOADS.writeDataPoint({
-      blobs: [key, unlocked ? "paid" : "free"],
+      blobs: [key, unlocked ? "paid" : "free", country, referrerHost],
       doubles: [totalSize],
       indexes: [key],
     });
