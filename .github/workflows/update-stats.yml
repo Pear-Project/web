@@ -1,0 +1,63 @@
+name: Sync download stats
+
+# Daily pull of aggregate download counts from Cloudflare Workers Analytics
+# Engine (populated by the pearos-dl Worker on every real download), plus a
+# manual trigger for re-reading on demand instead of waiting for midnight.
+on:
+  schedule:
+    - cron: "0 0 * * *" # 00:00 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking out source code
+        uses: actions/checkout@v4
+
+      - name: Query Analytics Engine
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_ANALYTICS_TOKEN: ${{ secrets.CF_ANALYTICS_TOKEN }}
+        run: |
+          query() {
+            curl -fsSL -X POST \
+              "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/analytics_engine/sql" \
+              -H "Authorization: Bearer ${CF_ANALYTICS_TOKEN}" \
+              -H "Content-Type: text/plain" \
+              --data "$1"
+          }
+
+          total_all_time=$(query "SELECT count() AS downloads FROM pearos_downloads" | jq -r '.data[0].downloads // 0')
+          last_30d=$(query "SELECT count() AS downloads FROM pearos_downloads WHERE timestamp > NOW() - INTERVAL '30' DAY" | jq -r '.data[0].downloads // 0')
+          last_24h=$(query "SELECT count() AS downloads FROM pearos_downloads WHERE timestamp > NOW() - INTERVAL '1' DAY" | jq -r '.data[0].downloads // 0')
+          by_file=$(query "SELECT blob1 AS file, blob2 AS tier, count() AS downloads, sum(double1) AS bytes FROM pearos_downloads GROUP BY blob1, blob2" | jq -c '.data // []')
+
+          echo "All-time: $total_all_time, last 30d: $last_30d, last 24h: $last_24h"
+          echo "By file: $by_file"
+
+          jq -n \
+            --arg generated_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --argjson total_all_time "$total_all_time" \
+            --argjson last_30d "$last_30d" \
+            --argjson last_24h "$last_24h" \
+            --argjson by_file "$by_file" \
+            '{generated_at:$generated_at, total_all_time:$total_all_time, last_30d:$last_30d, last_24h:$last_24h, by_file:$by_file}' \
+            > assets/data/download-stats.json
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "pearOS build bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          if git diff --quiet -- assets/data/download-stats.json; then
+            echo "Stats unchanged, nothing to commit."
+            exit 0
+          fi
+
+          git add assets/data/download-stats.json
+          git commit -m "Sync download stats"
+          git push origin HEAD:main
