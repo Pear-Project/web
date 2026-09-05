@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-09-05T18:25:46Z",
-  "total_all_time": 24,
-  "last_30d": 24,
-  "last_24h": 24,
+  "generated_at": "2026-09-05T19:15:04Z",
+  "total_all_time": 65,
+  "last_30d": 65,
+  "last_24h": 65,
   "by_file": [
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
       "tier": "free",
-      "downloads": "6",
-      "bytes": 12947521536
+      "downloads": "14",
+      "bytes": 30210883584
     },
     {
       "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
       "tier": "free",
-      "downloads": "16",
-      "bytes": 53742862336
+      "downloads": "49",
+      "bytes": 164587515904
     },
     {
       "file": "iso/health.check",
@@ -27,7 +27,7 @@
     {
       "date": "2026-09-05",
       "tier": "free",
-      "downloads": 24
+      "downloads": 65
     }
   ],
   "by_country": [
@@ -36,12 +36,36 @@
       "downloads": 20
     },
     {
+      "country": "US",
+      "downloads": 19
+    },
+    {
+      "country": "ID",
+      "downloads": 4
+    },
+    {
+      "country": "BR",
+      "downloads": 4
+    },
+    {
       "country": "RO",
-      "downloads": 2
+      "downloads": 3
+    },
+    {
+      "country": "FR",
+      "downloads": 3
     },
     {
       "country": "DE",
-      "downloads": 1
+      "downloads": 3
+    },
+    {
+      "country": "MX",
+      "downloads": 2
+    },
+    {
+      "country": "PL",
+      "downloads": 2
     },
     {
       "country": "MM",
@@ -50,16 +74,20 @@
   ],
   "by_referrer": [
     {
+      "referrer": "pearos.xyz",
+      "downloads": 34
+    },
+    {
       "referrer": "",
       "downloads": 20
     },
     {
       "referrer": "direct",
-      "downloads": 2
+      "downloads": 10
     },
     {
-      "referrer": "pearos.xyz",
-      "downloads": 2
+      "referrer": "pearos-xyz.translate.goog",
+      "downloads": 1
     }
   ],
   "by_hour": [
@@ -69,7 +97,11 @@
     },
     {
       "hour": 18,
-      "downloads": 13
+      "downloads": 38
+    },
+    {
+      "hour": 19,
+      "downloads": 16
     }
   ]
 }
