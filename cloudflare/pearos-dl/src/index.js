@@ -210,6 +210,17 @@ async function handleDownload(request, env, url) {
     return new Response(null, { headers, status });
   }
 
+  // Count a download once, at the start of the file -- not on HEAD (no
+  // bytes served) and not on a mid-file range resume (would double-count
+  // a single browser download that retries/resumes partway through).
+  if (env.DOWNLOADS && (!isRangeRequest || rangeStart === 0)) {
+    env.DOWNLOADS.writeDataPoint({
+      blobs: [key, unlocked ? "paid" : "free"],
+      doubles: [totalSize],
+      indexes: [key],
+    });
+  }
+
   if (unlocked) {
     // Full speed for paid, signed links.
     return new Response(object.body, { headers, status });
