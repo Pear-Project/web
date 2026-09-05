@@ -1,63 +1,78 @@
 {
-  "generated_at": "2026-09-05T19:33:36Z",
-  "total_all_time": 71,
-  "last_30d": 71,
-  "last_24h": 71,
+  "generated_at": "2026-09-05T20:02:39Z",
+  "total_all_time": 100,
+  "last_30d": 100,
+  "last_24h": 100,
   "by_file": [
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
       "tier": "free",
-      "downloads": "16",
-      "bytes": 34526724096
+      "downloads": "27",
+      "bytes": 58263846912
     },
     {
       "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
       "tier": "free",
-      "downloads": "53",
-      "bytes": 178023231488
+      "downloads": "70",
+      "bytes": 235125022720
     },
     {
       "file": "iso/health.check",
       "tier": "free",
       "downloads": "2",
       "bytes": 6
+    },
+    {
+      "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
+      "tier": "paid",
+      "downloads": "1",
+      "bytes": 3358928896
     }
   ],
   "daily": [
     {
       "date": "2026-09-05",
       "tier": "free",
-      "downloads": 71
+      "downloads": 99
+    },
+    {
+      "date": "2026-09-05",
+      "tier": "paid",
+      "downloads": 1
     }
   ],
   "by_country": [
+    {
+      "country": "US",
+      "downloads": 23
+    },
     {
       "country": "",
       "downloads": 20
     },
     {
-      "country": "US",
-      "downloads": 19
+      "country": "BR",
+      "downloads": 11
     },
     {
-      "country": "BR",
-      "downloads": 5
+      "country": "RO",
+      "downloads": 9
+    },
+    {
+      "country": "FR",
+      "downloads": 8
+    },
+    {
+      "country": "DE",
+      "downloads": 4
     },
     {
       "country": "ID",
       "downloads": 4
     },
     {
-      "country": "FR",
-      "downloads": 4
-    },
-    {
-      "country": "DE",
-      "downloads": 3
-    },
-    {
-      "country": "RO",
-      "downloads": 3
+      "country": "DO",
+      "downloads": 2
     },
     {
       "country": "MX",
@@ -66,16 +81,12 @@
     {
       "country": "GR",
       "downloads": 2
-    },
-    {
-      "country": "PL",
-      "downloads": 2
     }
   ],
   "by_referrer": [
     {
       "referrer": "pearos.xyz",
-      "downloads": 40
+      "downloads": 57
     },
     {
       "referrer": "",
@@ -83,10 +94,14 @@
     },
     {
       "referrer": "direct",
-      "downloads": 10
+      "downloads": 19
     },
     {
       "referrer": "pearos-xyz.translate.goog",
+      "downloads": 3
+    },
+    {
+      "referrer": "iso.pearos.xyz",
       "downloads": 1
     }
   ],
@@ -101,7 +116,11 @@
     },
     {
       "hour": 19,
-      "downloads": 22
+      "downloads": 50
+    },
+    {
+      "hour": 20,
+      "downloads": 1
     }
   ]
 }
