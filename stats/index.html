@@ -304,7 +304,7 @@
     (stats.by_file||[]).forEach(function(row){
       var name=editionName(row.file);
       if(!byEdition[name]) byEdition[name]={free:0,paid:0};
-      byEdition[name][row.tier==='paid'?'paid':'free']+=row.downloads||0;
+      byEdition[name][row.tier==='paid'?'paid':'free']+=Number(row.downloads)||0;
     });
 
     var tbody=document.getElementById('stats-table-body');
