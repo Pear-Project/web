@@ -35,9 +35,11 @@ jobs:
           last_30d=$(query "SELECT count() AS downloads FROM pearos_downloads WHERE timestamp > NOW() - INTERVAL '30' DAY" | jq -r '.data[0].downloads // 0')
           last_24h=$(query "SELECT count() AS downloads FROM pearos_downloads WHERE timestamp > NOW() - INTERVAL '1' DAY" | jq -r '.data[0].downloads // 0')
           by_file=$(query "SELECT blob1 AS file, blob2 AS tier, count() AS downloads, sum(double1) AS bytes FROM pearos_downloads GROUP BY blob1, blob2" | jq -c '.data // []')
+          daily=$(query "SELECT toStartOfInterval(timestamp, INTERVAL '1' DAY) AS day, count() AS downloads FROM pearos_downloads WHERE timestamp > NOW() - INTERVAL '30' DAY GROUP BY day ORDER BY day" | jq -c '[.data[]? | {date: (.day[0:10]), downloads: (.downloads | tonumber)}]')
 
           echo "All-time: $total_all_time, last 30d: $last_30d, last 24h: $last_24h"
           echo "By file: $by_file"
+          echo "Daily: $daily"
 
           jq -n \
             --arg generated_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -45,7 +47,8 @@ jobs:
             --argjson last_30d "$last_30d" \
             --argjson last_24h "$last_24h" \
             --argjson by_file "$by_file" \
-            '{generated_at:$generated_at, total_all_time:$total_all_time, last_30d:$last_30d, last_24h:$last_24h, by_file:$by_file}' \
+            --argjson daily "$daily" \
+            '{generated_at:$generated_at, total_all_time:$total_all_time, last_30d:$last_30d, last_24h:$last_24h, by_file:$by_file, daily:$daily}' \
             > assets/data/download-stats.json
 
       - name: Commit and push if changed

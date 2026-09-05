@@ -103,6 +103,7 @@
   .stats-table th{text-align:left;font-weight:600;color:var(--muted-foreground);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;padding:0 12px 10px}
   .stats-table td{padding:12px;border-top:1px solid var(--border);font-variant-numeric:tabular-nums}
   .stats-table tbody tr:hover{background:var(--accent)}
+  .stats-tooltip{position:absolute;pointer-events:none;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;box-shadow:0 8px 24px -8px rgba(0,0,0,.35);transform:translate(-50%,-115%);white-space:nowrap;font-variant-numeric:tabular-nums}
 </style>
 <div class="cookies" id="cookies" role="dialog" aria-live="polite" aria-label="Cookie consent">
   <p>We use cookies for analytics and ads. Nothing loads until you allow it.</p>
@@ -157,6 +158,14 @@
   <div class="stat-card"><div class="stat-label">All-time downloads</div><div class="stat-value" id="stat-all-time">—</div></div>
   <div class="stat-card"><div class="stat-label">Last 30 days</div><div class="stat-value" id="stat-30d">—</div></div>
   <div class="stat-card"><div class="stat-label">Last 24 hours</div><div class="stat-value" id="stat-24h">—</div></div>
+</div>
+
+<div class="mt-10">
+  <h2 class="text-lg font-semibold mb-4">Downloads, last 30 days</h2>
+  <div id="stats-chart-wrap" class="rounded-2xl border border-border p-4 md:p-6" style="position:relative">
+    <div id="stats-chart"></div>
+    <div class="stats-tooltip" id="stats-tooltip" hidden></div>
+  </div>
 </div>
 
 <div class="mt-10 overflow-x-auto rounded-2xl border border-border">
@@ -298,10 +307,80 @@
     if(typeof n!=='number') return '—';
     return n.toLocaleString('en-US');
   }
+
+  function renderChart(daily){
+    var wrap=document.getElementById('stats-chart-wrap');
+    var chartEl=document.getElementById('stats-chart');
+    var tooltip=document.getElementById('stats-tooltip');
+    daily=(daily||[]).slice().sort(function(a,b){ return a.date<b.date?-1:1; });
+    if(daily.length<2){
+      chartEl.innerHTML='<p class="text-muted-foreground text-sm text-center py-10">Not enough data yet for a trend chart.</p>';
+      return;
+    }
+    var W=800,H=220,PAD_L=32,PAD_R=8,PAD_T=14,PAD_B=22;
+    var innerW=W-PAD_L-PAD_R, innerH=H-PAD_T-PAD_B;
+    var n=daily.length;
+    var maxVal=Math.max.apply(null,daily.map(function(d){return d.downloads;}).concat([1]));
+    function xAt(i){ return PAD_L+(n===1?0:(i/(n-1))*innerW); }
+    function yAt(v){ return PAD_T+innerH-(v/maxVal)*innerH; }
+
+    var linePts=daily.map(function(d,i){ return xAt(i)+','+yAt(d.downloads); }).join(' ');
+    var areaD='M'+xAt(0)+','+(PAD_T+innerH)+' L'+daily.map(function(d,i){ return xAt(i)+','+yAt(d.downloads); }).join(' L')+' L'+xAt(n-1)+','+(PAD_T+innerH)+' Z';
+    var dots=daily.map(function(d,i){ return '<circle cx="'+xAt(i)+'" cy="'+yAt(d.downloads)+'" r="3" fill="var(--primary)" data-i="'+i+'"></circle>'; }).join('');
+
+    // sparse date labels: first, middle, last
+    var labelIdx=[0, Math.floor((n-1)/2), n-1];
+    var labels=labelIdx.map(function(i){
+      var d=new Date(daily[i].date+'T00:00:00Z');
+      var text=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      var anchor=i===0?'start':(i===n-1?'end':'middle');
+      return '<text x="'+xAt(i)+'" y="'+(H-4)+'" font-size="10" fill="var(--muted-foreground)" text-anchor="'+anchor+'">'+text+'</text>';
+    }).join('');
+
+    chartEl.innerHTML=
+      '<svg viewBox="0 0 '+W+' '+H+'" class="w-full h-auto" role="img" aria-label="Downloads per day, last 30 days" id="stats-svg">'+
+        '<line x1="'+PAD_L+'" y1="'+(PAD_T+innerH)+'" x2="'+(W-PAD_R)+'" y2="'+(PAD_T+innerH)+'" stroke="var(--border)" stroke-width="1"/>'+
+        '<text x="2" y="'+(PAD_T+5)+'" font-size="10" fill="var(--muted-foreground)">'+maxVal.toLocaleString('en-US')+'</text>'+
+        '<text x="2" y="'+(PAD_T+innerH)+'" font-size="10" fill="var(--muted-foreground)">0</text>'+
+        '<path d="'+areaD+'" fill="var(--primary)" opacity="0.12"></path>'+
+        '<polyline points="'+linePts+'" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>'+
+        dots+
+        labels+
+      '</svg>';
+
+    var svg=document.getElementById('stats-svg');
+    function nearestIndex(clientX){
+      var rect=svg.getBoundingClientRect();
+      var xFrac=(clientX-rect.left)/rect.width;
+      var xVal=xFrac*W;
+      var best=0,bestDist=Infinity;
+      for(var i=0;i<n;i++){
+        var dist=Math.abs(xAt(i)-xVal);
+        if(dist<bestDist){ bestDist=dist; best=i; }
+      }
+      return best;
+    }
+    wrap.addEventListener('mousemove',function(e){
+      var i=nearestIndex(e.clientX);
+      var d=daily[i];
+      var rect=svg.getBoundingClientRect();
+      var px=rect.left+(xAt(i)/W)*rect.width;
+      var py=rect.top+(yAt(d.downloads)/H)*rect.height;
+      var wrapRect=wrap.getBoundingClientRect();
+      tooltip.style.left=(px-wrapRect.left)+'px';
+      tooltip.style.top=(py-wrapRect.top)+'px';
+      var dObj=new Date(d.date+'T00:00:00Z');
+      tooltip.textContent=dObj.toLocaleDateString('en-US',{month:'short',day:'numeric'})+': '+fmt(d.downloads)+' download'+(d.downloads===1?'':'s');
+      tooltip.hidden=false;
+    });
+    wrap.addEventListener('mouseleave',function(){ tooltip.hidden=true; });
+  }
+
   fetch('../assets/data/download-stats.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(stats){
     document.getElementById('stat-all-time').textContent=fmt(stats.total_all_time);
     document.getElementById('stat-30d').textContent=fmt(stats.last_30d);
     document.getElementById('stat-24h').textContent=fmt(stats.last_24h);
+    renderChart(stats.daily);
 
     var byEdition={};
     (stats.by_file||[]).forEach(function(row){
