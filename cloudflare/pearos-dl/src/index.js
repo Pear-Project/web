@@ -193,6 +193,25 @@ async function handleDownload(request, env, url) {
   // directly (a real chunk of traffic was doing exactly that).
   if (!validSigned && !isHealthCheck) {
     const filename = key.replace(/^iso\//, "");
+
+    // wget follows a 302 by default and (unlike curl) happily saves the
+    // redirect target's *body* under the -O filename the user asked for --
+    // silently writing this HTML error page to disk as if it were the ISO,
+    // with no visible error at all. CLI tools get an honest plain-text
+    // rejection instead; only real browsers get bounced to the HTML retry page.
+    const ua = (request.headers.get("User-Agent") || "").toLowerCase();
+    const isCliTool = /^(wget|curl|aria2|python-requests|go-http-client|libcurl|httpie|axios|node-fetch)/.test(ua);
+
+    if (isCliTool) {
+      return new Response(
+        `This download link is not signed or has expired.\n\n` +
+          `Open https://pearos.xyz/nicecore/ (or the relevant build page) in a browser to get a fresh link, ` +
+          `then copy the resulting signed URL (it will include ?exp=...&sig=...&tier=...) and use that exact ` +
+          `URL with wget/curl -- it stays valid for 4 hours.\n`,
+        { status: 403, headers: { "content-type": "text/plain; charset=utf-8" } }
+      );
+    }
+
     const expiredUrl = `https://pearos.xyz/download-expired/?file=${encodeURIComponent(filename)}`;
     return Response.redirect(expiredUrl, 302);
   }
