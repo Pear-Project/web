@@ -17,6 +17,10 @@ export default {
       return handleCheckout(request, env);
     }
 
+    if (url.pathname === "/freepoint" && request.method === "POST") {
+      return handleFreepoint(request, env);
+    }
+
     if (url.pathname.startsWith("/iso/")) {
       return handleDownload(request, env, url);
     }
@@ -64,9 +68,36 @@ async function handleVerify(request, env) {
   const ttl = parseInt(env.SIGNED_URL_TTL_SECONDS, 10);
   const exp = Math.floor(Date.now() / 1000) + ttl;
   const path = `/iso/${file}`;
-  const sig = await sign(path, exp, env.HMAC_SECRET);
+  const sig = await sign(path, exp, "paid", env.HMAC_SECRET);
 
-  const downloadUrl = `https://iso.pearos.xyz${path}?exp=${exp}&sig=${sig}`;
+  const downloadUrl = `https://iso.pearos.xyz${path}?exp=${exp}&sig=${sig}&tier=paid`;
+  return json({ url: downloadUrl, expires_at: exp }, 200, request, env);
+}
+
+// ---------- /freepoint: mint a signed, throttled (free-tier) download link.
+// ---------- Every /iso/ request now requires a valid signature -- this is
+// ---------- how the free tier gets one, same 4h TTL as paid links, just
+// ---------- without the "paid" tier flag that unlocks full speed. ----------
+
+async function handleFreepoint(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "invalid_json" }, 400, request, env);
+  }
+
+  const file = body && body.file;
+  if (typeof file !== "string" || file.includes("..") || !/^[\w.\-]+\.iso$/.test(file)) {
+    return json({ error: "invalid_file" }, 400, request, env);
+  }
+
+  const ttl = parseInt(env.SIGNED_URL_TTL_SECONDS, 10);
+  const exp = Math.floor(Date.now() / 1000) + ttl;
+  const path = `/iso/${file}`;
+  const sig = await sign(path, exp, "free", env.HMAC_SECRET);
+
+  const downloadUrl = `https://iso.pearos.xyz${path}?exp=${exp}&sig=${sig}&tier=free`;
   return json({ url: downloadUrl, expires_at: exp }, 200, request, env);
 }
 
@@ -125,13 +156,18 @@ async function handleDownload(request, env, url) {
   const key = url.pathname.replace(/^\//, ""); // "iso/<file>.iso"
   const exp = url.searchParams.get("exp");
   const sig = url.searchParams.get("sig");
+  const tier = url.searchParams.get("tier") === "paid" ? "paid" : "free";
 
   let unlocked = false;
+  let validSigned = false;
   if (exp && sig) {
     const expNum = parseInt(exp, 10);
     if (Number.isFinite(expNum) && expNum > Date.now() / 1000) {
-      const expected = await sign(url.pathname, expNum, env.HMAC_SECRET);
-      unlocked = timingSafeEqual(expected, sig);
+      const expected = await sign(url.pathname, expNum, tier, env.HMAC_SECRET);
+      if (timingSafeEqual(expected, sig)) {
+        validSigned = true;
+        if (tier === "paid") unlocked = true;
+      }
     }
   }
 
@@ -139,11 +175,26 @@ async function handleDownload(request, env, url) {
   // Stripe-issued signed links (which expire after 4h). Known only to us;
   // anyone holding this exact value gets full speed forever, so rotate
   // env.FRIENDS_TOKEN (wrangler secret put) if it ever leaks.
-  if (!unlocked && env.FRIENDS_TOKEN) {
+  if (!validSigned && env.FRIENDS_TOKEN) {
     const friendKey = url.searchParams.get("key");
     if (friendKey && timingSafeEqual(friendKey, env.FRIENDS_TOKEN)) {
       unlocked = true;
+      validSigned = true;
     }
+  }
+
+  // Small health-check probe used by external uptime monitors (Statuspage /
+  // UptimeRobot etc.) -- always servable, no signature required.
+  const isHealthCheck = key === "iso/health.check";
+
+  // Every other /iso/ request now requires a valid, unexpired signature --
+  // free-tier links get one from /freepoint, paid ones from /verify. This
+  // is what actually stops the popup being bypassed by hitting the .iso URL
+  // directly (a real chunk of traffic was doing exactly that).
+  if (!validSigned && !isHealthCheck) {
+    const filename = key.replace(/^iso\//, "");
+    const expiredUrl = `https://pearos.xyz/download-expired/?file=${encodeURIComponent(filename)}`;
+    return Response.redirect(expiredUrl, 302);
   }
 
   const head = await env.ISO_BUCKET.head(key);
@@ -347,7 +398,7 @@ function sleep(ms) {
 
 // ---------- signing helpers ----------
 
-async function sign(path, exp, secret) {
+async function sign(path, exp, tier, secret) {
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -358,7 +409,7 @@ async function sign(path, exp, secret) {
   const mac = await crypto.subtle.sign(
     "HMAC",
     key,
-    new TextEncoder().encode(`${path}:${exp}`)
+    new TextEncoder().encode(`${path}:${exp}:${tier}`)
   );
   return bufferToHex(mac);
 }
