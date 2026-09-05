@@ -1,8 +1,8 @@
-name: Sync ISO checksums
+name: Sync ISO checksums and sizes
 
-# Daily pull of sha.txt from the two build repos, plus a manual trigger for
-# whenever a checksum needs to be re-read on demand instead of waiting for
-# the next midnight run.
+# Daily pull of sha.txt from the two build repos (plus a live HEAD request
+# for file size), plus a manual trigger for whenever this needs to be
+# re-read on demand instead of waiting for the next midnight run.
 on:
   schedule:
     - cron: "0 0 * * *" # 00:00 UTC daily
@@ -41,17 +41,47 @@ jobs:
           echo "NICECORE_SHA=$nicecore_sha" >> "$GITHUB_ENV"
           echo "GOLDWING_SHA=$goldwing_sha" >> "$GITHUB_ENV"
 
+      - name: Fetch file sizes
+        run: |
+          # Re-check the size of whatever URL is currently listed for each
+          # build -- a plain HEAD request to iso.pearos.xyz, no auth needed
+          # (the Worker returns content-length on HEAD regardless of the
+          # download being paywalled/throttled for GET).
+          nicecore_url=$(jq -r '.[] | select(.name == "NiceC0re") | .download' assets/data/nicecore-versions.json)
+          goldwing_url=$(jq -r '.[] | select(.name == "Latest (Goldwing)") | .download' assets/data/debian-versions.json)
+
+          nicecore_bytes=$(curl -fsSLI "$nicecore_url" | tr -d '\r' | awk 'BEGIN{IGNORECASE=1} /^content-length:/{print $2}' | tail -n1)
+          goldwing_bytes=$(curl -fsSLI "$goldwing_url" | tr -d '\r' | awk 'BEGIN{IGNORECASE=1} /^content-length:/{print $2}' | tail -n1)
+
+          if [ -z "$nicecore_bytes" ]; then
+            echo "[ ERR ]: Could not read NiceC0re content-length from $nicecore_url."
+            exit 1
+          fi
+          if [ -z "$goldwing_bytes" ]; then
+            echo "[ ERR ]: Could not read Goldwing content-length from $goldwing_url."
+            exit 1
+          fi
+
+          nicecore_size=$(awk -v b="$nicecore_bytes" 'BEGIN{printf "%.1f GB", b/1000000000}')
+          goldwing_size=$(awk -v b="$goldwing_bytes" 'BEGIN{printf "%.1f GB", b/1000000000}')
+
+          echo "NiceC0re size: $nicecore_size ($nicecore_bytes bytes)"
+          echo "Goldwing size: $goldwing_size ($goldwing_bytes bytes)"
+
+          echo "NICECORE_SIZE=$nicecore_size" >> "$GITHUB_ENV"
+          echo "GOLDWING_SIZE=$goldwing_size" >> "$GITHUB_ENV"
+
       - name: Update JSON data
         run: |
           tmpfile=$(mktemp)
-          jq --arg sha "$NICECORE_SHA" \
-            'map(if .name == "NiceC0re" then .sha256 = $sha else . end)' \
+          jq --arg sha "$NICECORE_SHA" --arg size "$NICECORE_SIZE" \
+            'map(if .name == "NiceC0re" then .sha256 = $sha | .size = $size else . end)' \
             assets/data/nicecore-versions.json > "$tmpfile"
           mv "$tmpfile" assets/data/nicecore-versions.json
 
           tmpfile=$(mktemp)
-          jq --arg sha "$GOLDWING_SHA" \
-            'map(if .name == "Latest (Goldwing)" then .sha256 = $sha else . end)' \
+          jq --arg sha "$GOLDWING_SHA" --arg size "$GOLDWING_SIZE" \
+            'map(if .name == "Latest (Goldwing)" then .sha256 = $sha | .size = $size else . end)' \
             assets/data/debian-versions.json > "$tmpfile"
           mv "$tmpfile" assets/data/debian-versions.json
 
@@ -61,10 +91,10 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
 
           if git diff --quiet -- assets/data/nicecore-versions.json assets/data/debian-versions.json; then
-            echo "Checksums unchanged, nothing to commit."
+            echo "Checksums and sizes unchanged, nothing to commit."
             exit 0
           fi
 
           git add assets/data/nicecore-versions.json assets/data/debian-versions.json
-          git commit -m "Sync ISO checksums (NiceC0re, Goldwing)"
+          git commit -m "Sync ISO checksums and sizes (NiceC0re, Goldwing)"
           git push origin HEAD:main
