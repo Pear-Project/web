@@ -1,0 +1,30 @@
+name = "pearos-dl"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+routes = [
+  { pattern = "iso.pearos.xyz/*", zone_name = "pearos.xyz" }
+]
+
+[[r2_buckets]]
+binding = "ISO_BUCKET"
+bucket_name = "pearos-cdn"
+
+# Workers Paid: raise the CPU-time budget from Free's fixed 10ms to the max.
+# This is what actually fixes the "Exceeded CPU Limit" errors on throttled
+# multi-GB downloads -- confirmed via wrangler tail that even the zero-copy,
+# 4MB-batched throttleStream still exceeded Free's 10ms cap.
+[limits]
+cpu_ms = 300000
+
+# Secrets (set via `wrangler secret put`, NOT stored here):
+#   HMAC_SECRET      - random string, used to sign/verify download links
+#   STRIPE_SECRET_KEY - Stripe secret key, used to verify checkout sessions
+
+[vars]
+ALLOWED_ORIGIN = "https://pearos.xyz"
+FREE_SPEED_BYTES_PER_SEC = "2097152"   # 2 MB/s
+SIGNED_URL_TTL_SECONDS = "14400"       # 4 hours
+
+[observability]
+enabled = true

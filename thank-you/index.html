@@ -1,0 +1,382 @@
+<!DOCTYPE html><html lang="en" class="font-sans plus_jakarta_sans_8eb255a-module__4VqPoG__variable inter_5901b7c6-module__ec5Qua__variable"><head><meta charset="utf-8"><script>
+  window.NC_IDS={
+    gtm:'GTM-N9KWQZLC',            // Google Tag Manager container ID
+    ga:'G-M5YQ4NE7DR',            // GA4 measurement ID
+    adsense:'XXXX',               // no ads on this page -- see note below, left as a placeholder on purpose
+    clarity:'xs709y21du'          // Microsoft Clarity project ID
+  };
+  // This is the Stripe donation thank-you page: no <ins class="adsbygoogle"> units
+  // exist here and none should be added. adsense is left as an 'XXXX' placeholder
+  // so NC_loadAnalytics()'s live() check skips loading adsbygoogle.js entirely --
+  // GTM/GA4/Clarity still load normally for conversion tracking.
+  // Consent Mode v2: everything starts denied, the cookie banner flips it
+  window.dataLayer=window.dataLayer||[];
+  function gtag(){
+    dataLayer.push(arguments);
+    // Bridges Google's own EU consent message (Privacy & messaging in AdSense)
+    // into our loader: whichever CMP calls this -- ours or Google's -- a
+    // granted consent/update triggers the same script injection.
+    if(arguments[0]==='consent'&&arguments[1]==='update'){
+      var c=arguments[2]||{};
+      if(c.ad_storage==='granted'||c.analytics_storage==='granted')window.NC_loadAnalytics();
+    }
+  }
+  gtag('consent','default',{
+    ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',
+    analytics_storage:'denied',wait_for_update:500
+  });
+  gtag('js',new Date());
+
+  window.NC_loadAnalytics=function(){
+    if(window.NC_analyticsLoaded)return;window.NC_analyticsLoaded=true;
+    var ids=window.NC_IDS;
+    // an ID left as a XXXX placeholder means "not set up yet": skip loading it
+    var live=function(id){return id&&id.indexOf('XXXX')<0;};
+    gtag('consent','update',{
+      ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',
+      analytics_storage:'granted'
+    });
+    // Google Tag Manager
+    if(live(ids.gtm))
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;
+      j.src='https://www.googletagmanager.com/gtm.js?id='+i;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer',ids.gtm);
+    // GA4 via gtag.js
+    if(live(ids.ga)){
+      var ga=document.createElement('script');ga.async=true;
+      ga.src='https://www.googletagmanager.com/gtag/js?id='+ids.ga;
+      document.head.appendChild(ga);
+      gtag('config',ids.ga);
+    }
+    // AdSense intentionally NOT wired up on this page -- no ad slots here.
+    // Microsoft Clarity
+    if(live(ids.clarity))
+    (function(c,l,a,r,i,t,y){
+      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window,document,"clarity","script",ids.clarity);
+  };
+  // returning visitor who already accepted: load straight away
+  try{if(localStorage.getItem('nc-consent')==='granted')window.NC_loadAnalytics();}catch(e){}
+</script><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="preload" href="../assets/fonts/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2" as="font" crossorigin="" type="font/woff2"/><link rel="preload" href="../assets/fonts/fba5a26ea33df6a3-s.p.18rizl4rsrl42.woff2" as="font" crossorigin="" type="font/woff2"/><link rel="stylesheet" href="../assets/css/177r5rjg2nsdc.css" data-precedence="next"/><meta name="next-size-adjust" content=""/><title>Thank You — pearOS</title><meta name="description" content="Thanks for supporting pearOS! Your donation keeps development, hosting, and releases going."/><meta name="author" content="Pear Software and Services"/><meta name="keywords" content="pearOS,donate,thank you"/><meta name="creator" content="Pear Software and Services"/><meta name="publisher" content="Pear Software and Services"/><meta name="robots" content="noindex"/><meta property="og:type" content="website"><meta property="og:site_name" content="pearOS"><meta property="og:locale" content="en_US"><meta property="og:title" content="Thank You — pearOS"><meta property="og:description" content="Thanks for supporting pearOS! Your donation keeps development, hosting, and releases going."><meta property="og:url" content="https://pearos.xyz/thank-you/"><meta property="og:image" content="https://pearos.xyz/assets/hero-desktop.webp"><meta property="og:image:secure_url" content="https://pearos.xyz/assets/hero-desktop.webp"><meta property="og:image:type" content="image/webp"><meta property="og:image:width" content="2560"><meta property="og:image:height" content="1600"><meta property="og:image:alt" content="The pearOS NiceC0re desktop, showing the menu bar, dock, and application launcher."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Thank You — pearOS"><meta name="twitter:description" content="Thanks for supporting pearOS! Your donation keeps development, hosting, and releases going."><meta name="twitter:image" content="https://pearos.xyz/assets/hero-desktop.webp"><meta name="twitter:image:alt" content="The pearOS NiceC0re desktop, showing the menu bar, dock, and application launcher."><link rel="shortcut icon" href="../assets/images/favicon.svg" type="image/svg+xml"/><link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml"/><style>html{scroll-behavior:smooth}</style></head><body class="flex min-h-svh flex-col antialiased"><style>
+  .cookies{--accent:var(--primary);--accent-hi:var(--primary);--edge:var(--border);--r-card:12px;
+    position:fixed;left:16px;right:16px;bottom:16px;z-index:200;margin:0 auto;max-width:560px;
+    background:var(--popover);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+    border:1px solid var(--edge);border-radius:var(--r-card);padding:18px 20px;
+    box-shadow:0 24px 60px -24px rgba(0,0,0,.4);
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    opacity:0;transform:translateY(16px);pointer-events:none;
+    transition:opacity .4s ease,transform .4s ease}
+  .cookies.show{opacity:1;transform:none;pointer-events:auto}
+  .cookies p{flex:1 1 240px;font-size:.9rem;line-height:1.45;color:var(--muted-foreground);margin:0}
+  .cookies-actions{display:flex;gap:10px}
+  .cookies button{font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border:0;
+    padding:8px 18px;border-radius:980px;transition:background .2s,color .2s}
+  .cookies .ck-allow{background:var(--accent);color:var(--primary-foreground)}
+  .cookies .ck-allow:hover{background:var(--accent-hi);opacity:.9}
+  .cookies .ck-deny{background:var(--muted);color:var(--muted-foreground)}
+  .cookies .ck-deny:hover{background:color-mix(in oklab, var(--accent) 15%, transparent)}
+  @media(max-width:520px){
+    .cookies{flex-direction:column;align-items:stretch;gap:14px}
+    .cookies p{flex:0 0 auto}
+    .cookies-actions{justify-content:flex-end}
+  }
+</style>
+<div class="cookies" id="cookies" role="dialog" aria-live="polite" aria-label="Cookie consent">
+  <p>We use cookies for analytics and ads. Nothing loads until you allow it.</p>
+  <div class="cookies-actions">
+    <button class="ck-deny" id="ck-deny">Decline</button>
+    <button class="ck-allow" id="ck-allow">Allow</button>
+  </div>
+</div>
+<script async src="https://fundingchoicesmessages.google.com/i/pub-2120727219771886?ers=1"></script><script>(function() {function signalGooglefcPresent() {if (!window.frames['googlefcPresent']) {if (document.body) {const iframe = document.createElement('iframe'); iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;'; iframe.style.display = 'none'; iframe.name = 'googlefcPresent'; document.body.appendChild(iframe);} else {setTimeout(signalGooglefcPresent, 0);}}}signalGooglefcPresent();})();</script><script>
+  (function(){
+    var box=document.getElementById('cookies');
+    var choice=null;
+    try{choice=localStorage.getItem('nc-consent');}catch(e){}
+    if(choice==='granted'||choice==='denied')return;
+
+    var decided=false;
+    function showOwnBanner(){
+      if(decided)return;
+      decided=true;
+      setTimeout(function(){box.classList.add('show');},900);
+    }
+    function settle(v){
+      try{localStorage.setItem('nc-consent',v);}catch(e){}
+      box.classList.remove('show');
+      if(v==='granted')window.NC_loadAnalytics();
+    }
+    document.getElementById('ck-allow').addEventListener('click',function(){settle('granted');});
+    document.getElementById('ck-deny').addEventListener('click',function(){settle('denied');});
+
+    // Google's own EU consent message (Privacy & messaging) already covers
+    // EEA/UK/CH visitors -- ask its TCF signal before showing ours, so
+    // nobody in scope gets asked twice. Outside that scope (gdprApplies
+    // false, or Funding Choices didn't load at all -- e.g. blocked) we fall
+    // back to our own banner exactly as before.
+    var asked=false;
+    function checkTcf(){
+      if(typeof window.__tcfapi!=='function')return false;
+      asked=true;
+      window.__tcfapi('addEventListener',2,function(tcData,success){
+        if(!success||tcData.gdprApplies===false){showOwnBanner();return;}
+        decided=true; // Google's message is responsible for this visitor
+      });
+      return true;
+    }
+    if(!checkTcf()){
+      var tries=0;
+      var poll=setInterval(function(){
+        tries++;
+        if(checkTcf()||tries>20)clearInterval(poll);
+        if(tries>20&&!asked)showOwnBanner();
+      },100);
+    }
+  })();
+</script><script>((a,b,c,d,e,f,g,h)=>{let i=document.documentElement,j=["light","dark"];function k(b){var c;(Array.isArray(a)?a:[a]).forEach(a=>{let c="class"===a,d=c&&f?e.map(a=>f[a]||a):e;c?(i.classList.remove(...d),i.classList.add(f&&f[b]?f[b]:b)):i.setAttribute(a,b)}),c=b,h&&j.includes(c)&&(i.style.colorScheme=c)}if(d)k(d);else try{let a=localStorage.getItem(b)||c,d=g&&"system"===a?window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light":a;k(d)}catch(a){}})("class","theme","light",null,["light","dark"],null,true,true)</script><header class="relative z-50 bg-popover"><div class="max-w-9xl container"><div class="flex items-center justify-between py-3"><a aria-label="Pear Software and Services home" href="../"><span class="flex items-center gap-2"><svg viewBox="0 0 36 55" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="currentColor" class="h-7 w-auto shrink-0 text-foreground"><path d="M18.8946 9.4862C23.3578 8.5873 26.2126 5.02838 26.2252 0.605225C22.0285 0.639036 17.7027 5.26745 18.8946 9.4862ZM35.3509 39.9143C27.7762 39.9143 22.0536 33.1051 23.9656 25.7921C24.3705 24.2429 25.2228 22.833 26.2101 21.5701C26.6828 20.9653 27.6248 20.3407 27.6736 19.5318C27.8492 16.6253 25.1824 13.8634 22.7843 12.5889C18.2262 10.1669 11.2454 11.4889 8.88917 16.3288C7.83889 18.4864 8.47923 20.8392 7.66627 23.0259C6.50011 26.1631 4.15825 28.2162 2.50211 31.0334C0.229797 34.899 -0.30993 40.3291 1.58734 44.4275C7.06383 56.2586 25.4342 57.619 32.8569 46.9025C34.2878 44.8365 35.3438 42.4381 35.3509 39.9143Z"></path></svg><span class="font-display text-xl font-semibold tracking-tight">Pear Software and Services</span></span></a><nav aria-label="Main" data-orientation="horizontal" dir="ltr" class="relative z-10 max-w-max flex-1 justify-center hidden items-center lg:flex"><div style="position:relative"><ul data-orientation="horizontal" class="group flex flex-1 list-none items-center justify-center space-x-1 gap-2" dir="ltr"><li><button id="radix-_R_ilb_-trigger-radix-_R_bilb_" data-state="closed" aria-expanded="false" class="group inline-flex h-9 w-max items-center justify-center rounded-md p-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-active:bg-accent/50 data-[state=open]:bg-accent/50 group text-foreground bg-transparent font-medium lg:text-base" data-radix-collection-item="">Features<!-- --> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down relative top-px ml-1 size-3 transition duration-300 group-data-[state=open]:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></li><li><a class="text-foreground px-3 py-2 font-medium lg:text-base" href="../marketplace/">Marketplace</a></li><li><a class="text-foreground px-3 py-2 font-medium lg:text-base" href="../about/">About</a></li><li><a class="text-foreground px-3 py-2 font-medium lg:text-base" href="../faq/">FAQ</a></li><li><a class="text-foreground px-3 py-2 font-medium lg:text-base" href="../contact/">Contact</a></li><li><a class="text-foreground px-3 py-2 font-medium lg:text-base" href="../donate/">Donate</a></li></ul></div><div class="absolute top-full left-0 flex justify-center"><div class="feat-menu bg-popover text-popover-foreground relative mt-1.5 w-[460px] overflow-hidden rounded-md border shadow-sm" hidden><ul class="grid w-[460px] grid-cols-2 gap-1 p-3"><li><a href="../#features" class="hover:bg-accent focus:bg-accent flex flex-row items-start gap-3 rounded-lg p-3 leading-none no-underline outline-hidden transition-colors select-none"><span class="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-dot size-4"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="1"></circle></svg></span><div class="space-y-1"><div class="text-sm leading-none font-semibold">The Desktop</div><p class="text-muted-foreground line-clamp-2 text-sm leading-snug">A real macOS-inspired desktop, not a wallpaper and icon pack.</p></div></a></li><li><a href="../#workflows" class="hover:bg-accent focus:bg-accent flex flex-row items-start gap-3 rounded-lg p-3 leading-none no-underline outline-hidden transition-colors select-none"><span class="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw size-4"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></span><div class="space-y-1"><div class="text-sm leading-none font-semibold">Ready to Go</div><p class="text-muted-foreground line-clamp-2 text-sm leading-snug">Welcome app, Pafari, and an app store — nothing to set up first.</p></div></a></li></ul></div></div></nav><div class="flex items-center gap-2.5"><div class="transition-opacity duration-300 opacity-100"><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground size-10"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg><span class="sr-only">Toggle theme</span></button></div><button class="text-muted-foreground relative flex size-8 lg:hidden"><span class="sr-only">Open main menu</span><div class="absolute top-1/2 left-1/2 block w-[18px] -translate-x-1/2 -translate-y-1/2"><span aria-hidden="true" class="absolute block h-0.5 w-full rounded-full bg-current transition duration-500 ease-in-out -translate-y-1.5"></span><span aria-hidden="true" class="absolute block h-0.5 w-full rounded-full bg-current transition duration-500 ease-in-out "></span><span aria-hidden="true" class="absolute block h-0.5 w-full rounded-full bg-current transition duration-500 ease-in-out translate-y-1.5"></span></div></button></div></div></div><div class="absolute inset-0 top-full container flex h-[calc(100vh-64px)] flex-col transition-all duration-300 ease-in-out lg:hidden invisible translate-x-full opacity-0 bg-popover"><nav class="mt-3 flex flex-1 flex-col gap-6"><div><button class="text-foreground flex w-full items-center justify-between text-lg tracking-[-0.36px]" aria-label="Features menu" aria-expanded="false">Features</button><div class="ml-1 space-y-3 overflow-hidden transition-all max-h-0 opacity-0"><a class="hover:bg-accent flex items-start gap-3 rounded-md p-2" href="../#features"><span class="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-dot size-4"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="1"></circle></svg></span><div><div class="text-foreground font-medium">The Desktop</div><p class="text-muted-foreground text-sm">A real macOS-inspired desktop, not a wallpaper and icon pack.</p></div></a><a class="hover:bg-accent flex items-start gap-3 rounded-md p-2" href="../#workflows"><span class="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw size-4"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></span><div><div class="text-foreground font-medium">Ready to Go</div><p class="text-muted-foreground text-sm">Welcome app, Pafari, and an app store — nothing to set up first.</p></div></a></div></div><a class="text-foreground text-lg tracking-[-0.36px]" href="../marketplace/">Marketplace</a><a class="text-foreground text-lg tracking-[-0.36px]" href="../about/">About</a><a class="text-foreground text-lg tracking-[-0.36px]" href="../faq/">FAQ</a><a class="text-foreground text-lg tracking-[-0.36px]" href="../contact/">Contact</a><a class="text-foreground text-lg tracking-[-0.36px]" href="../donate/">Donate</a></nav></div></header><main class="flex flex-1 flex-col"><section class="py-16 md:py-28 lg:py-20"><div class="container max-w-4xl text-center mx-auto"><div class="mx-auto flex size-16 items-center justify-center rounded-full" style="background:color-mix(in oklab, var(--chart-3) 15%, transparent)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--chart-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><path d="M20 6 9 17l-5-5"></path></svg></div><h1 class="font-display mt-6 text-4xl font-semibold tracking-tight sm:text-5xl">Thank you.</h1><p class="text-muted-foreground mt-4 text-lg font-medium max-w-2xl mx-auto">Your support keeps pearOS free, open source, and shipping. While you're here, grab whichever build you're running.</p><a class="text-primary mt-6 inline-block text-sm font-semibold hover:underline" href="../">&larr; Back to pearOS</a></div></section><section class="pb-16 md:pb-28 lg:pb-32"><div class="container max-w-4xl"><div class="mb-10"><div class="flex flex-wrap items-end justify-between gap-3 mb-4"><div><h2 class="text-xl font-semibold">NiceC0re</h2><p class="text-muted-foreground mt-1 text-sm">Flagship OS based on Arch Linux.</p></div><a class="text-primary text-sm font-semibold hover:underline" href="../nicecore/">View NiceC0re &rarr;</a></div><div class="overflow-x-auto rounded-xl border"><table class="w-full text-sm" style="table-layout:fixed"><thead class="bg-muted/50 text-muted-foreground text-xs uppercase tracking-wide"><tr><th class="px-4 py-3 text-left font-medium" style="width:30%">Version</th><th class="px-4 py-3 text-left font-medium" style="width:16%">Status</th><th class="px-4 py-3 text-left font-medium" style="width:14%">ISO size</th><th class="px-4 py-3 text-left font-medium" style="width:24%"><span class="inline-flex items-center gap-1">SHA256<a href="https://support.pearos.xyz/articles/how-to-verify-the-sha256-checksum-on-your-system" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-foreground normal-case" title="How to verify the SHA256 checksum" aria-label="How to verify the SHA256 checksum"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-help size-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg></a></span></th><th class="px-4 py-3 text-right font-medium" style="width:16%">Download</th></tr></thead><tbody id="builds-nicecore-table" class="divide-border divide-y"></tbody></table></div></div><div class="mb-10"><div class="flex flex-wrap items-end justify-between gap-3 mb-4"><div><h2 class="text-xl font-semibold">Debian Latest</h2><p class="text-muted-foreground mt-1 text-sm">Stable and slim ISO images.</p></div><a class="text-primary text-sm font-semibold hover:underline" href="../debian/">View Debian Latest &rarr;</a></div><div class="overflow-x-auto rounded-xl border"><table class="w-full text-sm" style="table-layout:fixed"><thead class="bg-muted/50 text-muted-foreground text-xs uppercase tracking-wide"><tr><th class="px-4 py-3 text-left font-medium" style="width:30%">Version</th><th class="px-4 py-3 text-left font-medium" style="width:16%">Status</th><th class="px-4 py-3 text-left font-medium" style="width:14%">ISO size</th><th class="px-4 py-3 text-left font-medium" style="width:24%"><span class="inline-flex items-center gap-1">SHA256<a href="https://support.pearos.xyz/articles/how-to-verify-the-sha256-checksum-on-your-system" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-foreground normal-case" title="How to verify the SHA256 checksum" aria-label="How to verify the SHA256 checksum"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-help size-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg></a></span></th><th class="px-4 py-3 text-right font-medium" style="width:16%">Download</th></tr></thead><tbody id="builds-debian-table" class="divide-border divide-y"></tbody></table></div></div><div class="mb-10"><div class="flex flex-wrap items-end justify-between gap-3 mb-4"><div><h2 class="text-xl font-semibold">BSD Build</h2><p class="text-muted-foreground mt-1 text-sm">Most experimental features. Coming soon.</p></div><a class="text-primary text-sm font-semibold hover:underline" href="../bsd/">View BSD Build &rarr;</a></div><div class="overflow-x-auto rounded-xl border"><table class="w-full text-sm" style="table-layout:fixed"><thead class="bg-muted/50 text-muted-foreground text-xs uppercase tracking-wide"><tr><th class="px-4 py-3 text-left font-medium" style="width:30%">Version</th><th class="px-4 py-3 text-left font-medium" style="width:16%">Status</th><th class="px-4 py-3 text-left font-medium" style="width:14%">ISO size</th><th class="px-4 py-3 text-left font-medium" style="width:24%"><span class="inline-flex items-center gap-1">SHA256<a href="https://support.pearos.xyz/articles/how-to-verify-the-sha256-checksum-on-your-system" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-foreground normal-case" title="How to verify the SHA256 checksum" aria-label="How to verify the SHA256 checksum"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-help size-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg></a></span></th><th class="px-4 py-3 text-right font-medium" style="width:16%">Download</th></tr></thead><tbody id="builds-bsd-table" class="divide-border divide-y"></tbody></table></div></div><div class="mb-10"><div class="flex flex-wrap items-end justify-between gap-3 mb-4"><div><h2 class="text-xl font-semibold">aarch64</h2><p class="text-muted-foreground mt-1 text-sm">Raspberry Pi build.</p></div><a class="text-primary text-sm font-semibold hover:underline" href="../aarch64/">View aarch64 &rarr;</a></div><div class="overflow-x-auto rounded-xl border"><table class="w-full text-sm" style="table-layout:fixed"><thead class="bg-muted/50 text-muted-foreground text-xs uppercase tracking-wide"><tr><th class="px-4 py-3 text-left font-medium" style="width:30%">Version</th><th class="px-4 py-3 text-left font-medium" style="width:16%">Status</th><th class="px-4 py-3 text-left font-medium" style="width:14%">ISO size</th><th class="px-4 py-3 text-left font-medium" style="width:24%"><span class="inline-flex items-center gap-1">SHA256<a href="https://support.pearos.xyz/articles/how-to-verify-the-sha256-checksum-on-your-system" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-foreground normal-case" title="How to verify the SHA256 checksum" aria-label="How to verify the SHA256 checksum"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-help size-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg></a></span></th><th class="px-4 py-3 text-right font-medium" style="width:16%">Download</th></tr></thead><tbody id="builds-aarch64-table" class="divide-border divide-y"></tbody></table></div></div></div></section></main><footer class="bg-primary text-primary-foreground dark:bg-card dark:text-card-foreground dark:border-border relative overflow-hidden border-t border-transparent"><div aria-hidden="true" class="pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)] opacity-10" style="background-image:radial-gradient(color-mix(in oklab, var(--foreground) 12%, transparent) 1px, transparent 1px);background-size:22px 22px;mask-image:radial-gradient(ellipse_at_top,black,transparent_72%);-webkit-mask-image:radial-gradient(ellipse_at_top,black,transparent_72%)"></div><div class="relative container"><div class="border-primary-foreground/15 dark:border-border flex flex-col items-start gap-8 border-b py-14 md:flex-row md:items-center md:justify-between md:py-20"><div class="flex items-center gap-4"><span class="flex items-center gap-2 text-primary-foreground dark:text-foreground"><svg viewBox="0 0 36 55" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="currentColor" class="h-7 w-auto shrink-0 text-primary-foreground dark:text-card-foreground"><path d="M18.8946 9.4862C23.3578 8.5873 26.2126 5.02838 26.2252 0.605225C22.0285 0.639036 17.7027 5.26745 18.8946 9.4862ZM35.3509 39.9143C27.7762 39.9143 22.0536 33.1051 23.9656 25.7921C24.3705 24.2429 25.2228 22.833 26.2101 21.5701C26.6828 20.9653 27.6248 20.3407 27.6736 19.5318C27.8492 16.6253 25.1824 13.8634 22.7843 12.5889C18.2262 10.1669 11.2454 11.4889 8.88917 16.3288C7.83889 18.4864 8.47923 20.8392 7.66627 23.0259C6.50011 26.1631 4.15825 28.2162 2.50211 31.0334C0.229797 34.899 -0.30993 40.3291 1.58734 44.4275C7.06383 56.2586 25.4342 57.619 32.8569 46.9025C34.2878 44.8365 35.3438 42.4381 35.3509 39.9143Z"></path></svg></span><h2 class="font-display max-w-md text-3xl leading-tight font-semibold tracking-tight text-balance md:text-4xl">Linux you'll want to look at.</h2></div><a class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-semibold transition-all focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 h-11 px-8 text-base" href="../#choose-build">Download Now</a></div><nav class="border-primary-foreground/15 dark:border-border grid grid-cols-2 gap-y-10 border-b py-12 sm:grid-cols-4 md:py-16"><div><h3 class="text-sm font-semibold tracking-wide uppercase opacity-70">Product</h3><ul class="mt-5 space-y-3"><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../#features">The Desktop</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../#workflows">Ready to Go</a></li></ul></div><div><h3 class="text-sm font-semibold tracking-wide uppercase opacity-70">Company</h3><ul class="mt-5 space-y-3"><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../about/">About</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../marketplace/">Marketplace</a></li></ul></div><div><h3 class="text-sm font-semibold tracking-wide uppercase opacity-70">Support</h3><ul class="mt-5 space-y-3"><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../faq/">FAQ</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="https://support.pearos.xyz/" target="_blank" rel="noopener noreferrer">Knowledge Base</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="https://support.pearos.xyz/" target="_blank" rel="noopener noreferrer">Knowledge Base</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../contact/">Contact</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../donate/">Donate</a></li></ul></div><div><h3 class="text-sm font-semibold tracking-wide uppercase opacity-70">Legal</h3><ul class="mt-5 space-y-3"><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../terms/">Terms of service</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../privacy/">Privacy policy</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../gdpr/">GDPR Policy</a></li></ul></div></nav><div class="flex flex-wrap items-center justify-between gap-4 py-8"><p class="text-primary-foreground/60 dark:text-muted-foreground text-sm">©<!-- --> Pear Software and Services <!-- -->- All rights reserved.</p><a href="https://reclamatiisal.anpc.ro/" target="_blank" rel="noopener noreferrer" title="Soluționarea Alternativă a Litigiilor (SAL) - ANPC"><img src="../assets/images/sal-pictograma.png" width="201" height="50" alt="SAL - Soluționarea Alternativă a Litigiilor" loading="lazy" style="display:block"/></a><div class="flex items-center gap-4"><a aria-label="GitHub" target="_blank" rel="noopener noreferrer" class="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 dark:border-border dark:text-foreground dark:hover:bg-accent flex size-9 items-center justify-center rounded-full border transition-colors" href="https://github.com/pearOS-archlinux/iso"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-github size-4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg></a><a aria-label="X" target="_blank" rel="noopener noreferrer" class="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 dark:border-border dark:text-foreground dark:hover:bg-accent flex size-9 items-center justify-center rounded-full border transition-colors" href="https://twitter.com/PearLinux"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter size-4"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a></div></div></div></footer><script>(function(){
+  function init(){
+    var tbody=document.getElementById('builds-nicecore-table');
+    if(!tbody) return;
+    var COPY_ICON='<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy size-3"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>';
+    fetch('../assets/data/nicecore-versions.json').then(function(r){return r.json();}).then(function(versions){
+      tbody.innerHTML=versions.map(function(v){
+        var available=v.status==='Available';
+        var badgeColor=available?'var(--chart-3)':'var(--muted-foreground)';
+        var statusBadge='<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium" style="background:color-mix(in oklab, '+badgeColor+' 15%, transparent);color:'+badgeColor+'">'+v.status+'</span>';
+        var sizeCell=available?v.size:'\u2014';
+        var shaCell=v.sha256
+          ? '<button type="button" class="sha-copy inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 font-mono text-[11px] hover:bg-accent" data-sha="'+v.sha256+'" title="'+v.sha256+'"><span>'+v.sha256.slice(0,8)+'\u2026'+v.sha256.slice(-6)+'</span>'+COPY_ICON+'</button>'
+          : '<span class="text-muted-foreground text-xs">\u2014</span>';
+        var downloadCell=available
+          ? '<a class="inline-flex items-center justify-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90" href="'+v.download+'" target="_blank" rel="noopener noreferrer">Download</a>'
+          : '<span class="text-muted-foreground text-xs">\u2014</span>';
+        return '<tr><td class="px-4 py-3 font-medium">'+v.name+'</td><td class="px-4 py-3">'+statusBadge+'</td><td class="text-muted-foreground px-4 py-3 text-xs">'+sizeCell+'</td><td class="px-4 py-3">'+shaCell+'</td><td class="px-4 py-3 text-right">'+downloadCell+'</td></tr>';
+      }).join('');
+    }).catch(function(){
+      tbody.innerHTML='<tr><td class="text-muted-foreground px-4 py-3 text-sm" colspan="5">Could not load version list.</td></tr>';
+    });
+    tbody.addEventListener('click',function(e){
+      var btn=e.target.closest('.sha-copy');
+      if(!btn) return;
+      var sha=btn.getAttribute('data-sha');
+      var span=btn.querySelector('span');
+      var restore=span.textContent;
+      function done(){
+        span.textContent='Copied!';
+        setTimeout(function(){ span.textContent=restore; },1500);
+      }
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(sha).then(done).catch(function(){});
+      }
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();</script><script>(function(){
+  function init(){
+    var tbody=document.getElementById('builds-debian-table');
+    if(!tbody) return;
+    var COPY_ICON='<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy size-3"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>';
+    fetch('../assets/data/debian-versions.json').then(function(r){return r.json();}).then(function(versions){
+      tbody.innerHTML=versions.map(function(v){
+        var available=v.status==='Available';
+        var badgeColor=available?'var(--chart-3)':'var(--muted-foreground)';
+        var statusBadge='<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium" style="background:color-mix(in oklab, '+badgeColor+' 15%, transparent);color:'+badgeColor+'">'+v.status+'</span>';
+        var sizeCell=available?v.size:'\u2014';
+        var shaCell=v.sha256
+          ? '<button type="button" class="sha-copy inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 font-mono text-[11px] hover:bg-accent" data-sha="'+v.sha256+'" title="'+v.sha256+'"><span>'+v.sha256.slice(0,8)+'\u2026'+v.sha256.slice(-6)+'</span>'+COPY_ICON+'</button>'
+          : '<span class="text-muted-foreground text-xs">\u2014</span>';
+        var downloadCell=available
+          ? '<a class="inline-flex items-center justify-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90" href="'+v.download+'" target="_blank" rel="noopener noreferrer">Download</a>'
+          : '<span class="text-muted-foreground text-xs">\u2014</span>';
+        return '<tr><td class="px-4 py-3 font-medium">'+v.name+'</td><td class="px-4 py-3">'+statusBadge+'</td><td class="text-muted-foreground px-4 py-3 text-xs">'+sizeCell+'</td><td class="px-4 py-3">'+shaCell+'</td><td class="px-4 py-3 text-right">'+downloadCell+'</td></tr>';
+      }).join('');
+    }).catch(function(){
+      tbody.innerHTML='<tr><td class="text-muted-foreground px-4 py-3 text-sm" colspan="5">Could not load version list.</td></tr>';
+    });
+    tbody.addEventListener('click',function(e){
+      var btn=e.target.closest('.sha-copy');
+      if(!btn) return;
+      var sha=btn.getAttribute('data-sha');
+      var span=btn.querySelector('span');
+      var restore=span.textContent;
+      function done(){
+        span.textContent='Copied!';
+        setTimeout(function(){ span.textContent=restore; },1500);
+      }
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(sha).then(done).catch(function(){});
+      }
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();</script><script>(function(){
+  function init(){
+    var tbody=document.getElementById('builds-bsd-table');
+    if(!tbody) return;
+    var COPY_ICON='<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy size-3"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>';
+    fetch('../assets/data/bsd-versions.json').then(function(r){return r.json();}).then(function(versions){
+      tbody.innerHTML=versions.map(function(v){
+        var available=v.status==='Available';
+        var badgeColor=available?'var(--chart-3)':'var(--muted-foreground)';
+        var statusBadge='<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium" style="background:color-mix(in oklab, '+badgeColor+' 15%, transparent);color:'+badgeColor+'">'+v.status+'</span>';
+        var sizeCell=available?v.size:'\u2014';
+        var shaCell=v.sha256
+          ? '<button type="button" class="sha-copy inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 font-mono text-[11px] hover:bg-accent" data-sha="'+v.sha256+'" title="'+v.sha256+'"><span>'+v.sha256.slice(0,8)+'\u2026'+v.sha256.slice(-6)+'</span>'+COPY_ICON+'</button>'
+          : '<span class="text-muted-foreground text-xs">\u2014</span>';
+        var downloadCell=available
+          ? '<a class="inline-flex items-center justify-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90" href="'+v.download+'" target="_blank" rel="noopener noreferrer">Download</a>'
+          : '<span class="text-muted-foreground text-xs">\u2014</span>';
+        return '<tr><td class="px-4 py-3 font-medium">'+v.name+'</td><td class="px-4 py-3">'+statusBadge+'</td><td class="text-muted-foreground px-4 py-3 text-xs">'+sizeCell+'</td><td class="px-4 py-3">'+shaCell+'</td><td class="px-4 py-3 text-right">'+downloadCell+'</td></tr>';
+      }).join('');
+    }).catch(function(){
+      tbody.innerHTML='<tr><td class="text-muted-foreground px-4 py-3 text-sm" colspan="5">Could not load version list.</td></tr>';
+    });
+    tbody.addEventListener('click',function(e){
+      var btn=e.target.closest('.sha-copy');
+      if(!btn) return;
+      var sha=btn.getAttribute('data-sha');
+      var span=btn.querySelector('span');
+      var restore=span.textContent;
+      function done(){
+        span.textContent='Copied!';
+        setTimeout(function(){ span.textContent=restore; },1500);
+      }
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(sha).then(done).catch(function(){});
+      }
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();</script><script>(function(){
+  function init(){
+    var tbody=document.getElementById('builds-aarch64-table');
+    if(!tbody) return;
+    var COPY_ICON='<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy size-3"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>';
+    fetch('../assets/data/aarch64-versions.json').then(function(r){return r.json();}).then(function(versions){
+      tbody.innerHTML=versions.map(function(v){
+        var available=v.status==='Available';
+        var badgeColor=available?'var(--chart-3)':'var(--muted-foreground)';
+        var statusBadge='<span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium" style="background:color-mix(in oklab, '+badgeColor+' 15%, transparent);color:'+badgeColor+'">'+v.status+'</span>';
+        var sizeCell=available?v.size:'\u2014';
+        var shaCell=v.sha256
+          ? '<button type="button" class="sha-copy inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 font-mono text-[11px] hover:bg-accent" data-sha="'+v.sha256+'" title="'+v.sha256+'"><span>'+v.sha256.slice(0,8)+'\u2026'+v.sha256.slice(-6)+'</span>'+COPY_ICON+'</button>'
+          : '<span class="text-muted-foreground text-xs">\u2014</span>';
+        var downloadCell=available
+          ? '<a class="inline-flex items-center justify-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90" href="'+v.download+'" target="_blank" rel="noopener noreferrer">Download</a>'
+          : '<span class="text-muted-foreground text-xs">\u2014</span>';
+        return '<tr><td class="px-4 py-3 font-medium">'+v.name+'</td><td class="px-4 py-3">'+statusBadge+'</td><td class="text-muted-foreground px-4 py-3 text-xs">'+sizeCell+'</td><td class="px-4 py-3">'+shaCell+'</td><td class="px-4 py-3 text-right">'+downloadCell+'</td></tr>';
+      }).join('');
+    }).catch(function(){
+      tbody.innerHTML='<tr><td class="text-muted-foreground px-4 py-3 text-sm" colspan="5">Could not load version list.</td></tr>';
+    });
+    tbody.addEventListener('click',function(e){
+      var btn=e.target.closest('.sha-copy');
+      if(!btn) return;
+      var sha=btn.getAttribute('data-sha');
+      var span=btn.querySelector('span');
+      var restore=span.textContent;
+      function done(){
+        span.textContent='Copied!';
+        setTimeout(function(){ span.textContent=restore; },1500);
+      }
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(sha).then(done).catch(function(){});
+      }
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();</script><script>(function(){
+  function findToggle(){
+    var suns=document.getElementsByClassName('lucide-sun');
+    for(var i=0;i<suns.length;i++){
+      var btn=suns[i].closest('button');
+      if(btn) return btn;
+    }
+    return null;
+  }
+  function applyTheme(theme){
+    var root=document.documentElement;
+    root.classList.remove('light','dark');
+    root.classList.add(theme);
+    root.style.colorScheme=theme;
+    try{localStorage.setItem('theme',theme);}catch(e){}
+  }
+  function init(){
+    var btn=findToggle();
+    if(!btn) return;
+    btn.addEventListener('click',function(){
+      var current=document.documentElement.classList.contains('dark')?'dark':'light';
+      applyTheme(current==='dark'?'light':'dark');
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();</script><script>(function(){
+  // If we landed here from Stripe (?session_id=...), swap plain download
+  // links for signed, unthrottled ones. No session_id -> links behave exactly
+  // as before (direct, throttled by the download worker). Purely behavioral,
+  // no markup/CSS changes.
+  var sessionId;
+  try{ sessionId=new URLSearchParams(location.search).get('session_id'); }catch(e){ sessionId=null; }
+  if(!sessionId) return;
+
+  var VERIFY_URL='https://iso.pearos.xyz/verify';
+
+  // Came back from a checkout started on a build page (?file=...) -- auto
+  // start that download once, unthrottled, no extra click needed.
+  var autoFile;
+  try{ autoFile=new URLSearchParams(location.search).get('file'); }catch(e){ autoFile=null; }
+  if(autoFile){
+    fetch(VERIFY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({session_id:sessionId,file:autoFile})
+    }).then(function(r){return r.json();}).then(function(data){
+      if(data&&data.url) window.open(data.url,'_blank','noopener');
+    }).catch(function(){});
+  }
+
+  document.addEventListener('click',function(e){
+    var link=e.target.closest('a[href*="iso.pearos.xyz/iso/"]');
+    if(!link||link.dataset.verifying) return;
+    e.preventDefault();
+    link.dataset.verifying='1';
+    var restore=link.textContent;
+    link.textContent='Verifying…';
+    var file=link.href.split('/').pop().split('?')[0];
+    fetch(VERIFY_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({session_id:sessionId,file:file})
+    }).then(function(r){return r.json();}).then(function(data){
+      window.open(data&&data.url?data.url:link.href,'_blank','noopener');
+    }).catch(function(){
+      window.open(link.href,'_blank','noopener');
+    }).finally(function(){
+      link.textContent=restore;
+      delete link.dataset.verifying;
+    });
+  });
+})();</script></body></html>

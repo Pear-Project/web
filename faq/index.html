@@ -1,0 +1,438 @@
+<!DOCTYPE html><html data-dpl-id="dpl_7HkqB3S5xHTrVZaD674JP8QQoTrX" lang="en" class="font-sans plus_jakarta_sans_8eb255a-module__4VqPoG__variable inter_5901b7c6-module__ec5Qua__variable"><head><meta charset="utf-8"><script>
+  window.NC_IDS={
+    gtm:'GTM-N9KWQZLC',            // Google Tag Manager container ID
+    ga:'G-M5YQ4NE7DR',            // GA4 measurement ID
+    adsense:'ca-pub-2120727219771886', // AdSense publisher ID (from the current site, matches ads.txt)
+    clarity:'xs709y21du'          // Microsoft Clarity project ID
+  };
+  // Manual AdSense slot for this page. Fill in the real AdSense ad-unit ID
+  // below once one exists for this placement -- until then the section
+  // removes itself instead of shipping an empty/broken ad box.
+  window.NC_AD_SLOTS={content:'9001134411'};
+  window.NC_initAdSlots=function(){
+    document.querySelectorAll('[data-ad-key]').forEach(function(el){
+      var id=(window.NC_AD_SLOTS||{})[el.getAttribute('data-ad-key')];
+      if(id){
+        var ins=el.querySelector('ins.adsbygoogle');
+        if(ins){ins.setAttribute('data-ad-slot',id);ins.setAttribute('data-ad-format','auto');ins.setAttribute('data-full-width-responsive','true');(window.adsbygoogle=window.adsbygoogle||[]).push({});}
+      }else{el.remove();}
+    });
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',window.NC_initAdSlots);
+  else window.NC_initAdSlots();
+  // Consent Mode v2: everything starts denied, the cookie banner flips it
+  window.dataLayer=window.dataLayer||[];
+  function gtag(){
+    dataLayer.push(arguments);
+    // Bridges Google's own EU consent message (Privacy & messaging in AdSense)
+    // into our loader: whichever CMP calls this -- ours or Google's -- a
+    // granted consent/update triggers the same script injection.
+    if(arguments[0]==='consent'&&arguments[1]==='update'){
+      var c=arguments[2]||{};
+      if(c.ad_storage==='granted'||c.analytics_storage==='granted')window.NC_loadAnalytics();
+    }
+  }
+  gtag('consent','default',{
+    ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',
+    analytics_storage:'denied',wait_for_update:500
+  });
+  gtag('js',new Date());
+
+  window.NC_loadAnalytics=function(){
+    if(window.NC_analyticsLoaded)return;window.NC_analyticsLoaded=true;
+    var ids=window.NC_IDS;
+    // an ID left as a XXXX placeholder means "not set up yet": skip loading it
+    var live=function(id){return id&&id.indexOf('XXXX')<0;};
+    gtag('consent','update',{
+      ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',
+      analytics_storage:'granted'
+    });
+    // Google Tag Manager
+    if(live(ids.gtm))
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;
+      j.src='https://www.googletagmanager.com/gtm.js?id='+i;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer',ids.gtm);
+    // GA4 via gtag.js
+    if(live(ids.ga)){
+      var ga=document.createElement('script');ga.async=true;
+      ga.src='https://www.googletagmanager.com/gtag/js?id='+ids.ga;
+      document.head.appendChild(ga);
+      gtag('config',ids.ga);
+    }
+    // AdSense
+    if(live(ids.adsense)){
+      var ad=document.createElement('script');ad.async=true;ad.crossOrigin='anonymous';
+      ad.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ids.adsense;
+      document.head.appendChild(ad);
+      // Auto Ads is enabled from the AdSense account dashboard itself, which
+      // makes adsbygoogle.js auto-initialize page-level ads on load. Do NOT
+      // also push {enable_page_level_ads:true} here — that fires it a second
+      // time and throws "Only one 'enable_page_level_ads' allowed per page".
+      // Manual <ins class="adsbygoogle"> slots elsewhere on the page still
+      // work fine, they push their own empty {} independently of this.
+    }
+    // Microsoft Clarity
+    if(live(ids.clarity))
+    (function(c,l,a,r,i,t,y){
+      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window,document,"clarity","script",ids.clarity);
+  };
+  // returning visitor who already accepted: load straight away
+  try{if(localStorage.getItem('nc-consent')==='granted')window.NC_loadAnalytics();}catch(e){}
+</script><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="preload" href="../assets/fonts/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2" as="font" crossorigin="" type="font/woff2"/><link rel="preload" href="../assets/fonts/fba5a26ea33df6a3-s.p.18rizl4rsrl42.woff2" as="font" crossorigin="" type="font/woff2"/><link rel="stylesheet" href="../assets/css/177r5rjg2nsdc.css" data-precedence="next"/><meta name="next-size-adjust" content=""/><title>FAQ — pearOS</title><meta name="description" content="Get help with pearOS, report bugs, and connect with the community."/><meta name="author" content="Pear Software and Services"/><meta name="keywords" content="pearOS,Arch Linux,Linux distro,open source operating system,NiceC0re,Debian,BSD,aarch64,desktop environment"/><meta name="creator" content="Pear Software and Services"/><meta name="publisher" content="Pear Software and Services"/><meta name="robots" content="index, follow"/><meta property="og:type" content="website"><meta property="og:site_name" content="pearOS"><meta property="og:locale" content="en_US"><meta property="og:title" content="FAQ — pearOS"><meta property="og:description" content="Get help with pearOS, report bugs, and connect with the community."><meta property="og:url" content="https://pearos.xyz/faq/"><meta property="og:image" content="https://pearos.xyz/assets/hero-desktop.webp"><meta property="og:image:secure_url" content="https://pearos.xyz/assets/hero-desktop.webp"><meta property="og:image:type" content="image/webp"><meta property="og:image:width" content="2560"><meta property="og:image:height" content="1600"><meta property="og:image:alt" content="The pearOS NiceC0re desktop, showing the menu bar, dock, and application launcher."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="FAQ — pearOS"><meta name="twitter:description" content="Get help with pearOS, report bugs, and connect with the community."><meta name="twitter:image" content="https://pearos.xyz/assets/hero-desktop.webp"><meta name="twitter:image:alt" content="The pearOS NiceC0re desktop, showing the menu bar, dock, and application launcher."><link rel="shortcut icon" href="../assets/images/favicon.svg" type="image/svg+xml"/><link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml"/><style>html{scroll-behavior:smooth}</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is there a free version?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The Free plan includes unlimited members, two teams, and 500 issues — free forever, no credit card required. You can upgrade the moment you outgrow it."}}, {"@type": "Question", "name": "How do I get help if I get stuck?", "acceptedAnswer": {"@type": "Answer", "text": "Every plan includes priority support from a real person, plus in-app guides and searchable documentation. Enterprise customers also get a dedicated account manager."}}, {"@type": "Question", "name": "What are your support hours?", "acceptedAnswer": {"@type": "Answer", "text": "Support is staffed Monday to Friday across US and EU time zones, with a typical first response under four hours on paid plans."}}, {"@type": "Question", "name": "How do I invite my team?", "acceptedAnswer": {"@type": "Answer", "text": "Open Settings → Members, paste in a list of email addresses, and pick a role. Invited teammates land straight in the right workspace."}}, {"@type": "Question", "name": "Can I change plans later?", "acceptedAnswer": {"@type": "Answer", "text": "Any time. Upgrades take effect immediately and downgrades apply at the end of your billing period — no emails required."}}, {"@type": "Question", "name": "What happens if I forget my password?", "acceptedAnswer": {"@type": "Answer", "text": "Use the “Forgot password” link on the login screen and we’ll email you a secure reset link. SSO users sign in through their identity provider."}}, {"@type": "Question", "name": "How do cycles and roadmaps fit together?", "acceptedAnswer": {"@type": "Answer", "text": "Cycles are your short, time-boxed sprints; roadmaps zoom out to the quarter and beyond. Issues flow between them automatically as priorities change."}}, {"@type": "Question", "name": "What can Pear Software and Services AI do?", "acceptedAnswer": {"@type": "Answer", "text": "Pear Software and Services AI drafts issue descriptions, suggests priorities, groups duplicates, and summarizes long threads — all opt-in and reviewable."}}, {"@type": "Question", "name": "Do you support integrations?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — GitHub, GitLab, Slack, and Figma out of the box, plus a REST API and webhooks for everything else."}}, {"@type": "Question", "name": "How is my data protected?", "acceptedAnswer": {"@type": "Answer", "text": "All data is encrypted in transit (TLS 1.2+) and at rest (AES-256). We run regular backups and undergo independent penetration testing."}}, {"@type": "Question", "name": "Do you support SSO?", "acceptedAnswer": {"@type": "Answer", "text": "SAML and SCIM single sign-on are available on the Enterprise plan, alongside audit logs and granular role-based access controls."}}, {"@type": "Question", "name": "Are you compliant with SOC 2?", "acceptedAnswer": {"@type": "Answer", "text": "Pear Software and Services is SOC 2 Type II compliant. You can request our latest report and security documentation from your account manager."}}, {"@type": "Question", "name": "Can I import from another tool?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Import issues, projects, and comments from Jira, Linear, GitHub, and CSV with our guided importer."}}, {"@type": "Question", "name": "Do you offer refunds?", "acceptedAnswer": {"@type": "Answer", "text": "If Pear Software and Services isn’t the right fit within your first 30 days on a paid plan, contact us and we’ll refund your most recent payment."}}, {"@type": "Question", "name": "Where can I see what you’re shipping?", "acceptedAnswer": {"@type": "Answer", "text": "Our public changelog and roadmap are updated every cycle, so you can always see what just shipped and what’s coming next."}}]}</script></head><body class="flex min-h-svh flex-col antialiased"><style>
+  .cookies{--accent:var(--primary);--accent-hi:var(--primary);--edge:var(--border);--r-card:12px;
+    position:fixed;left:16px;right:16px;bottom:16px;z-index:200;margin:0 auto;max-width:560px;
+    background:var(--popover);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+    border:1px solid var(--edge);border-radius:var(--r-card);padding:18px 20px;
+    box-shadow:0 24px 60px -24px rgba(0,0,0,.4);
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    opacity:0;transform:translateY(16px);pointer-events:none;
+    transition:opacity .4s ease,transform .4s ease}
+  .cookies.show{opacity:1;transform:none;pointer-events:auto}
+  .cookies p{flex:1 1 240px;font-size:.9rem;line-height:1.45;color:var(--muted-foreground);margin:0}
+  .cookies-actions{display:flex;gap:10px}
+  .cookies button{font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border:0;
+    padding:8px 18px;border-radius:980px;transition:background .2s,color .2s}
+  .cookies .ck-allow{background:var(--accent);color:var(--primary-foreground)}
+  .cookies .ck-allow:hover{background:var(--accent-hi);opacity:.9}
+  .cookies .ck-deny{background:var(--muted);color:var(--muted-foreground)}
+  .cookies .ck-deny:hover{background:color-mix(in oklab, var(--accent) 15%, transparent)}
+  @media(max-width:520px){
+    .cookies{flex-direction:column;align-items:stretch;gap:14px}
+    .cookies p{flex:0 0 auto}
+    .cookies-actions{justify-content:flex-end}
+  }
+</style>
+<div class="cookies" id="cookies" role="dialog" aria-live="polite" aria-label="Cookie consent">
+  <p>We use cookies for analytics and ads. Nothing loads until you allow it.</p>
+  <div class="cookies-actions">
+    <button class="ck-deny" id="ck-deny">Decline</button>
+    <button class="ck-allow" id="ck-allow">Allow</button>
+  </div>
+</div>
+<script async src="https://fundingchoicesmessages.google.com/i/pub-2120727219771886?ers=1"></script><script>(function() {function signalGooglefcPresent() {if (!window.frames['googlefcPresent']) {if (document.body) {const iframe = document.createElement('iframe'); iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;'; iframe.style.display = 'none'; iframe.name = 'googlefcPresent'; document.body.appendChild(iframe);} else {setTimeout(signalGooglefcPresent, 0);}}}signalGooglefcPresent();})();</script><script>
+  (function(){
+    var box=document.getElementById('cookies');
+    var choice=null;
+    try{choice=localStorage.getItem('nc-consent');}catch(e){}
+    if(choice==='granted'||choice==='denied')return;
+
+    var decided=false;
+    function showOwnBanner(){
+      if(decided)return;
+      decided=true;
+      setTimeout(function(){box.classList.add('show');},900);
+    }
+    function settle(v){
+      try{localStorage.setItem('nc-consent',v);}catch(e){}
+      box.classList.remove('show');
+      if(v==='granted')window.NC_loadAnalytics();
+    }
+    document.getElementById('ck-allow').addEventListener('click',function(){settle('granted');});
+    document.getElementById('ck-deny').addEventListener('click',function(){settle('denied');});
+
+    // Google's own EU consent message (Privacy & messaging) already covers
+    // EEA/UK/CH visitors -- ask its TCF signal before showing ours, so
+    // nobody in scope gets asked twice. Outside that scope (gdprApplies
+    // false, or Funding Choices didn't load at all -- e.g. blocked) we fall
+    // back to our own banner exactly as before.
+    var asked=false;
+    function checkTcf(){
+      if(typeof window.__tcfapi!=='function')return false;
+      asked=true;
+      window.__tcfapi('addEventListener',2,function(tcData,success){
+        if(!success||tcData.gdprApplies===false){showOwnBanner();return;}
+        decided=true; // Google's message is responsible for this visitor
+      });
+      return true;
+    }
+    if(!checkTcf()){
+      var tries=0;
+      var poll=setInterval(function(){
+        tries++;
+        if(checkTcf()||tries>20)clearInterval(poll);
+        if(tries>20&&!asked)showOwnBanner();
+      },100);
+    }
+  })();
+</script><div hidden=""></div><script>((a,b,c,d,e,f,g,h)=>{let i=document.documentElement,j=["light","dark"];function k(b){var c;(Array.isArray(a)?a:[a]).forEach(a=>{let c="class"===a,d=c&&f?e.map(a=>f[a]||a):e;c?(i.classList.remove(...d),i.classList.add(f&&f[b]?f[b]:b)):i.setAttribute(a,b)}),c=b,h&&j.includes(c)&&(i.style.colorScheme=c)}if(d)k(d);else try{let a=localStorage.getItem(b)||c,d=g&&"system"===a?window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light":a;k(d)}catch(a){}})("class","theme","light",null,["light","dark"],null,true,true)</script><!--/$--><header class="relative z-50 bg-popover"><div class="max-w-9xl container"><div class="flex items-center justify-between py-3"><a aria-label="Pear Software and Services home" href="../"><span class="flex items-center gap-2"><svg viewBox="0 0 36 55" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="currentColor" class="h-7 w-auto shrink-0 text-foreground"><path d="M18.8946 9.4862C23.3578 8.5873 26.2126 5.02838 26.2252 0.605225C22.0285 0.639036 17.7027 5.26745 18.8946 9.4862ZM35.3509 39.9143C27.7762 39.9143 22.0536 33.1051 23.9656 25.7921C24.3705 24.2429 25.2228 22.833 26.2101 21.5701C26.6828 20.9653 27.6248 20.3407 27.6736 19.5318C27.8492 16.6253 25.1824 13.8634 22.7843 12.5889C18.2262 10.1669 11.2454 11.4889 8.88917 16.3288C7.83889 18.4864 8.47923 20.8392 7.66627 23.0259C6.50011 26.1631 4.15825 28.2162 2.50211 31.0334C0.229797 34.899 -0.30993 40.3291 1.58734 44.4275C7.06383 56.2586 25.4342 57.619 32.8569 46.9025C34.2878 44.8365 35.3438 42.4381 35.3509 39.9143Z"></path></svg><span class="font-display text-xl font-semibold tracking-tight">Pear Software and Services</span></span></a><nav aria-label="Main" data-orientation="horizontal" dir="ltr" class="relative z-10 max-w-max flex-1 justify-center hidden items-center lg:flex"><div style="position:relative"><ul data-orientation="horizontal" class="group flex flex-1 list-none items-center justify-center space-x-1 gap-2" dir="ltr"><li><button id="radix-_R_ilb_-trigger-radix-_R_bilb_" data-state="closed" aria-expanded="false" class="group inline-flex h-9 w-max items-center justify-center rounded-md p-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-active:bg-accent/50 data-[state=open]:bg-accent/50 group text-foreground bg-transparent font-medium lg:text-base" data-radix-collection-item="">Features<!-- --> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down relative top-px ml-1 size-3 transition duration-300 group-data-[state=open]:rotate-180" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></li><li><a class="text-foreground px-3 py-2 font-medium lg:text-base" href="../marketplace/">Marketplace</a></li><li><a class="text-foreground px-3 py-2 font-medium lg:text-base" href="../about/">About</a></li><li><a class="px-3 py-2 font-medium lg:text-base text-muted-foreground" href="./">FAQ</a></li><li><a class="text-foreground px-3 py-2 font-medium lg:text-base" href="../contact/">Contact</a></li><li><a class="text-foreground px-3 py-2 font-medium lg:text-base" href="../donate/">Donate</a></li></ul></div><div class="absolute top-full left-0 flex justify-center"><div class="feat-menu bg-popover text-popover-foreground relative mt-1.5 w-[460px] overflow-hidden rounded-md border shadow-sm" hidden><ul class="grid w-[460px] grid-cols-2 gap-1 p-3"><li><a href="../#features" class="hover:bg-accent focus:bg-accent flex flex-row items-start gap-3 rounded-lg p-3 leading-none no-underline outline-hidden transition-colors select-none"><span class="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-dot size-4"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="1"></circle></svg></span><div class="space-y-1"><div class="text-sm leading-none font-semibold">The Desktop</div><p class="text-muted-foreground line-clamp-2 text-sm leading-snug">A real macOS-inspired desktop, not a wallpaper and icon pack.</p></div></a></li><li><a href="../#workflows" class="hover:bg-accent focus:bg-accent flex flex-row items-start gap-3 rounded-lg p-3 leading-none no-underline outline-hidden transition-colors select-none"><span class="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw size-4"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></span><div class="space-y-1"><div class="text-sm leading-none font-semibold">Ready to Go</div><p class="text-muted-foreground line-clamp-2 text-sm leading-snug">Welcome app, Pafari, and an app store — nothing to set up first.</p></div></a></li></ul></div></div></nav><div class="flex items-center gap-2.5"><div class="transition-opacity duration-300 opacity-100"><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground size-10"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg><span class="sr-only">Toggle theme</span></button></div><button class="text-muted-foreground relative flex size-8 lg:hidden"><span class="sr-only">Open main menu</span><div class="absolute top-1/2 left-1/2 block w-[18px] -translate-x-1/2 -translate-y-1/2"><span aria-hidden="true" class="absolute block h-0.5 w-full rounded-full bg-current transition duration-500 ease-in-out -translate-y-1.5"></span><span aria-hidden="true" class="absolute block h-0.5 w-full rounded-full bg-current transition duration-500 ease-in-out "></span><span aria-hidden="true" class="absolute block h-0.5 w-full rounded-full bg-current transition duration-500 ease-in-out translate-y-1.5"></span></div></button></div></div></div><div class="absolute inset-0 top-full container flex h-[calc(100vh-64px)] flex-col transition-all duration-300 ease-in-out lg:hidden invisible translate-x-full opacity-0 bg-popover"><nav class="mt-3 flex flex-1 flex-col gap-6"><div><button class="text-foreground flex w-full items-center justify-between text-lg tracking-[-0.36px]" aria-label="Features menu" aria-expanded="false">Features</button><div class="ml-1 space-y-3 overflow-hidden transition-all max-h-0 opacity-0"><a class="hover:bg-accent flex items-start gap-3 rounded-md p-2" href="../#features"><span class="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-dot size-4"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="1"></circle></svg></span><div><div class="text-foreground font-medium">The Desktop</div><p class="text-muted-foreground text-sm">A real macOS-inspired desktop, not a wallpaper and icon pack.</p></div></a><a class="hover:bg-accent flex items-start gap-3 rounded-md p-2" href="../#workflows"><span class="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-md"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw size-4"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></span><div><div class="text-foreground font-medium">Ready to Go</div><p class="text-muted-foreground text-sm">Welcome app, Pafari, and an app store — nothing to set up first.</p></div></a></div></div><a class="text-foreground text-lg tracking-[-0.36px]" href="../marketplace/">Marketplace</a><a class="text-foreground text-lg tracking-[-0.36px]" href="../about/">About</a><a class="text-lg tracking-[-0.36px] text-muted-foreground" href="./">FAQ</a><a class="text-foreground text-lg tracking-[-0.36px]" href="../contact/">Contact</a><a class="text-foreground text-lg tracking-[-0.36px]" href="../donate/">Donate</a></nav></div></header><main class="flex flex-1 flex-col"><section class="relative py-16 md:py-28 lg:py-32"><div aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-15" style="background-image:radial-gradient(color-mix(in oklab, var(--foreground) 12%, transparent) 1px, transparent 1px);background-size:22px 22px;mask-image:radial-gradient(ellipse_at_top,black,transparent_72%);-webkit-mask-image:radial-gradient(ellipse_at_top,black,transparent_72%)"></div><div aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0"><div class="container flex items-center"><div class="bg-border h-px flex-1"></div><svg class="text-border mx-3 size-2.5 shrink-0" viewBox="0 0 10 10"><line x1="5" y1="0" x2="5" y2="10" stroke="currentColor" stroke-width="1"></line><line x1="0" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1"></line></svg><div class="bg-border h-px flex-1"></div></div></div><div class="relative container"><div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between"><div class="max-w-2xl space-y-3"><h1 class="font-display text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">Frequently asked questions</h1><p class="text-muted-foreground text-lg text-balance">Browse by topic or search below — downloads, donations, the software, and privacy.</p></div><div class="relative w-full lg:max-w-sm"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg><input class="border-input file:text-foreground placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded border px-3 py-1 text-base shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 md:text-sm bg-background h-11 pl-10" placeholder="Search questions..." aria-label="Search FAQ" value=""/></div></div><div dir="ltr" data-orientation="vertical" class="mt-10 flex gap-6 max-lg:flex-col md:mt-14 lg:gap-10"><div role="tablist" aria-orientation="vertical" class="text-muted-foreground items-center bg-muted/60 flex h-auto w-full justify-start overflow-x-auto rounded-2xl p-1.5 lg:max-w-xs lg:flex-col lg:overflow-visible" tabindex="-1" data-orientation="vertical" style="outline:none"><button type="button" role="tab" aria-selected="true" aria-controls="radix-_R_5lfiutb_-content-Support" data-state="active" id="radix-_R_5lfiutb_-trigger-Support" class="ring-offset-background focus-visible:ring-ring inline-flex items-center text-sm font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground w-full min-w-[220px] flex-1 justify-start rounded-xl px-4 py-3 text-start whitespace-normal transition-colors duration-300 data-[state=active]:shadow-sm lg:px-5 lg:py-4" tabindex="-1" data-orientation="vertical" data-radix-collection-item=""><div class="flex w-full items-start gap-3"><div class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg" style="background-color:color-mix(in oklab, var(--chart-1) 14%, transparent);color:var(--chart-1)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-life-buoy size-4"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><circle cx="12" cy="12" r="4"></circle></svg></div><div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><h2 class="font-display font-semibold">Downloads</h2><span class="text-muted-foreground text-xs">4</span></div><p class="text-muted-foreground mt-1 text-sm text-pretty">Speed tiers, available builds, and checksums.</p></div></div></button><button type="button" role="tab" aria-selected="false" aria-controls="radix-_R_5lfiutb_-content-Account" data-state="inactive" id="radix-_R_5lfiutb_-trigger-Account" class="ring-offset-background focus-visible:ring-ring inline-flex items-center text-sm font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground w-full min-w-[220px] flex-1 justify-start rounded-xl px-4 py-3 text-start whitespace-normal transition-colors duration-300 data-[state=active]:shadow-sm lg:px-5 lg:py-4" tabindex="-1" data-orientation="vertical" data-radix-collection-item=""><div class="flex w-full items-start gap-3"><div class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg" style="background-color:color-mix(in oklab, var(--chart-2) 14%, transparent);color:var(--chart-2)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user size-4"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div><div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><h2 class="font-display font-semibold">Donations</h2><span class="text-muted-foreground text-xs">4</span></div><p class="text-muted-foreground mt-1 text-sm text-pretty">Pay what you want, unlocks, and refunds.</p></div></div></button><button type="button" role="tab" aria-selected="false" aria-controls="radix-_R_5lfiutb_-content-Features" data-state="inactive" id="radix-_R_5lfiutb_-trigger-Features" class="ring-offset-background focus-visible:ring-ring inline-flex items-center text-sm font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground w-full min-w-[220px] flex-1 justify-start rounded-xl px-4 py-3 text-start whitespace-normal transition-colors duration-300 data-[state=active]:shadow-sm lg:px-5 lg:py-4" tabindex="-1" data-orientation="vertical" data-radix-collection-item=""><div class="flex w-full items-start gap-3"><div class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg" style="background-color:color-mix(in oklab, var(--chart-3) 14%, transparent);color:var(--chart-3)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles size-4"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path><path d="M4 17v2"></path><path d="M5 18H3"></path></svg></div><div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><h2 class="font-display font-semibold">The Software</h2><span class="text-muted-foreground text-xs">3</span></div><p class="text-muted-foreground mt-1 text-sm text-pretty">License, source code, and the installer.</p></div></div></button><button type="button" role="tab" aria-selected="false" aria-controls="radix-_R_5lfiutb_-content-Security" data-state="inactive" id="radix-_R_5lfiutb_-trigger-Security" class="ring-offset-background focus-visible:ring-ring inline-flex items-center text-sm font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground w-full min-w-[220px] flex-1 justify-start rounded-xl px-4 py-3 text-start whitespace-normal transition-colors duration-300 data-[state=active]:shadow-sm lg:px-5 lg:py-4" tabindex="-1" data-orientation="vertical" data-radix-collection-item=""><div class="flex w-full items-start gap-3"><div class="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg" style="background-color:color-mix(in oklab, var(--chart-5) 14%, transparent);color:var(--chart-5)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield size-4"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg></div><div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><h2 class="font-display font-semibold">Privacy &amp; Legal</h2><span class="text-muted-foreground text-xs">4</span></div><p class="text-muted-foreground mt-1 text-sm text-pretty">Tracking, your rights, and who operates this.</p></div></div></button></div><div data-state="active" data-orientation="vertical" role="tabpanel" aria-labelledby="radix-_R_5lfiutb_-trigger-Support" id="radix-_R_5lfiutb_-content-Support" tabindex="0" class="ring-offset-background focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden bg-card m-0 flex-1 overflow-hidden rounded-2xl border" style="animation-duration:0s"><div class="border-border flex items-start gap-4 border-b px-6 py-5" style="background:linear-gradient(135deg, color-mix(in oklab, var(--chart-1) 8%, transparent), transparent 55%)"><div class="flex size-11 shrink-0 items-center justify-center rounded-xl" style="background-color:color-mix(in oklab, var(--chart-1) 16%, transparent);color:var(--chart-1)"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-life-buoy size-5"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path><circle cx="12" cy="12" r="4"></circle></svg></div><div><h2 class="font-display text-xl font-semibold tracking-tight">Support</h2><p class="text-muted-foreground mt-1 text-sm">Plans, onboarding, and getting help from our team.</p></div></div><div class="w-full" data-orientation="vertical"><div data-state="closed" data-orientation="vertical" class="border-border border-b px-6 last:border-0"><h3 data-orientation="vertical" data-state="closed" class="flex"><button type="button" aria-expanded="false" data-state="closed" data-orientation="vertical" id="radix-_R_33dlfiutb_" class="flex flex-1 items-center justify-between transition-all [&amp;[data-state=open]&gt;svg]:rotate-180 py-5 text-start text-base font-medium hover:no-underline" data-radix-collection-item=""><span class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3"><span>Is there a free version?</span></span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-muted-foreground size-4 shrink-0 transition-transform duration-200"><path d="m6 9 6 6 6-6"></path></svg></button></h3><div data-state="closed" id="radix-_R_b3dlfiutb_" hidden="" role="region" aria-labelledby="radix-_R_33dlfiutb_" data-orientation="vertical" class="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm" style="--radix-accordion-content-height:var(--radix-collapsible-content-height);--radix-accordion-content-width:var(--radix-collapsible-content-width)"></div></div><div data-state="closed" data-orientation="vertical" class="border-border border-b px-6 last:border-0"><h3 data-orientation="vertical" data-state="closed" class="flex"><button type="button" aria-expanded="false" data-state="closed" data-orientation="vertical" id="radix-_R_53dlfiutb_" class="flex flex-1 items-center justify-between transition-all [&amp;[data-state=open]&gt;svg]:rotate-180 py-5 text-start text-base font-medium hover:no-underline" data-radix-collection-item=""><span class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3"><span>How do I get help if I get stuck?</span></span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-muted-foreground size-4 shrink-0 transition-transform duration-200"><path d="m6 9 6 6 6-6"></path></svg></button></h3><div data-state="closed" id="radix-_R_d3dlfiutb_" hidden="" role="region" aria-labelledby="radix-_R_53dlfiutb_" data-orientation="vertical" class="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm" style="--radix-accordion-content-height:var(--radix-collapsible-content-height);--radix-accordion-content-width:var(--radix-collapsible-content-width)"></div></div><div data-state="closed" data-orientation="vertical" class="border-border border-b px-6 last:border-0"><h3 data-orientation="vertical" data-state="closed" class="flex"><button type="button" aria-expanded="false" data-state="closed" data-orientation="vertical" id="radix-_R_73dlfiutb_" class="flex flex-1 items-center justify-between transition-all [&amp;[data-state=open]&gt;svg]:rotate-180 py-5 text-start text-base font-medium hover:no-underline" data-radix-collection-item=""><span class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3"><span>What are your support hours?</span></span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-muted-foreground size-4 shrink-0 transition-transform duration-200"><path d="m6 9 6 6 6-6"></path></svg></button></h3><div data-state="closed" id="radix-_R_f3dlfiutb_" hidden="" role="region" aria-labelledby="radix-_R_73dlfiutb_" data-orientation="vertical" class="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm" style="--radix-accordion-content-height:var(--radix-collapsible-content-height);--radix-accordion-content-width:var(--radix-collapsible-content-width)"></div></div></div></div><div data-state="inactive" data-orientation="vertical" role="tabpanel" aria-labelledby="radix-_R_5lfiutb_-trigger-Account" hidden="" id="radix-_R_5lfiutb_-content-Account" tabindex="0" class="ring-offset-background focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden bg-card m-0 flex-1 overflow-hidden rounded-2xl border"></div><div data-state="inactive" data-orientation="vertical" role="tabpanel" aria-labelledby="radix-_R_5lfiutb_-trigger-Features" hidden="" id="radix-_R_5lfiutb_-content-Features" tabindex="0" class="ring-offset-background focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden bg-card m-0 flex-1 overflow-hidden rounded-2xl border"></div><div data-state="inactive" data-orientation="vertical" role="tabpanel" aria-labelledby="radix-_R_5lfiutb_-trigger-Security" hidden="" id="radix-_R_5lfiutb_-content-Security" tabindex="0" class="ring-offset-background focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden bg-card m-0 flex-1 overflow-hidden rounded-2xl border"></div></div><div class="mt-16 md:mt-20"><div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><h2 class="font-display text-2xl font-semibold tracking-tight">Still need help?</h2><p class="text-muted-foreground mt-1">Our team is here if you can&#x27;t find what you&#x27;re looking for.</p></div></div><div class="grid gap-4 sm:grid-cols-3"><a class="group border-border bg-muted/40 hover:bg-muted/70 flex flex-col rounded-2xl border p-5 transition-colors" href="../contact/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle text-primary size-5"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path></svg><h3 class="font-display mt-4 font-semibold">Contact support</h3><p class="text-muted-foreground mt-1 text-sm text-pretty">Reach a real person — we usually reply within a day.</p><span class="text-primary mt-4 inline-flex items-center gap-1 text-sm font-medium opacity-0 transition-opacity group-hover:opacity-100">Learn more<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right size-3.5"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></a><a class="group border-border bg-muted/40 hover:bg-muted/70 flex flex-col rounded-2xl border p-5 transition-colors" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open text-primary size-5"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg><h3 class="font-display mt-4 font-semibold">Documentation</h3><p class="text-muted-foreground mt-1 text-sm text-pretty">Guides, API reference, and setup walkthroughs.</p><span class="text-primary mt-4 inline-flex items-center gap-1 text-sm font-medium opacity-0 transition-opacity group-hover:opacity-100">Learn more<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right size-3.5"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></a><a class="group border-border bg-muted/40 hover:bg-muted/70 flex flex-col rounded-2xl border p-5 transition-colors" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles text-primary size-5"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path><path d="M4 17v2"></path><path d="M5 18H3"></path></svg><h3 class="font-display mt-4 font-semibold">Changelog</h3><p class="text-muted-foreground mt-1 text-sm text-pretty">See what shipped this cycle and what’s next.</p><span class="text-primary mt-4 inline-flex items-center gap-1 text-sm font-medium opacity-0 transition-opacity group-hover:opacity-100">Learn more<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right size-3.5"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></span></a></div></div></div></section><section class="pb-16 md:pb-28 lg:pb-32"><div class="container max-w-4xl"><div class="max-w-2xl"><p class="text-muted-foreground text-sm font-medium tracking-wide uppercase mb-3">Live status</p><h2 class="font-display text-3xl font-semibold tracking-tight text-balance sm:text-4xl">System status</h2><p class="text-muted-foreground text-lg font-medium text-pretty mt-4">Uptime and incident history for pearOS services, hosted by Atlassian Statuspage.</p></div><div class="mt-10 overflow-hidden rounded-xl border bg-background"><iframe src="https://pearsoftwareandservices.statuspage.io/" title="Pear Software and Services status" loading="lazy" class="block w-full" style="border:0;color-scheme:light;height:1400px"></iframe></div><p class="text-muted-foreground mt-3 text-sm">Prefer a dedicated tab? <a class="text-primary hover:underline" href="https://pearsoftwareandservices.statuspage.io/" target="_blank" rel="noopener noreferrer">Open status.pearos.xyz</a></p></div></section><section class="bg-background section-padding relative" data-ad-key="content"><div class="container mx-auto max-w-3xl"><span class="text-muted-foreground mb-2 block text-[10px] font-medium uppercase tracking-wide">Advertisement</span><div class="border-border bg-card flex min-h-[120px] w-full items-center justify-center overflow-hidden rounded-2xl border p-4"><ins class="adsbygoogle" style="display:block;width:100%" data-ad-client="ca-pub-2120727219771886" data-ad-slot=""></ins></div></div></section></main><footer class="bg-primary text-primary-foreground dark:bg-card dark:text-card-foreground dark:border-border relative overflow-hidden border-t border-transparent"><div aria-hidden="true" class="pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)] opacity-10" style="background-image:radial-gradient(color-mix(in oklab, var(--foreground) 12%, transparent) 1px, transparent 1px);background-size:22px 22px;mask-image:radial-gradient(ellipse_at_top,black,transparent_72%);-webkit-mask-image:radial-gradient(ellipse_at_top,black,transparent_72%)"></div><div class="relative container"><div class="border-primary-foreground/15 dark:border-border flex flex-col items-start gap-8 border-b py-14 md:flex-row md:items-center md:justify-between md:py-20"><div class="flex items-center gap-4"><span class="flex items-center gap-2 text-primary-foreground dark:text-foreground"><svg viewBox="0 0 36 55" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="currentColor" class="h-7 w-auto shrink-0 text-primary-foreground dark:text-card-foreground"><path d="M18.8946 9.4862C23.3578 8.5873 26.2126 5.02838 26.2252 0.605225C22.0285 0.639036 17.7027 5.26745 18.8946 9.4862ZM35.3509 39.9143C27.7762 39.9143 22.0536 33.1051 23.9656 25.7921C24.3705 24.2429 25.2228 22.833 26.2101 21.5701C26.6828 20.9653 27.6248 20.3407 27.6736 19.5318C27.8492 16.6253 25.1824 13.8634 22.7843 12.5889C18.2262 10.1669 11.2454 11.4889 8.88917 16.3288C7.83889 18.4864 8.47923 20.8392 7.66627 23.0259C6.50011 26.1631 4.15825 28.2162 2.50211 31.0334C0.229797 34.899 -0.30993 40.3291 1.58734 44.4275C7.06383 56.2586 25.4342 57.619 32.8569 46.9025C34.2878 44.8365 35.3438 42.4381 35.3509 39.9143Z"></path></svg></span><h2 class="font-display max-w-md text-3xl leading-tight font-semibold tracking-tight text-balance md:text-4xl">Linux you'll want to look at.</h2></div><a class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-semibold transition-all focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 h-11 px-8 text-base" href="../#choose-build">Download Now</a></div><nav class="border-primary-foreground/15 dark:border-border grid grid-cols-2 gap-y-10 border-b py-12 sm:grid-cols-4 md:py-16"><div><h3 class="text-sm font-semibold tracking-wide uppercase opacity-70">Product</h3><ul class="mt-5 space-y-3"><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../#features">The Desktop</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../#workflows">Ready to Go</a></li></ul></div><div><h3 class="text-sm font-semibold tracking-wide uppercase opacity-70">Company</h3><ul class="mt-5 space-y-3"><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../about/">About</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../marketplace/">Marketplace</a></li></ul></div><div><h3 class="text-sm font-semibold tracking-wide uppercase opacity-70">Support</h3><ul class="mt-5 space-y-3"><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="./">FAQ</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="https://support.pearos.xyz/" target="_blank" rel="noopener noreferrer">Knowledge Base</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../contact/">Contact</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../donate/">Donate</a></li></ul></div><div><h3 class="text-sm font-semibold tracking-wide uppercase opacity-70">Legal</h3><ul class="mt-5 space-y-3"><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../terms/">Terms of service</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../privacy/">Privacy policy</a></li><li><a class="text-primary-foreground/80 hover:text-primary-foreground dark:text-muted-foreground dark:hover:text-foreground transition-colors" href="../gdpr/">GDPR Policy</a></li></ul></div></nav><div class="flex flex-wrap items-center justify-between gap-4 py-8"><p class="text-primary-foreground/60 dark:text-muted-foreground text-sm">©<!-- --> Pear Software and Services <!-- -->- All rights reserved.</p><a href="https://reclamatiisal.anpc.ro/" target="_blank" rel="noopener noreferrer" title="Soluționarea Alternativă a Litigiilor (SAL) - ANPC"><img src="../assets/images/sal-pictograma.png" width="201" height="50" alt="SAL - Soluționarea Alternativă a Litigiilor" loading="lazy" style="display:block"/></a><div class="flex items-center gap-4"><a aria-label="GitHub" target="_blank" rel="noopener noreferrer" class="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 dark:border-border dark:text-foreground dark:hover:bg-accent flex size-9 items-center justify-center rounded-full border transition-colors" href="https://github.com/pearOS-archlinux/iso"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-github size-4"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg></a><a aria-label="X" target="_blank" rel="noopener noreferrer" class="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 dark:border-border dark:text-foreground dark:hover:bg-accent flex size-9 items-center justify-center rounded-full border transition-colors" href="https://twitter.com/PearLinux"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter size-4"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a></div></div></div></footer><script>(function(){
+  function findToggle(){
+    var suns=document.getElementsByClassName('lucide-sun');
+    for(var i=0;i<suns.length;i++){
+      var btn=suns[i].closest('button');
+      if(btn) return btn;
+    }
+    return null;
+  }
+  function applyTheme(theme){
+    var root=document.documentElement;
+    root.classList.remove('light','dark');
+    root.classList.add(theme);
+    root.style.colorScheme=theme;
+    try{localStorage.setItem('theme',theme);}catch(e){}
+  }
+  function init(){
+    var btn=findToggle();
+    if(!btn) return;
+    btn.addEventListener('click',function(){
+      var current=document.documentElement.classList.contains('dark')?'dark':'light';
+      applyTheme(current==='dark'?'light':'dark');
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();</script><script>(function(){
+  function init(){
+    var menuBtn=null;
+    document.querySelectorAll('span.sr-only').forEach(function(s){
+      if(s.textContent.trim()==='Open main menu'){ menuBtn=s.closest('button'); }
+    });
+    var panel=null;
+    document.querySelectorAll('div').forEach(function(d){
+      if(!panel && d.classList.contains('invisible') && d.classList.contains('translate-x-full') && d.classList.contains('opacity-0')){
+        panel=d;
+      }
+    });
+    if(!menuBtn||!panel) return;
+    var open=false;
+    function setOpen(v){
+      open=v;
+      if(open){
+        panel.classList.remove('invisible','translate-x-full','opacity-0');
+        panel.style.visibility='visible';
+        panel.style.opacity='1';
+        panel.style.transform='translateX(0)';
+      }else{
+        panel.style.visibility='hidden';
+        panel.style.opacity='0';
+        panel.style.transform='translateX(100%)';
+      }
+    }
+    menuBtn.addEventListener('click',function(){ setOpen(!open); });
+
+    var featBtn=document.querySelector('button[aria-label="Features menu"]');
+    if(featBtn){
+      var content=featBtn.nextElementSibling;
+      if(content){
+        content.style.maxHeight='0px';
+        featBtn.addEventListener('click',function(){
+          var expanded=featBtn.getAttribute('aria-expanded')==='true';
+          featBtn.setAttribute('aria-expanded',String(!expanded));
+          if(expanded){
+            content.style.maxHeight='0px';
+            content.style.opacity='0';
+          }else{
+            content.classList.remove('max-h-0','opacity-0');
+            content.style.maxHeight=content.scrollHeight+'px';
+            content.style.opacity='1';
+          }
+        });
+      }
+    }
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();</script><script>(function(){
+  var FAQ_DATA = [{"category": "Downloads", "question": "How fast are downloads?", "answer": "By default, ISO downloads are rate-limited to about 2 MB/s. If you support the project through the on-page prompt, you get a temporary, individually signed link that removes the limit for 4 hours — read more on <a class=\"text-primary hover:underline\" href=\"../donate/\">the donate page</a>."}, {"category": "Downloads", "question": "Which builds are available right now?", "answer": "NiceC0re (our flagship, Arch Linux-based build) and Debian Latest (Goldwing) are available today. BSD and aarch64 (Raspberry Pi) builds are still in development — check <a class=\"text-primary hover:underline\" href=\"../builds/\">all builds</a> for current status."}, {"category": "Downloads", "question": "How do I verify my download?", "answer": "Every available build lists a SHA256 checksum next to it — click to copy it, then compare against your downloaded file. See <a class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://support.pearos.xyz/articles/how-to-verify-the-sha256-checksum-on-your-system\">how to verify a checksum</a> for step-by-step instructions."}, {"category": "Downloads", "question": "Can I redistribute the ISOs myself?", "answer": "Yes — pearOS is released under the GPL-3.0 license, so the software itself can be freely redistributed under those terms. The one thing we ask you not to do is resell or redistribute an individually unlocked, full-speed download link generated for someone else's donation."}, {"category": "Donations", "question": "Do I have to pay for pearOS?", "answer": "No. pearOS is free and open source, and always will be — every ISO is free to download. Donations are entirely optional and only exist to fund ongoing development, hosting, and releases."}, {"category": "Donations", "question": "What does a donation actually unlock?", "answer": "Choosing an amount when you download opens a Stripe checkout, right on the page. Once it's complete, that specific ISO becomes downloadable at full, unthrottled speed for 4 hours."}, {"category": "Donations", "question": "Can I support the project without unlocking a faster download?", "answer": "Absolutely — head to <a class=\"text-primary hover:underline\" href=\"../donate/\">/donate/</a> for GitHub-free options like PayPal, Ko-fi, and Patreon, none of which are tied to any particular download."}, {"category": "Donations", "question": "Can I get a refund?", "answer": "Mistaken or duplicate payments are reviewed case by case — email <a class=\"text-primary hover:underline\" href=\"mailto:alex@pear-software.com\">alex@pear-software.com</a>. Full details are in our <a class=\"text-primary hover:underline\" href=\"../terms/\">Terms of Use</a>."}, {"category": "The Software", "question": "What license is pearOS released under?", "answer": "The GNU General Public License v3.0 (GPL-3.0). The pearOS name, logo, and this website's own branding are not covered by that license and remain the property of Pear Software and Services."}, {"category": "The Software", "question": "Where is the source code?", "answer": "On GitHub at <a class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://github.com/pearOS-archlinux/iso\">github.com/pearOS-archlinux/iso</a>, including the build scripts, packages, and the Ploader bootloader."}, {"category": "The Software", "question": "Does pearOS come with a graphical installer?", "answer": "Yes — NiceC0re ships with a graphical installer, a rolling release model, and full access to the Arch User Repository (AUR), so there's nothing to configure by hand before you get started."}, {"category": "Privacy & Legal", "question": "Does this site track me?", "answer": "Only if you say yes. Analytics and advertising cookies stay off until you click \"Allow\" on the cookie banner. See our <a class=\"text-primary hover:underline\" href=\"../privacy/\">Privacy Policy</a> for the full breakdown."}, {"category": "Privacy & Legal", "question": "Who operates pearOS.xyz?", "answer": "Pear Software and Services S.R.L. (CUI 50888207), an independently run project based in Bucharest, Romania. More on <a class=\"text-primary hover:underline\" href=\"../about/\">the About page</a>."}, {"category": "Privacy & Legal", "question": "What are my GDPR rights, and how do I use them?", "answer": "Access, correction, deletion, portability, and more — see our <a class=\"text-primary hover:underline\" href=\"../gdpr/\">GDPR Policy</a> for the full list and how to exercise them."}, {"category": "Privacy & Legal", "question": "What if I have an unresolved complaint?", "answer": "As a consumer, you can refer it to ANPC through the SAL platform at <a class=\"text-primary hover:underline\" target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://reclamatiisal.anpc.ro/\">reclamatiisal.anpc.ro</a>. Details are in our <a class=\"text-primary hover:underline\" href=\"../terms/\">Terms of Use</a>."}];
+  var CHEVRON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-muted-foreground size-4 shrink-0 transition-transform duration-200"><path d="m6 9 6 6 6-6"></path></svg>';
+
+  function init(){
+    var tablist=document.querySelector('[role="tablist"]');
+    if(!tablist) return;
+    var tabs=Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
+    var panels=Array.prototype.slice.call(document.querySelectorAll('[role="tabpanel"]'));
+    var searchInput=document.querySelector('input[aria-label="Search FAQ"]');
+    if(!tabs.length||!panels.length) return;
+
+    function categoryOf(tab){
+      var h2=tab.querySelector('h2');
+      return h2?h2.textContent.trim():'';
+    }
+
+    function buildHeader(tab){
+      var iconBox=tab.querySelector('div[style*="color-mix"]');
+      var svg=iconBox?iconBox.querySelector('svg'):null;
+      var bg=iconBox?iconBox.getAttribute('style'):'';
+      var title=categoryOf(tab);
+      var descEl=tab.querySelector('p');
+      var descText=descEl?descEl.textContent.trim():'';
+      var svgHtml=svg?svg.outerHTML.replace('size-4','size-5'):'';
+      var header=document.createElement('div');
+      header.className='border-border flex items-start gap-4 border-b px-6 py-5';
+      header.innerHTML=
+        '<div class="flex size-11 shrink-0 items-center justify-center rounded-xl" style="'+(bg||'')+'">'+svgHtml+'</div>'+
+        '<div><h2 class="font-display text-xl font-semibold tracking-tight">'+title+'</h2>'+
+        '<p class="text-muted-foreground mt-1 text-sm">'+descText+'</p></div>';
+      return header;
+    }
+
+    function buildItem(item, idx){
+      var wrap=document.createElement('div');
+      wrap.setAttribute('data-state','closed');
+      wrap.className='border-border border-b px-6 last:border-0';
+      var uid='faqgen-'+idx+'-'+Math.random().toString(36).slice(2,8);
+      wrap.innerHTML=
+        '<h3 class="flex">'+
+          '<button type="button" aria-expanded="false" data-state="closed" id="'+uid+'-trigger" class="flex flex-1 items-center justify-between transition-all [&[data-state=open]>svg]:rotate-180 py-5 text-start text-base font-medium hover:no-underline">'+
+            '<span class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3"><span>'+item.question+'</span></span>'+
+            CHEVRON_SVG+
+          '</button>'+
+        '</h3>'+
+        '<div data-state="closed" id="'+uid+'-content" hidden role="region" aria-labelledby="'+uid+'-trigger" class="overflow-hidden text-sm">'+
+          '<div class="text-muted-foreground pb-5">'+item.answer+'</div>'+
+        '</div>';
+      var btn=wrap.querySelector('button');
+      var content=wrap.querySelector('[role="region"]');
+      content.hidden=false;
+      content.style.overflow='hidden';
+      content.style.transition='max-height .35s ease';
+      content.style.maxHeight='0px';
+      btn.addEventListener('click',function(){
+        var isOpen=btn.getAttribute('data-state')==='open';
+        var next=isOpen?'closed':'open';
+        btn.setAttribute('data-state',next);
+        btn.setAttribute('aria-expanded',String(!isOpen));
+        wrap.setAttribute('data-state',next);
+        content.setAttribute('data-state',next);
+        content.style.maxHeight=isOpen?'0px':content.scrollHeight+'px';
+      });
+      return wrap;
+    }
+
+    function populate(panel, category){
+      var items=FAQ_DATA.filter(function(d){ return d.category===category; });
+      var tab=tabs.filter(function(t){ return categoryOf(t)===category; })[0];
+      panel.innerHTML='';
+      if(tab) panel.appendChild(buildHeader(tab));
+      var list=document.createElement('div');
+      list.className='w-full';
+      items.forEach(function(item,i){ list.appendChild(buildItem(item,i)); });
+      panel.appendChild(list);
+    }
+
+    panels.forEach(function(panel){
+      var labelledBy=panel.getAttribute('aria-labelledby');
+      var trigger=labelledBy?document.getElementById(labelledBy):null;
+      var category=trigger?categoryOf(trigger):'';
+      panel.setAttribute('data-category',category);
+      populate(panel,category);
+    });
+
+    function activateTab(tab){
+      tabs.forEach(function(t){
+        var active=t===tab;
+        t.setAttribute('aria-selected',active?'true':'false');
+        t.setAttribute('data-state',active?'active':'inactive');
+        t.setAttribute('tabindex',active?'0':'-1');
+      });
+      var targetId=tab.getAttribute('aria-controls');
+      panels.forEach(function(p){
+        var active=p.id===targetId;
+        p.setAttribute('data-state',active?'active':'inactive');
+        p.hidden=!active;
+        var list=p.querySelector('div.w-full');
+        if(list){
+          Array.prototype.forEach.call(list.children,function(item){ item.hidden=false; });
+        }
+      });
+    }
+
+    tabs.forEach(function(tab){
+      tab.addEventListener('click',function(){ activateTab(tab); });
+    });
+
+    if(searchInput){
+      searchInput.addEventListener('input',function(){
+        var q=searchInput.value.trim().toLowerCase();
+        if(!q){
+          var activeTab=tabs.filter(function(t){ return t.getAttribute('data-state')==='active'; })[0]||tabs[0];
+          activateTab(activeTab);
+          return;
+        }
+        panels.forEach(function(panel){
+          panel.hidden=false;
+          var list=panel.querySelector('div.w-full');
+          var anyMatch=false;
+          if(list){
+            Array.prototype.forEach.call(list.children,function(item){
+              var match=item.textContent.toLowerCase().indexOf(q)!==-1;
+              item.hidden=!match;
+              if(match) anyMatch=true;
+            });
+          }
+          panel.hidden=!anyMatch;
+          panel.setAttribute('data-state',anyMatch?'active':'inactive');
+        });
+        tabs.forEach(function(t){
+          t.setAttribute('data-state','inactive');
+          t.setAttribute('aria-selected','false');
+        });
+      });
+    }
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();</script><script>(function(){
+  function init(){
+    var buttons=document.querySelectorAll('nav[aria-label="Main"] button');
+    var trigger=null;
+    buttons.forEach(function(b){
+      if(b.textContent.trim().indexOf('Features')===0) trigger=b;
+    });
+    var menu=document.querySelector('.feat-menu');
+    if(!trigger||!menu) return;
+    function setOpen(open){
+      trigger.setAttribute('data-state',open?'open':'closed');
+      trigger.setAttribute('aria-expanded',open?'true':'false');
+      menu.hidden=!open;
+    }
+    trigger.addEventListener('click',function(e){
+      e.preventDefault();
+      var isOpen=trigger.getAttribute('data-state')==='open';
+      setOpen(!isOpen);
+    });
+    menu.querySelectorAll('a').forEach(function(link){
+      link.addEventListener('click',function(){ setOpen(false); });
+    });
+    document.addEventListener('click',function(e){
+      if(!trigger.contains(e.target)&&!menu.contains(e.target)){
+        setOpen(false);
+      }
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();</script><script>(function(){
+  function init(){
+    var links=document.querySelectorAll('[data-download-link]');
+    if(!links.length) return;
+    fetch('../assets/data/nicecore-versions.json').then(function(r){return r.json();}).then(function(versions){
+      var url=versions&&versions[0]&&versions[0].download;
+      if(!url) return;
+      links.forEach(function(el){
+        var key=el.getAttribute('data-download-link');
+        if(key==='nicecore') el.setAttribute('href', url);
+      });
+    }).catch(function(){});
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  }else{
+    init();
+  }
+})();</script><script src="../assets/adblock-detector.js" defer></script></body></html>
