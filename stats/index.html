@@ -524,7 +524,7 @@
 
     if(stats.generated_at){
       var d=new Date(stats.generated_at);
-      document.getElementById('stats-updated').textContent='Last updated '+d.toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'})+' UTC';
+      document.getElementById('stats-updated').textContent='Last updated '+d.toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short',timeZone:'UTC'})+' UTC';
     }
   }).catch(function(){
     document.getElementById('stats-table-body').innerHTML='<tr><td colspan="4" class="text-muted-foreground text-center py-8">Could not load stats right now.</td></tr>';
