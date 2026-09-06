@@ -40,8 +40,13 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
 .flow-node .fn-sub{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-foreground);margin-bottom:3px;font-weight:600}
 .flow-node .fn-title{font-size:13.5px;font-weight:600;line-height:1.3;color:var(--foreground)}
 .flow-edge-hit{fill:none;stroke:transparent;stroke-width:16px;cursor:pointer;pointer-events:stroke}
-.flow-edge-line{fill:none;stroke:var(--border);stroke-width:1.6px;pointer-events:none;transition:stroke .15s,stroke-width .15s}
-.flow-edge-hit:hover+.flow-edge-line, .flow-edge-line.active{stroke:var(--primary);stroke-width:2.4px}
+.flow-edge-line{fill:none;stroke-width:2px;pointer-events:none;opacity:.62;transition:stroke-width .15s,opacity .15s}
+.flow-edge-hit:hover+.flow-edge-line{opacity:1;stroke-width:2.8px}
+.flow-edge-line.active{opacity:1;stroke-width:3px}
+.flow-edge-line.dim{opacity:.1}
+.flow-port{position:absolute;width:9px;height:9px;border-radius:50%;border:2px solid var(--card);transform:translate(-50%,-50%);pointer-events:none;z-index:5;opacity:.85;transition:opacity .15s,transform .15s}
+.flow-port.active{opacity:1;transform:translate(-50%,-50%) scale(1.35)}
+.flow-port.dim{opacity:.15}
 .flow-toolbar{position:absolute;top:16px;right:16px;z-index:20;display:flex;gap:6px;background:var(--popover);border:1px solid var(--border);border-radius:12px;padding:6px;box-shadow:0 10px 30px -18px rgba(0,0,0,.5)}
 .flow-toolbar button{width:34px;height:34px;border-radius:8px;border:0;background:transparent;color:var(--foreground);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600}
 .flow-toolbar button:hover{background:var(--accent)}
@@ -69,15 +74,19 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     <div class="flow-world" id="flow-world">
       <svg id="flow-svg" style="position:absolute;top:0;left:0;overflow:visible"></svg>
       <div id="flow-nodes"></div>
+      <div id="flow-ports" style="position:absolute;top:0;left:0"></div>
     </div>
   </div>
   <div class="flow-toolbar">
     <button id="flow-zoom-out" title="Zoom out" aria-label="Zoom out">&#8722;</button>
     <button id="flow-zoom-reset" title="Reset view" aria-label="Reset view" style="font-size:11px">Reset</button>
     <button id="flow-zoom-in" title="Zoom in" aria-label="Zoom in">&#43;</button>
+    <span style="width:1px;align-self:stretch;background:var(--border);margin:2px 2px"></span>
+    <button id="flow-export-layout" title="Copy your box positions to send back" aria-label="Export layout" style="font-size:11px;width:auto;padding:0 10px">Export</button>
+    <button id="flow-reset-layout" title="Discard your custom positions" aria-label="Reset layout" style="font-size:11px;width:auto;padding:0 10px">Reset layout</button>
   </div>
   <div class="flow-legend" id="flow-legend"></div>
-  <div class="flow-hint">Drag to pan · Scroll to zoom · Click a box or line</div>
+  <div class="flow-hint">Drag boxes to rearrange (saved automatically) · Scroll to zoom · Click a box to trace its wires</div>
 </main>
 
 <aside class="flow-panel" id="flow-panel">
@@ -110,43 +119,50 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
   };
 
   var NODES = [
-    {id:'pkgbuilds-repo', col:0, row:-3.4, cat:'signing', title:'pearos-archlinux/pkgbuilds', sub:'GitHub repo · monorepo',
+    {id:'release-announce', col:0.34, row:-2.09, cat:'automation', title:'release-announce.yml', sub:'on tag push · pearos-archlinux/iso only',
+      desc:'Triggers only on a v-prefixed tag push to pearos-archlinux/iso (e.g. v26.9) — Goldwing/Debian has no equivalent workflow. Parses the tag into a version, reads sha.txt, and pulls a curated excerpt out of release_notes.md, then posts a formatted embed to Discord.',
+      links:[{label:'View workflow ↗', url:'https://github.com/pearos-archlinux/iso/blob/main/.github/workflows/release-announce.yml'}]},
+    {id:'discord', col:1.75, row:-1.99, cat:'notify', title:'Discord', sub:'#nicec0re-announcements webhook',
+      desc:'Receives the automated “pearOS NiceC0re x.y is out!” embed — download link, SHA256, and a short changelog excerpt — whenever a new tag is pushed to the Arch build repo.',
+      links:[]},
+
+    {id:'pkgbuilds-repo', col:-0.04, row:-4.95, cat:'signing', title:'pearos-archlinux/pkgbuilds', sub:'GitHub repo · monorepo',
       desc:'One directory per Arch package (pafari, pearos-settings, liquid-gel, …), each with a PKGBUILD. Any push to main runs a detect-changes step that diffs pkgver/pkgrel per directory and only rebuilds packages whose version actually increased — not just any line changed.',
       links:[{label:'Open repo ↗', url:'https://github.com/pearos-archlinux/pkgbuilds'}]},
-    {id:'arch-pkg-build', col:1, row:-3.4, cat:'signing', title:'Build Package', sub:'makepkg · archlinux:latest, one job per changed dir',
+    {id:'arch-pkg-build', col:1.07, row:-4.93, cat:'signing', title:'Build Package', sub:'makepkg · archlinux:latest, one job per changed dir',
       desc:'For each version-bumped package: imports any upstream PGP keys declared in the PKGBUILD’s validpgpkeys, then builds as an unprivileged user with makepkg -s.',
       links:[{label:'View workflow ↗', url:'https://github.com/pearos-archlinux/pkgbuilds/blob/main/.github/workflows/build-and-publish.yaml'}]},
-    {id:'arch-pkg-sign', col:2, row:-3.4, cat:'signing', title:'Sign & Rebuild Repo DB', sub:'sign.sh · GPG_PRIVATE_KEY',
+    {id:'arch-pkg-sign', col:2.14, row:-4.87, cat:'signing', title:'Sign & Rebuild Repo DB', sub:'sign.sh · GPG_PRIVATE_KEY',
       desc:'Pulls the current [pearos] repo state from R2 first, detached-signs the new .pkg.tar.zst with the shared pearOS GPG key, rebuilds the pacman repo database, then pushes the whole updated repo back.',
       links:[{label:'View sign.sh ↗', url:'https://github.com/pearos-archlinux/pkgbuilds/blob/main/sign.sh'}]},
-    {id:'arch-pkg-repo', col:3, row:-3.4, cat:'storage', title:'Cloudflare R2', sub:'package-repo/main/x86_64',
+    {id:'arch-pkg-repo', col:3.2, row:-4.87, cat:'storage', title:'Cloudflare R2', sub:'package-repo/main/x86_64',
       desc:'The actual [pearos] pacman repository — signed packages plus the repo database — lives here. A separate location from the pearos-cdn bucket that holds finished ISOs.',
       links:[]},
 
-    {id:'dpkg-repo', col:0, row:-1.7, cat:'signing', title:'Pear-Project/dpkg', sub:'GitHub repo · monorepo',
+    {id:'dpkg-repo', col:-0.03, row:-3.85, cat:'signing', title:'Pear-Project/dpkg', sub:'GitHub repo · monorepo',
       desc:'The Debian equivalent of pkgbuilds — one directory per app with a custom DEBBUILD file. Same version-bump detection, split by declared arch=() into separate amd64 and arm64 build jobs (an arch of "all" builds once and is copied into both).',
       links:[{label:'Open repo ↗', url:'https://github.com/Pear-Project/dpkg'}]},
-    {id:'deb-pkg-build', col:1, row:-1.7, cat:'signing', title:'Build Package', sub:'build-pkg.sh · debian:forky + native arm64 runner',
+    {id:'deb-pkg-build', col:1.08, row:-3.91, cat:'signing', title:'Build Package', sub:'build-pkg.sh · debian:forky + native arm64 runner',
       desc:'amd64 builds run first in a debian:forky container; arm64 builds run after (on GitHub’s free hosted Arm64 runner, no cross-compile) to avoid two jobs racing to push the same repo at once.',
       links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/dpkg/blob/main/.github/workflows/build-and-publish.yaml'}]},
-    {id:'deb-pkg-sign', col:2, row:-1.7, cat:'signing', title:'Sign & Update apt Metadata', sub:'publish.sh · same shared GPG key',
+    {id:'deb-pkg-sign', col:2.24, row:-3.99, cat:'signing', title:'Sign & Update apt Metadata', sub:'publish.sh · same shared GPG key',
       desc:'Signs the .deb with the exact same pearOS GPG key used for Arch, regenerates the apt Packages/Release metadata, commits, and pushes — runs serialized (concurrency group) since two overlapping publishes can’t both rebase cleanly.',
       links:[]},
     {id:'deb-pkg-repo', col:3, row:-1.7, cat:'storage', title:'debian-package-repo', sub:'git repo → GitHub Pages',
       desc:'The signed .deb files and apt metadata are committed straight into this repo; GitHub Pages serves it as-is — that’s literally what apt.pearos.xyz is.',
       links:[{label:'Open repo ↗', url:'https://github.com/Pear-Project/debian-package-repo'},{label:'Visit apt.pearos.xyz ↗', url:'https://apt.pearos.xyz/'}]},
 
-    {id:'arch-repo', col:0, row:0, cat:'build', title:'pearos-archlinux/iso', sub:'GitHub repo',
+    {id:'arch-repo', col:-0.97, row:-1.27, cat:'build', title:'pearos-archlinux/iso', sub:'GitHub repo',
       desc:'Source repo for the Arch-based NiceC0re edition — kickstart.sh, package lists, the pearOS and inled GPG keys. Builds trigger on push to pear/**, packages/**, gh-actions/**, kickstart.sh or the workflow file itself; on a Wednesday 03:00 UTC cron gated to only the 2nd Wednesday of the month; or manually via workflow_dispatch.',
       links:[{label:'Open repo ↗', url:'https://github.com/pearos-archlinux/iso'}]},
-    {id:'debian-repo', col:0, row:2.4, cat:'build', title:'Pear-Project/iso', sub:'GitHub repo',
+    {id:'debian-repo', col:-0.93, row:2.43, cat:'build', title:'Pear-Project/iso', sub:'GitHub repo',
       desc:'Source repo for the Debian-based Goldwing edition — build-iso.sh, profiles/, configs/. Same trigger pattern as the Arch repo: push, 2nd-Wednesday cron, or manual dispatch.',
       links:[{label:'Open repo ↗', url:'https://github.com/Pear-Project/iso'}]},
 
-    {id:'arch-build', col:1, row:0, cat:'build', title:'Arch ISO Build', sub:'iso-build.yaml · archlinux:latest',
+    {id:'arch-build', col:0.83, row:-1.08, cat:'build', title:'Arch ISO Build', sub:'iso-build.yaml · archlinux:latest',
       desc:'Runs inside a privileged Arch Linux container: sets up pacman.conf/mirrorlist, imports and TRUSTS the pearOS + inled GPG public keys (does not create any new signature here), bootstraps the CachyOS keyring for the kernel/driver packages, then runs kickstart.sh → mkarchiso, which installs packages straight from the already-signed [pearos] repo to produce the NiceC0re ISO.',
       links:[{label:'View workflow ↗', url:'https://github.com/pearos-archlinux/iso/blob/main/.github/workflows/iso-build.yaml'}]},
-    {id:'debian-build', col:1, row:2.4, cat:'build', title:'Debian ISO Build', sub:'iso-build.yaml · debian:forky',
+    {id:'debian-build', col:0.86, row:1.78, cat:'build', title:'Debian ISO Build', sub:'iso-build.yaml · debian:forky',
       desc:'Runs inside a privileged Debian container using mmdebstrap, squashfs-tools and xorriso via kickstart.sh to assemble the Goldwing ISO, installing packages from the signed apt.pearos.xyz repo. rclone is installed from its official script since Debian’s own archive doesn’t package it.',
       links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/iso/blob/main/.github/workflows/iso-build.yaml'}]},
 
@@ -163,23 +179,23 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
       desc:'Same checksum-commit pattern for the Debian build, written back to sha.txt in Pear-Project/iso.',
       links:[]},
 
-    {id:'r2-bucket', col:4, row:1.2, cat:'storage', title:'Cloudflare R2', sub:'pearos-cdn bucket',
+    {id:'r2-bucket', col:4.73, row:-1.65, cat:'storage', title:'Cloudflare R2', sub:'pearos-cdn bucket',
       desc:'Object storage holding every published ISO and its checksum sidecar. Both build pipelines write here; the pearos-dl Worker reads from here to actually serve downloads.',
       links:[]},
 
-    {id:'website-update', col:5, row:1.2, cat:'automation', title:'Update Website (immediate)', sub:'WEB_REPO_PAT',
-      desc:'The last step of each successful build job — clones Pear-Project/web with a fine-grained PAT and updates the matching entry (sha256, size, download URL) in nicecore-versions.json or debian-versions.json. Fires on every successful build, including manual workflow_dispatch runs.',
+    {id:'website-update', col:4.64, row:-0.25, cat:'automation', title:'Update Website (immediate)', sub:'WEB_REPO_PAT · Debian build only',
+      desc:'Debian ISO Build’s last step — clones Pear-Project/web with a fine-grained PAT and updates the “Latest (Goldwing)” entry (sha256, size, download URL) in debian-versions.json. Fires on every successful build, including manual workflow_dispatch runs. The Arch build has no equivalent step — NiceC0re’s entry only gets refreshed by update-sha.yml below, so a manual Arch build’s new sha/size can lag up to 24h behind on the site unless that workflow is also run manually.',
       links:[]},
 
-    {id:'web-repo', col:6, row:1.2, cat:'website', title:'Pear-Project/web', sub:'GitHub repo',
+    {id:'web-repo', col:5.75, row:0.72, cat:'website', title:'Pear-Project/web', sub:'GitHub repo',
       desc:'The website source of truth: static HTML/CSS/JS, the JSON data files the build pipelines update, and every GitHub Actions automation (checksum sync, stats sync, WhatsApp report, this very flow page).',
       links:[{label:'Open repo ↗', url:'https://github.com/Pear-Project/web'}]},
 
     {id:'github-pages', col:7, row:0.1, cat:'website', title:'GitHub Pages', sub:'pearos.xyz',
       desc:'Static hosting for the live site — auto-redeploys on every push to main, no build step. GitHub just serves whatever HTML/CSS/JS sits in the repo.',
       links:[{label:'Visit site ↗', url:'https://pearos.xyz/'}]},
-    {id:'pages-mirror', col:7, row:1.2, cat:'website', title:'Cloudflare Pages (mirror)', sub:'pearos-mirror.pages.dev',
-      desc:'A parallel static copy of the same site on a completely separate hosting provider, kept in sync so there’s a live failover if GitHub Pages itself ever goes down.',
+    {id:'pages-mirror', col:7.21, row:1.17, cat:'website', title:'Cloudflare Pages (mirror)', sub:'pearos-mirror.pages.dev',
+      desc:'A parallel static copy of the same site on a completely separate hosting provider, redeployed on every push to main alongside GitHub Pages. It sits idle otherwise — nothing points visitors here automatically. It only becomes useful when uptime-monitor.yml detects GitHub Pages is down and its WhatsApp alert names this URL as the manual failover: someone has to actually repoint pearos.xyz’s DNS at it (Option B — a paid Cloudflare Load Balancer would automate that switch, judged not worth it given GitHub Pages’ uptime track record).',
       links:[{label:'Visit mirror ↗', url:'https://pearos-mirror.pages.dev/'}]},
     {id:'stats-page', col:7, row:2.4, cat:'website', title:'/stats/', sub:'public dashboard',
       desc:'Displays what update-stats.yml produces: totals, a free/paid trend chart, top countries, traffic sources, paid-conversion %, and the friends-link counter used to catch a leaked link.',
@@ -189,9 +205,13 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
       desc:'Intercepts every click on an .iso link site-wide and shows the pay-what-you-want modal instead of navigating away, so every download gets a real chance to convert — instead of silently bypassing straight to the file.',
       links:[{label:'View script ↗', url:'https://github.com/Pear-Project/web/blob/main/assets/js/pearos-checkout.js'}]},
 
-    {id:'pearos-dl-worker', col:9, row:1.2, cat:'worker', title:'pearos-dl Worker', sub:'iso.pearos.xyz · Cloudflare',
-      desc:'The central gateway. Verifies HMAC-signed download links (tier baked into the signature so it can’t be tampered with), throttles free downloads to 2 MB/s, serves paid/friend links at full speed, supports HTTP Range/resume, gives CLI tools (wget/curl) a clean 403 instead of a fake file, and logs every real download to Analytics Engine.',
+    {id:'pearos-dl-worker', col:8.95, row:0.69, cat:'worker', title:'pearos-dl Worker', sub:'iso.pearos.xyz · Cloudflare',
+      desc:'The central gateway — a single Cloudflare Worker whose fetch() handler routes every request by path. Real traffic reaches it from three places: the download popup (POSTs to /freepoint or /checkout), the thank-you page (POSTs to /verify), and any browser opening a previously-minted signed URL or a raw forum link (GET /iso/*). Verifies HMAC-signed download links (tier baked into the signature so it can’t be tampered with), throttles free downloads, serves paid/friend links at full speed, supports HTTP Range/resume, gives CLI tools (wget/curl) a clean 403 instead of a fake file, and logs every real download to Analytics Engine.',
       links:[{label:'View source ↗', url:'https://github.com/Pear-Project/web/blob/main/cloudflare/pearos-dl/src/index.js'}]},
+
+    {id:'distrowatch-badge', col:9.13, row:-1.79, cat:'worker', title:'/badge/distrowatch', sub:'shields.io endpoint · GET',
+      desc:'A shields.io-compatible JSON endpoint that live-scrapes pearOS’s DistroWatch ranking page and returns {label, message, color}, edge-cached for 6h (DistroWatch itself only updates about once a day). Backs the DistroWatch badge shown on the homepage.',
+      links:[]},
 
     {id:'freepoint', col:10, row:-0.3, cat:'worker', title:'/freepoint', sub:'mint free-tier link',
       desc:'Mints a 4-hour HMAC-signed URL for the free, throttled tier. This is what the popup calls when someone picks “download free” instead of paying.',
@@ -202,11 +222,11 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     {id:'verify-endpoint', col:10, row:1.3, cat:'worker', title:'/verify', sub:'confirm payment, mint paid link',
       desc:'Looks up the Stripe Checkout Session server-side, confirms payment_status is exactly “paid”, then mints a 4-hour full-speed signed URL. Called from the thank-you page after a successful checkout.',
       links:[]},
-    {id:'iso-endpoint', col:10, row:2.1, cat:'worker', title:'/iso/*', sub:'serve from R2',
+    {id:'iso-endpoint', col:10.12, row:2.41, cat:'worker', title:'/iso/*', sub:'serve from R2',
       desc:'Every download ultimately lands here. Requires a valid, unexpired signature (free or paid tier) to proceed at all — unsigned access gets a friendly retry page (browsers) or a plain-text 403 (CLI tools), except for the small health.check probe used by uptime monitors.',
       links:[]},
 
-    {id:'hmac-signing', col:10.7, row:0.9, cat:'worker', title:'HMAC Signing', sub:'sign(path, exp, tier, secret)',
+    {id:'hmac-signing', col:11, row:0.9, cat:'worker', title:'HMAC Signing', sub:'sign(path, exp, tier, secret)',
       desc:'Every mint (/freepoint, /verify) and every check (/iso/*) run the exact same HMAC-SHA256 function over "path:exp:tier" with a server-only secret, compared with a timing-safe equal. Tier is baked into the signed message itself, so rewriting ?tier=free to ?tier=paid on a real URL just breaks the signature — proven by direct testing.',
       links:[]},
 
@@ -214,40 +234,47 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
       desc:'Stripe redirects here after checkout with ?session_id=… (and the original file). The page immediately calls /verify and auto-opens the resulting download link — no manual step for the payer.',
       links:[{label:'View page ↗', url:'https://pearos.xyz/thank-you/'}]},
 
-    {id:'stripe', col:11, row:0.9, cat:'payments', title:'Stripe', sub:'Checkout Sessions',
+    {id:'stripe', col:11.48, row:2.95, cat:'payments', title:'Stripe', sub:'Checkout Sessions',
       desc:'Processes the actual payment — card, Apple Pay, Link, or PayPal — via an embedded Checkout Session, then reports payment_status back when /verify asks. Real donations ($1, $2.99 x2) have already gone through this exact path.',
       links:[{label:'stripe.com ↗', url:'https://stripe.com'}]},
-    {id:'analytics-engine', col:11, row:2.1, cat:'automation', title:'Workers Analytics Engine', sub:'download telemetry',
+    {id:'analytics-engine', col:12, row:2.1, cat:'automation', title:'Workers Analytics Engine', sub:'download telemetry',
       desc:'Every real download the Worker serves writes one data point here: file, tier (free/paid/friend), country, referrer host, byte count. Queried later over SQL by update-stats.yml.',
       links:[]},
 
-    {id:'update-stats', col:9, row:3.4, cat:'automation', title:'update-stats.yml', sub:'hourly · Pear-Project/web',
+    {id:'update-stats', col:6.31, row:4.04, cat:'automation', title:'update-stats.yml', sub:'hourly · Pear-Project/web',
       desc:'Queries Analytics Engine over its SQL API, then runs render_chart.py (matplotlib, dark theme matching the site’s own palette) to rebuild the trend-chart PNG, writes download-stats.json, and pushes both back — hourly, offset a few minutes past the hour to dodge GitHub’s most congested cron slot. Checks out with a PAT (not the default token) so its own push correctly triggers whatsapp-report.yml downstream.',
       links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/update-stats.yml'},{label:'View render_chart.py ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/scripts/render_chart.py'}]},
-    {id:'update-sha', col:6, row:3.4, cat:'automation', title:'update-sha.yml', sub:'daily · Pear-Project/web',
-      desc:'A daily (and manual) fallback: re-reads sha.txt from both build repos and re-checks file size with a live HEAD request to iso.pearos.xyz, in case a build’s own immediate website-update step was ever missed.',
+    {id:'update-sha', col:3.85, row:3.6, cat:'automation', title:'update-sha.yml', sub:'daily · Pear-Project/web',
+      desc:'Daily (and manual) sync: reads sha.txt from both pearos-archlinux/iso and Pear-Project/iso, then re-checks live file size with a plain HEAD request to iso.pearos.xyz (allowed through unsigned). For NiceC0re/Arch this is the ONLY thing that ever refreshes the site’s sha256/size — the Arch build has no immediate website-update step of its own. For Goldwing/Debian it’s a secondary re-check, since that build already pushes its own update immediately.',
       links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/update-sha.yml'}]},
-    {id:'whatsapp-report', col:11, row:3.8, cat:'automation', title:'whatsapp-report.yml', sub:'daily · ~13:00 Romania time',
+    {id:'uptime-monitor', col:4.83, row:4.49, cat:'automation', title:'uptime-monitor.yml', sub:'every 15 min · Pear-Project/web',
+      desc:'Requests https://pearos.xyz/ every 15 minutes and compares the result against the last known state (committed to assets/data/uptime-state.json). Sends a WhatsApp alert only on an actual up→down or down→up transition, never repeating on every check — the down alert explicitly names the Cloudflare Pages mirror as the manual failover target, since there is no automatic DNS failover (Option B: cheap manual switch instead of a paid Load Balancer).',
+      links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/uptime-monitor.yml'},{label:'View uptime_alert.py ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/scripts/uptime_alert.py'}]},
+    {id:'whatsapp-report', col:5.4, row:5.9, cat:'automation', title:'whatsapp-report.yml', sub:'daily · ~13:00 Romania time',
       desc:'Checks all 6 monitored domains, then runs build_whatsapp_message.py to assemble a *bold*/_italic_ formatted report (site status, totals, per-edition and top-country/referrer breakdowns, paid-conversion %, friends-link counter) and POSTs it — with the trend-chart PNG attached — to the whatser.xyz API. Runs on its own schedule, decoupled from update-stats.yml.',
       links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/whatsapp-report.yml'},{label:'View build_whatsapp_message.py ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/scripts/build_whatsapp_message.py'}]},
-    {id:'whatsapp', col:12, row:3.8, cat:'notify', title:'WhatsApp', sub:'whatser.xyz API',
+    {id:'whatsapp', col:6.78, row:5.2, cat:'notify', title:'WhatsApp', sub:'whatser.xyz API',
       desc:'Final destination — the daily report lands as a WhatsApp message with the chart image attached, so the numbers are visible without opening the site. whatser.xyz is itself a separate app (built by the same dev) exposing a plain POST /api/create-message endpoint.',
       links:[]},
 
-    {id:'page-scripts', col:0, row:5.6, cat:'website', title:'Every Page: Tracking Bootstrap', sub:'inline <head> script',
+    {id:'page-scripts', col:8.74, row:5.37, cat:'website', title:'Every Page: Tracking Bootstrap', sub:'inline <head> script',
       desc:'A shared boilerplate block present on every page: sets Google Consent Mode v2 to fully denied by default, then only calls NC_loadAnalytics() once a visitor actually consents — nothing tracking-related fires before that.',
       links:[]},
-    {id:'cookie-consent', col:1, row:5.6, cat:'website', title:'Cookie Consent Gate', sub:'own banner + Google Funding Choices',
+    {id:'cookie-consent', col:9.69, row:5.39, cat:'website', title:'Cookie Consent Gate', sub:'own banner + Google Funding Choices',
       desc:'For EEA/UK/CH visitors, Google’s own consent message (Funding Choices/TCF) is asked first so nobody sees two banners; everyone else gets pearOS’s own simple Allow/Decline banner. Either path calls the same consent-update function.',
       links:[]},
-    {id:'gtm', col:2, row:4.9, cat:'website', title:'Google Tag Manager', sub:'container GTM-N9KWQZLC', links:[],
+    {id:'gtm', col:10.81, row:5.49, cat:'website', title:'Google Tag Manager', sub:'container GTM-N9KWQZLC', links:[],
       desc:'Loaded only post-consent; not otherwise used to drive any custom tags in this build, but wired in for future tagging without another code change.'},
-    {id:'ga4', col:2, row:5.5, cat:'website', title:'Google Analytics 4', sub:'G-M5YQ4NE7DR', links:[],
+    {id:'ga4', col:10.85, row:4.89, cat:'website', title:'Google Analytics 4', sub:'G-M5YQ4NE7DR', links:[],
       desc:'Standard pageview/session analytics via gtag.js, loaded post-consent alongside GTM.'},
-    {id:'clarity', col:2, row:6.1, cat:'website', title:'Microsoft Clarity', sub:'project xs709y21du', links:[],
+    {id:'clarity', col:10.81, row:4.23, cat:'website', title:'Microsoft Clarity', sub:'project xs709y21du', links:[],
       desc:'Session recordings and heatmaps, loaded post-consent — separate from GA4/GTM, its own script tag and project ID.'},
-    {id:'adsense', col:2, row:6.7, cat:'website', title:'Google AdSense', sub:'pub-2120727219771886', links:[],
-      desc:'Powers both the manually-placed ad slots on content pages and Google’s own Auto Ads. Auto Ads once broke the /stats/ page’s mobile layout by injecting a large unit above the fold — fixed by simply not loading the AdSense script at all on that page (its ID is set to a placeholder there), since it never had a manual slot to justify loading it anyway.'}
+    {id:'adsense', col:10.86, row:6.15, cat:'website', title:'Google AdSense', sub:'pub-2120727219771886', links:[],
+      desc:'Powers both the manually-placed ad slots on content pages and Google’s own Auto Ads. Auto Ads once broke the /stats/ page’s mobile layout by injecting a large unit above the fold — fixed by simply not loading the AdSense script at all on that page (its ID is set to a placeholder there), since it never had a manual slot to justify loading it anyway.'},
+
+    {id:'distrowatch-site', col:10.76, row:-2.43, cat:'notify', title:'DistroWatch.com', sub:'external ranking site (scraped)',
+      desc:'Not an API — /badge/distrowatch parses the ranking straight out of DistroWatch’s own HTML table page for pearOS, which is why the result is cached for 6h rather than fetched fresh on every badge load.',
+      links:[{label:'pearOS on DistroWatch ↗', url:'https://distrowatch.com/table.php?distribution=pearos'}]}
   ];
 
   var EDGES = [
@@ -259,37 +286,63 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     ['arch-build','arch-upload'], ['debian-build','debian-upload'],
     ['arch-build','arch-sha-commit'], ['debian-build','debian-sha-commit'],
     ['arch-upload','r2-bucket'], ['debian-upload','r2-bucket'],
-    ['arch-sha-commit','website-update'], ['debian-sha-commit','website-update'],
+    ['arch-repo','release-announce'], ['release-announce','discord'],
+    ['debian-sha-commit','website-update'],
     ['website-update','web-repo'],
     ['web-repo','github-pages'], ['web-repo','pages-mirror'], ['web-repo','stats-page'],
     ['github-pages','checkout-popup'],
-    ['checkout-popup','freepoint'], ['checkout-popup','checkout-endpoint'],
-    ['checkout-endpoint','stripe'], ['stripe','thank-you-page'], ['thank-you-page','verify-endpoint'],
+    ['checkout-popup','pearos-dl-worker'], ['thank-you-page','pearos-dl-worker'],
+    ['checkout-endpoint','stripe'], ['stripe','thank-you-page'],
     ['pearos-dl-worker','freepoint'], ['pearos-dl-worker','checkout-endpoint'],
     ['pearos-dl-worker','verify-endpoint'], ['pearos-dl-worker','iso-endpoint'],
+    ['pearos-dl-worker','distrowatch-badge'], ['distrowatch-badge','distrowatch-site'],
+    ['github-pages','distrowatch-badge'], ['distrowatch-badge','github-pages'],
     ['freepoint','hmac-signing'], ['verify-endpoint','hmac-signing'], ['hmac-signing','iso-endpoint'],
     ['iso-endpoint','r2-bucket'], ['iso-endpoint','analytics-engine'],
     ['github-pages','page-scripts'], ['page-scripts','cookie-consent'],
     ['cookie-consent','gtm'], ['cookie-consent','ga4'], ['cookie-consent','clarity'], ['cookie-consent','adsense'],
     ['update-stats','analytics-engine'], ['update-stats','web-repo'],
-    ['update-sha','arch-repo'], ['update-sha','debian-repo'], ['update-sha','web-repo'],
-    ['whatsapp-report','web-repo'], ['whatsapp-report','whatsapp']
+    ['arch-repo','update-sha'], ['debian-repo','update-sha'], ['update-sha','web-repo'], ['update-sha','iso-endpoint'],
+    ['whatsapp-report','web-repo'], ['whatsapp-report','whatsapp'],
+    ['uptime-monitor','github-pages'], ['uptime-monitor','web-repo'],
+    ['uptime-monitor','whatsapp'], ['uptime-monitor','pages-mirror']
   ];
 
   // ---------- layout ----------
+  var LAYOUT_KEY = 'flow-layout-v1';
   var CELL_W = 250, CELL_H = 120, NODE_W = 208, NODE_H_EST = 62;
   var nodeById = {};
+  var savedLayout = {};
+  try{ savedLayout = JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}'); }catch(e){}
   NODES.forEach(function(n){
-    n.x = n.col * CELL_W;
-    n.y = n.row * CELL_H;
+    var pos = savedLayout[n.id];
+    var col = pos ? pos.col : n.col;
+    var row = pos ? pos.row : n.row;
+    n.x = col * CELL_W;
+    n.y = row * CELL_H;
     n.w = NODE_W;
     n.h = NODE_H_EST;
     nodeById[n.id] = n;
   });
 
+  // Persists a dragged node's position (as col/row, same units as the NODES
+  // array) into this browser's localStorage, so a custom arrangement survives
+  // reloads without affecting any other visitor -- it never leaves this device
+  // unless the Export button is used to copy it out on purpose.
+  function saveNodePosition(node){
+    var stored = {};
+    try{ stored = JSON.parse(localStorage.getItem(LAYOUT_KEY) || '{}'); }catch(e){}
+    stored[node.id] = {
+      col: +(node.x / CELL_W).toFixed(3),
+      row: +((node.y - PAD_TOP + minY) / CELL_H).toFixed(3)
+    };
+    try{ localStorage.setItem(LAYOUT_KEY, JSON.stringify(stored)); }catch(e){}
+  }
+
   var worldEl = document.getElementById('flow-world');
   var svgEl = document.getElementById('flow-svg');
   var nodesEl = document.getElementById('flow-nodes');
+  var portsEl = document.getElementById('flow-ports');
   var viewport = document.getElementById('flow-viewport');
 
   var maxX = 0, maxY = 0;
@@ -338,6 +391,7 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     });
     el.addEventListener('pointerup', function(e){
       if(nodeDrag && !nodeDrag.moved){ selectNode(n); }
+      else if(nodeDrag && nodeDrag.moved){ saveNodePosition(n); }
       nodeDrag=null;
     });
     el.addEventListener('pointercancel', function(){ nodeDrag=null; });
@@ -352,33 +406,130 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     drawEdges();
   });
 
-  function anchorRight(n){ return {x: n.x + n.w, y: n.y + n.h/2}; }
-  function anchorLeft(n){ return {x: n.x, y: n.y + n.h/2}; }
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+
+  // Outputs always leave from a node's right edge, inputs always arrive on
+  // its left edge -- regardless of the two nodes' relative x position (same
+  // convention as ComfyUI/n8n). When a node has several inputs or several
+  // outputs, each port gets its own stacked slot down that side instead of
+  // every line converging on the vertical center, so parallel wires stay
+  // readable instead of overlapping.
+  function computePorts(){
+    var outPorts = {}, inPorts = {};
+    NODES.forEach(function(n){ outPorts[n.id] = []; inPorts[n.id] = []; });
+    EDGES.forEach(function(pair){ outPorts[pair[0]].push(pair); inPorts[pair[1]].push(pair); });
+    Object.keys(outPorts).forEach(function(id){
+      outPorts[id].sort(function(p1, p2){ return nodeById[p1[1]].y - nodeById[p2[1]].y; });
+    });
+    Object.keys(inPorts).forEach(function(id){
+      inPorts[id].sort(function(p1, p2){ return nodeById[p1[0]].y - nodeById[p2[0]].y; });
+    });
+    return { out: outPorts, in: inPorts };
+  }
+
+  function portAnchor(node, portList, pair, isRight){
+    var idx = portList.indexOf(pair);
+    var count = portList.length;
+    var y;
+    if(count <= 1){
+      y = node.y + node.h/2;
+    } else {
+      var margin = Math.min(16, node.h*0.22);
+      var usable = node.h - margin*2;
+      y = node.y + margin + usable*(idx/(count-1));
+    }
+    return { x: isRight ? node.x + node.w : node.x, y: y };
+  }
 
   function edgePath(a, b){
-    var dx = Math.max(60, (b.x - a.x) * 0.5);
+    var dx = Math.max(70, Math.min(220, Math.abs(b.x - a.x) * 0.5));
     return 'M '+a.x+' '+a.y+' C '+(a.x+dx)+' '+a.y+', '+(b.x-dx)+' '+b.y+', '+b.x+' '+b.y;
   }
 
-  var edgeLineEls = [];
+  function buildArrowDefs(){
+    var defs = document.createElementNS(SVG_NS, 'defs');
+    Object.keys(CATS).forEach(function(catKey){
+      var marker = document.createElementNS(SVG_NS, 'marker');
+      marker.setAttribute('id', 'flow-arrow-'+catKey);
+      marker.setAttribute('viewBox', '0 0 10 10');
+      marker.setAttribute('refX', '9.5'); marker.setAttribute('refY', '5');
+      marker.setAttribute('markerWidth', '5.5'); marker.setAttribute('markerHeight', '5.5');
+      marker.setAttribute('orient', 'auto-start-reverse');
+      var arrow = document.createElementNS(SVG_NS, 'path');
+      arrow.setAttribute('d', 'M 0 1 L 10 5 L 0 9 z');
+      arrow.style.fill = CATS[catKey].token;
+      marker.appendChild(arrow);
+      defs.appendChild(marker);
+    });
+    svgEl.appendChild(defs);
+  }
+
+  function makePortDot(pt, color){
+    var dot = document.createElement('div');
+    dot.className = 'flow-port';
+    dot.style.left = pt.x + 'px';
+    dot.style.top = pt.y + 'px';
+    dot.style.background = color;
+    return dot;
+  }
+
+  var edgeRecords = [];
   function drawEdges(){
-    svgEl.innerHTML='';
-    edgeLineEls = [];
+    svgEl.innerHTML = '';
+    portsEl.innerHTML = '';
+    buildArrowDefs();
+    edgeRecords = [];
+    var ports = computePorts();
     EDGES.forEach(function(pair){
       var a = nodeById[pair[0]], b = nodeById[pair[1]];
       if(!a||!b) return;
-      var p1, p2;
-      if (a.x <= b.x) { p1 = anchorRight(a); p2 = anchorLeft(b); }
-      else { p1 = anchorLeft(a); p2 = anchorRight(b); }
+      var p1 = portAnchor(a, ports.out[a.id], pair, true);
+      var p2 = portAnchor(b, ports.in[b.id], pair, false);
       var d = edgePath(p1, p2);
-      var hit = document.createElementNS('http://www.w3.org/2000/svg','path');
-      hit.setAttribute('d', d); hit.setAttribute('class','flow-edge-hit');
-      var line = document.createElementNS('http://www.w3.org/2000/svg','path');
-      line.setAttribute('d', d); line.setAttribute('class','flow-edge-line');
+      var color = CATS[a.cat].token;
+      var hit = document.createElementNS(SVG_NS, 'path');
+      hit.setAttribute('d', d); hit.setAttribute('class', 'flow-edge-hit');
+      var line = document.createElementNS(SVG_NS, 'path');
+      line.setAttribute('d', d); line.setAttribute('class', 'flow-edge-line');
+      line.style.stroke = color;
+      line.setAttribute('marker-end', 'url(#flow-arrow-'+a.cat+')');
       hit.addEventListener('click', function(e){ e.stopPropagation(); selectEdge(pair, a, b, line); });
       svgEl.appendChild(hit);
       svgEl.appendChild(line);
-      edgeLineEls.push(line);
+
+      var outDot = makePortDot(p1, color), inDot = makePortDot(p2, color);
+      portsEl.appendChild(outDot); portsEl.appendChild(inDot);
+
+      edgeRecords.push({ pair: pair, a: a, b: b, line: line, hit: hit, dots: [outDot, inDot] });
+    });
+  }
+
+  function highlightEdgesForNode(nodeId){
+    edgeRecords.forEach(function(rec){
+      var connected = rec.pair[0] === nodeId || rec.pair[1] === nodeId;
+      rec.line.classList.toggle('active', connected);
+      rec.line.classList.toggle('dim', !connected);
+      rec.dots.forEach(function(dot){
+        dot.classList.toggle('active', connected);
+        dot.classList.toggle('dim', !connected);
+      });
+    });
+  }
+  function highlightSingleEdge(line){
+    edgeRecords.forEach(function(rec){
+      var isThis = rec.line === line;
+      rec.line.classList.toggle('active', isThis);
+      rec.line.classList.toggle('dim', !isThis);
+      rec.dots.forEach(function(dot){
+        dot.classList.toggle('active', isThis);
+        dot.classList.toggle('dim', !isThis);
+      });
+    });
+  }
+  function resetEdgeHighlight(){
+    edgeRecords.forEach(function(rec){
+      rec.line.classList.remove('active', 'dim');
+      rec.dots.forEach(function(dot){ dot.classList.remove('active', 'dim'); });
     });
   }
 
@@ -400,23 +551,29 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     applyTransform();
   }
 
-  var dragging=false, dragStart=null, stateStart=null;
+  var dragging=false, dragStart=null, stateStart=null, panMoved=false;
   viewport.addEventListener('pointerdown', function(e){
     // Let clicks/drags on a node, or clicks on an edge, work normally --
     // starting a canvas-pan capture on top of them breaks both.
     if(e.target.closest && e.target.closest('.flow-node')) return;
     if(e.target.tagName === 'path') return;
-    dragging = true; viewport.classList.add('dragging');
+    dragging = true; panMoved = false; viewport.classList.add('dragging');
     dragStart = {x:e.clientX, y:e.clientY}; stateStart = {x:state.x, y:state.y};
     viewport.setPointerCapture(e.pointerId);
   });
   viewport.addEventListener('pointermove', function(e){
     if(!dragging) return;
+    if(Math.abs(e.clientX-dragStart.x) > 4 || Math.abs(e.clientY-dragStart.y) > 4) panMoved = true;
     state.x = stateStart.x + (e.clientX - dragStart.x);
     state.y = stateStart.y + (e.clientY - dragStart.y);
     applyTransform();
   });
-  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
+  viewport.addEventListener('pointerup', function(){
+    // A plain click on empty canvas (no pan movement) clears whatever is selected.
+    if(dragging && !panMoved){ panel.classList.remove('open'); clearActive(); }
+    dragging=false; viewport.classList.remove('dragging');
+  });
+  ['pointercancel','pointerleave'].forEach(function(ev){
     viewport.addEventListener(ev, function(){ dragging=false; viewport.classList.remove('dragging'); });
   });
 
@@ -436,6 +593,28 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
   document.getElementById('flow-zoom-in').addEventListener('click', function(){ zoomBy(1.2); });
   document.getElementById('flow-zoom-out').addEventListener('click', function(){ zoomBy(1/1.2); });
   document.getElementById('flow-zoom-reset').addEventListener('click', centerView);
+
+  document.getElementById('flow-export-layout').addEventListener('click', function(){
+    var lines = NODES.map(function(n){
+      var col = +(n.x / CELL_W).toFixed(2);
+      var row = +(((n.y - PAD_TOP + minY) / CELL_H)).toFixed(2);
+      return "    {id:'"+n.id+"', col:"+col+", row:"+row+"}";
+    });
+    var text = lines.join(',\n');
+    var done = function(){ window.alert('Layout copied -- paste it back to me (Claude) and I\'ll bake these positions into the page for good.'); };
+    var fallback = function(){ window.prompt('Copy this and send it to me:', text); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  });
+
+  document.getElementById('flow-reset-layout').addEventListener('click', function(){
+    if(!window.confirm('Discard your custom box positions and go back to the default layout?')) return;
+    try{ localStorage.removeItem(LAYOUT_KEY); }catch(e){}
+    location.reload();
+  });
   function zoomBy(factor){
     var vw = viewport.clientWidth, vh = viewport.clientHeight;
     var worldX = (vw/2 - state.x) / state.scale, worldY = (vh/2 - state.y) / state.scale;
@@ -454,6 +633,7 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
   function clearActive(){
     if(activeNodeEl){ activeNodeEl.classList.remove('active'); activeNodeEl=null; }
     if(activeEdgeLine){ activeEdgeLine.classList.remove('active'); activeEdgeLine=null; }
+    resetEdgeHighlight();
   }
 
   function openPanel(sub, title, desc, links){
@@ -476,6 +656,7 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     clearActive();
     nodeEls[n.id].classList.add('active');
     activeNodeEl = nodeEls[n.id];
+    highlightEdgesForNode(n.id);
     openPanel(CATS[n.cat].label, n.title + (n.sub ? ' · ' + n.sub : ''), n.desc, n.links);
   }
 
@@ -483,6 +664,7 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     clearActive();
     line.classList.add('active');
     activeEdgeLine = line;
+    highlightSingleEdge(line);
     openPanel('Connection', a.title + ' → ' + b.title,
       'Data or control flows from “'+a.title+'” to “'+b.title+'” in the pipeline. Click either box for the full detail on each side.', []);
   }
