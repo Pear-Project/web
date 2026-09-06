@@ -195,11 +195,15 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
       desc:'Static hosting for the live site — auto-redeploys on every push to main, no build step. GitHub just serves whatever HTML/CSS/JS sits in the repo.',
       links:[{label:'Visit site ↗', url:'https://pearos.xyz/'}]},
     {id:'pages-mirror', col:7.21, row:1.17, cat:'website', title:'Cloudflare Pages (mirror)', sub:'pearos-mirror.pages.dev',
-      desc:'A parallel static copy of the same site on a completely separate hosting provider, redeployed on every push to main alongside GitHub Pages. It sits idle otherwise — nothing points visitors here automatically. It only becomes useful when uptime-monitor.yml detects GitHub Pages is down and its WhatsApp alert names this URL as the manual failover: someone has to actually repoint pearos.xyz’s DNS at it (Option B — a paid Cloudflare Load Balancer would automate that switch, judged not worth it given GitHub Pages’ uptime track record).',
+      desc:'A parallel static copy of the same site on a completely separate hosting provider, redeployed on every push to main alongside GitHub Pages. pearos.xyz is registered as a custom domain on this Pages project (cert pre-issued and verified) specifically so a DNS failover can switch to it instantly — no cold-start domain validation delay during a real incident.',
       links:[{label:'Visit mirror ↗', url:'https://pearos-mirror.pages.dev/'}]},
     {id:'stats-page', col:7, row:2.4, cat:'website', title:'/stats/', sub:'public dashboard',
       desc:'Displays what update-stats.yml produces: totals, a free/paid trend chart, top countries, traffic sources, paid-conversion %, and the friends-link counter used to catch a leaked link.',
       links:[{label:'View page ↗', url:'https://pearos.xyz/stats/'}]},
+
+    {id:'changelog-page', col:7, row:3.3, cat:'website', title:'/changelog/', sub:'one tab per build',
+      desc:'Was a dead "Changelog" card on /faq/ linking to href="#" — nothing ever rendered. Now a real page reading assets/data/changelog.json, with one tabbed section per build; a build with no release_notes.md yet (Debian, BSD, aarch64) just shows "Coming soon".',
+      links:[{label:'View page ↗', url:'https://pearos.xyz/changelog/'}]},
 
     {id:'checkout-popup', col:8, row:0.1, cat:'website', title:'Download Popup', sub:'pearos-checkout.js',
       desc:'Intercepts every click on an .iso link site-wide and shows the pay-what-you-want modal instead of navigating away, so every download gets a real chance to convert — instead of silently bypassing straight to the file.',
@@ -231,9 +235,12 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
       links:[]},
 
     {id:'thank-you-page', col:8, row:1.4, cat:'website', title:'/thank-you/', sub:'auto-verify on load',
-      desc:'Stripe redirects here after checkout with ?session_id=… (and the original file). The page immediately calls /verify and auto-opens the resulting download link — no manual step for the payer.',
+      desc:'Stripe redirects here after checkout with ?session_id=… (and the original file). The page immediately calls /verify and auto-opens the resulting download link — no manual step for the payer. Also shows a "Become a Patron" CTA right at this moment of peak intent (right after someone already paid once), instead of leaving that ask stranded on the separate /donate/ page nobody visits organically.',
       links:[{label:'View page ↗', url:'https://pearos.xyz/thank-you/'}]},
 
+    {id:'patreon', col:8, row:2.4, cat:'notify', title:'Patreon', sub:'monthly membership',
+      desc:'Where the /thank-you/ page\'s "Become a Patron" CTA leads. Membership revenue has stayed flat and small (~$25/mo average, no growth trend across 9 months) since the only place it was ever linked before was the standalone /donate/ page — this surfaces the ask at actual peak intent instead.',
+      links:[{label:'pearOS on Patreon ↗', url:'https://www.patreon.com/cw/PearSoftwareandServices'}]},
     {id:'stripe', col:11.48, row:2.95, cat:'payments', title:'Stripe', sub:'Checkout Sessions',
       desc:'Processes the actual payment — card, Apple Pay, Link, or PayPal — via an embedded Checkout Session, then reports payment_status back when /verify asks. Real donations ($1, $2.99 x2) have already gone through this exact path.',
       links:[{label:'stripe.com ↗', url:'https://stripe.com'}]},
@@ -245,11 +252,17 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
       desc:'Queries Analytics Engine over its SQL API, then runs render_chart.py (matplotlib, dark theme matching the site’s own palette) to rebuild the trend-chart PNG, writes download-stats.json, and pushes both back — hourly, offset a few minutes past the hour to dodge GitHub’s most congested cron slot. Checks out with a PAT (not the default token) so its own push correctly triggers whatsapp-report.yml downstream.',
       links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/update-stats.yml'},{label:'View render_chart.py ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/scripts/render_chart.py'}]},
     {id:'update-sha', col:3.85, row:3.6, cat:'automation', title:'update-sha.yml', sub:'daily · Pear-Project/web',
-      desc:'Daily (and manual) sync: reads sha.txt from both pearos-archlinux/iso and Pear-Project/iso, then re-checks live file size with a plain HEAD request to iso.pearos.xyz (allowed through unsigned). For NiceC0re/Arch this is the ONLY thing that ever refreshes the site’s sha256/size — the Arch build has no immediate website-update step of its own. For Goldwing/Debian it’s a secondary re-check, since that build already pushes its own update immediately.',
-      links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/update-sha.yml'}]},
+      desc:'Daily (and manual) sync: reads sha.txt from both pearos-archlinux/iso and Pear-Project/iso, then re-checks live file size with a plain HEAD request to iso.pearos.xyz (allowed through unsigned). For NiceC0re/Arch this is the ONLY thing that ever refreshes the site’s sha256/size — the Arch build has no immediate website-update step of its own. For Goldwing/Debian it’s a secondary re-check, since that build already pushes its own update immediately. Also runs build_changelog.py, which fetches release_notes.md from each build repo (where one exists) and parses it into assets/data/changelog.json for the /changelog/ page — a build without a release_notes.md yet just comes through as null, no code change needed once one is added.',
+      links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/update-sha.yml'},{label:'View build_changelog.py ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/scripts/build_changelog.py'}]},
     {id:'uptime-monitor', col:4.83, row:4.49, cat:'automation', title:'uptime-monitor.yml', sub:'every 15 min · Pear-Project/web',
-      desc:'Requests https://pearos.xyz/ every 15 minutes and compares the result against the last known state (committed to assets/data/uptime-state.json). Sends a WhatsApp alert only on an actual up→down or down→up transition, never repeating on every check — the down alert explicitly names the Cloudflare Pages mirror as the manual failover target, since there is no automatic DNS failover (Option B: cheap manual switch instead of a paid Load Balancer).',
-      links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/uptime-monitor.yml'},{label:'View uptime_alert.py ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/scripts/uptime_alert.py'}]},
+      desc:'Requests https://pearos.xyz/ every 15 minutes and compares the result against the last known state (committed to assets/data/uptime-state.json). Sends a WhatsApp alert only on an actual up→down or down→up transition, never repeating on every check. A separate step then runs dns_failover.py, which is stateless — it re-derives what to do from the DNS records\' *current* content (a fresh check against GitHub\'s own pear-project.github.io, independent of pearos.xyz\'s DNS) rather than trusting the state file, so it self-corrects even if this job\'s own commit races another workflow\'s push.',
+      links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/uptime-monitor.yml'},{label:'View uptime_alert.py ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/scripts/uptime_alert.py'},{label:'View dns_failover.py ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/scripts/dns_failover.py'}]},
+    {id:'gh-cron-dispatcher', col:2.7, row:5.1, cat:'automation', title:'gh-cron-dispatcher Worker', sub:'Cloudflare Cron Trigger · dispatches GH Actions',
+      desc:'GitHub\'s own `schedule:` cron trigger was silently skipping most of its windows for these three workflows — hours at a time with zero automatic runs despite workflow_dispatch always succeeding. This Worker uses a real Cloudflare Cron Trigger as the clock and calls workflow_dispatch on each one via the GitHub REST API instead, entirely independent of GitHub\'s own (unreliable) scheduler.',
+      links:[{label:'View source ↗', url:'https://github.com/Pear-Project/web/blob/main/cloudflare/gh-cron-dispatcher/src/index.js'}]},
+    {id:'pearos-failover', col:6.1, row:3.15, cat:'automation', title:'pearos-failover Worker', sub:'Cloudflare Cron Trigger · every 5 min',
+      desc:'Runs entirely on Cloudflare, independent of GitHub Actions itself — checks pear-project.github.io directly (not pearos.xyz, so it\'s not fooled by whatever DNS currently points at) to see if GitHub Pages is actually up. Stateless: re-derives what to do from the DNS records\' current type (A/AAAA vs a failover CNAME) rather than tracking its own state, so it never conflicts with uptime-monitor.yml\'s independent copy of the same logic — whichever notices first just makes the other\'s next pass a no-op. Only ever touches the A/AAAA/CNAME records, never the MX/TXT (mail, SPF, site verification) records living at the same apex.',
+      links:[{label:'View source ↗', url:'https://github.com/Pear-Project/web/blob/main/cloudflare/pearos-failover/src/index.js'}]},
     {id:'whatsapp-report', col:5.4, row:5.9, cat:'automation', title:'whatsapp-report.yml', sub:'daily · ~13:00 Romania time',
       desc:'Checks all 6 monitored domains, then runs build_whatsapp_message.py to assemble a *bold*/_italic_ formatted report (site status, totals, per-edition and top-country/referrer breakdowns, paid-conversion %, friends-link counter) and POSTs it — with the trend-chart PNG attached — to the whatser.xyz API. Runs on its own schedule, decoupled from update-stats.yml.',
       links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/whatsapp-report.yml'},{label:'View build_whatsapp_message.py ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/scripts/build_whatsapp_message.py'}]},
@@ -271,6 +284,10 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
       desc:'Session recordings and heatmaps, loaded post-consent — separate from GA4/GTM, its own script tag and project ID.'},
     {id:'adsense', col:10.86, row:6.15, cat:'website', title:'Google AdSense', sub:'pub-2120727219771886', links:[],
       desc:'Powers both the manually-placed ad slots on content pages and Google’s own Auto Ads. Auto Ads once broke the /stats/ page’s mobile layout by injecting a large unit above the fold — fixed by simply not loading the AdSense script at all on that page (its ID is set to a placeholder there), since it never had a manual slot to justify loading it anyway.'},
+
+    {id:'ezoic', col:9.7, row:6.9, cat:'website', title:'Ezoic', sub:'Incubator Program · under review',
+      desc:'Header/CMP scripts load unconditionally, right at the top of every page\'s <head> — ahead of, and NOT gated by, the site\'s own consent banner. Ezoic\'s own consent management replaces the site\'s gate for ad-related scripts specifically (a deliberate exception to the pattern every other tracker on this page follows). No ad_placements are wired up yet on purpose, to avoid interfering with the pending review; AdSense still runs unchanged in the meantime.',
+      links:[]},
 
     {id:'distrowatch-site', col:10.76, row:-2.43, cat:'notify', title:'DistroWatch.com', sub:'external ranking site (scraped)',
       desc:'Not an API — /badge/distrowatch parses the ranking straight out of DistroWatch’s own HTML table page for pearOS, which is why the result is cached for 6h rather than fetched fresh on every badge load.',
@@ -305,7 +322,12 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     ['arch-repo','update-sha'], ['debian-repo','update-sha'], ['update-sha','web-repo'], ['update-sha','iso-endpoint'],
     ['whatsapp-report','web-repo'], ['whatsapp-report','whatsapp'],
     ['uptime-monitor','github-pages'], ['uptime-monitor','web-repo'],
-    ['uptime-monitor','whatsapp'], ['uptime-monitor','pages-mirror']
+    ['uptime-monitor','whatsapp'], ['uptime-monitor','pages-mirror'], ['uptime-monitor','github-pages'],
+    ['gh-cron-dispatcher','update-stats'], ['gh-cron-dispatcher','whatsapp-report'], ['gh-cron-dispatcher','uptime-monitor'],
+    ['pearos-failover','github-pages'], ['pearos-failover','pages-mirror'],
+    ['thank-you-page','patreon'],
+    ['web-repo','changelog-page'], ['update-sha','changelog-page'],
+    ['page-scripts','ezoic']
   ];
 
   // ---------- layout ----------
