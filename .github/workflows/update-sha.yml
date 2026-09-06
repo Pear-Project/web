@@ -71,6 +71,11 @@ jobs:
           echo "NICECORE_SIZE=$nicecore_size" >> "$GITHUB_ENV"
           echo "GOLDWING_SIZE=$goldwing_size" >> "$GITHUB_ENV"
 
+      - name: Rebuild changelog from each build repo's release notes
+        run: |
+          pip install --quiet markdown
+          python3 .github/scripts/build_changelog.py
+
       - name: Update JSON data
         run: |
           tmpfile=$(mktemp)
@@ -90,11 +95,19 @@ jobs:
           git config user.name "pearOS build bot"
           git config user.email "actions@users.noreply.github.com"
 
-          if git diff --quiet -- assets/data/nicecore-versions.json assets/data/debian-versions.json; then
-            echo "Checksums and sizes unchanged, nothing to commit."
+          if git diff --quiet -- assets/data/nicecore-versions.json assets/data/debian-versions.json assets/data/changelog.json; then
+            echo "Checksums, sizes, and changelog unchanged, nothing to commit."
             exit 0
           fi
 
-          git add assets/data/nicecore-versions.json assets/data/debian-versions.json
-          git commit -m "Sync ISO checksums and sizes (NiceC0re, Goldwing)"
+          git add assets/data/nicecore-versions.json assets/data/debian-versions.json assets/data/changelog.json
+          git commit -m "Sync ISO checksums, sizes, and changelog"
+          # Other workflows commit to main independently -- retry with a
+          # rebase instead of failing outright on a push collision.
+          for i in 1 2 3 4 5; do
+            git push origin HEAD:main && exit 0
+            git fetch origin main
+            git rebase origin/main
+            sleep $((RANDOM % 5 + 1))
+          done
           git push origin HEAD:main

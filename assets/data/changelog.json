@@ -1,0 +1,63 @@
+{
+  "nicecore": [
+    {
+      "title": "12 Aug 2026 RELEASE 3",
+      "html": "<h2>information</h2>\n<p>https://pearos.xyz | https://nicec0re.pearos.xyz</p>\n<ul>\n<li>Added Ventoy Support</li>\n<li>Added better Window Snapping Support (hover the green button on a window)</li>\n</ul>"
+    },
+    {
+      "title": "08 Aug 2026 RELEASE 2",
+      "html": "<h2>information</h2>\n<p>https://pearos.xyz | https://nicec0re.pearos.xyz</p>\n<ul>\n<li>Fixed chwd error in calares if no internet</li>\n<li>Add new window borders\n<img width=\"862\" height=\"569\" alt=\"image\" src=\"https://github.com/user-attachments/assets/6dcc0542-3a59-41b9-954a-c7433b076335\" /></li>\n<li>Windows now tint if you move them <br></li>\n<li>Close Button gets a black dot if a running process (i.e.: in konsole type 'sleep 20' to test)<br>\n<img width=\"494\" height=\"131\" alt=\"image\" src=\"https://github.com/user-attachments/assets/4331a703-8f80-49c9-9266-181b050ef1a5\" /> <br></li>\n<li>\n<p>Added Window Tiling similar to macOS <br>\n<img width=\"336\" height=\"351\" alt=\"image\" src=\"https://github.com/user-attachments/assets/75e9d404-1300-4bbf-af86-46e427325a1a\" /><br></p>\n</li>\n<li>\n<p>Window borders got 16px rounded cornerse even in Maximized state\n<img width=\"336\" height=\"351\" alt=\"image\" src=\"https://github.com/user-attachments/assets/456ef170-03d3-4590-99ab-d3c37b2b21b8\" /><br></p>\n</li>\n</ul>\n<h3>Known bugs:</h3>\n<ul>\n<li>when updating from older version you need sudo pacman -Sy pear-temp-fix --noconfirm</li>\n<li>pearOS calculator doesn't let you use keyboard</li>\n<li>Small Grab Area when trying to move certain windows around</li>\n<li>Some WiFi cards are not working (investigating(forgot to investigate actually))</li>\n<li>BTRFS not working on install (investigating(forgot to investigate actually))</li>\n<li>Other bugs: Please use the Issues tab in this repo. Thank you</li>\n</ul>"
+    },
+    {
+      "title": "01 Aug 2026",
+      "html": "<h2>Information</h2>\n<p>https://pearos.xyz | https://nicec0re.pearos.xyz</p>\n<ul>\n<li>Added Seafari Browser</li>\n<li>Added New Welcome Application</li>\n<li>Added More Settings in System Preferences</li>\n<li>Added ploader - pearos-bootloader on the USB only(installer will use GRUB). Legacy boot is still possible</li>\n<li>Fixed pearOS Lockscreen Bug</li>\n<li>Fixed pacman-keys</li>\n<li>Fixed OOBE errors (before it only worked in en_US, other languages crashing the installer)</li>\n<li>Fixed Mouse &amp; Trackpad settings in System Preferences</li>\n<li>Removed Pafari Browser</li>\n<li>Stability Improvements</li>\n<li>Fix Memory Leak in System Preferences application</li>\n</ul>\n<h3>Known bugs:</h3>\n<ul>\n<li>pearOS calculator doesn't let you use keyboard</li>\n<li>Small Grab Area when trying to move certain windows around</li>\n<li>Some WiFi cards are not working (investigating(forgot to investigate actually))</li>\n<li>BTRFS not working on install (investigating)</li>\n<li>Other bugs: Please use the Issues tab in this repo. Thank you</li>\n</ul>"
+    },
+    {
+      "title": "16 Jun 2026",
+      "html": "<h2>Information</h2>\n<p>https://pearos.xyz | https://nicec0re.pearos.xyz\n* Added Dynamic Island\n* Added Tray in Notch/Dynamic Island\n* Added Liquid Gel Slider\n* Added Golden Gate Wallpapers\n* Added auto dark/light mode theme (not tested)\n* Added new dock\n* Added Zoom animation on dock\n* Added New Dock settings in System Settings\n* Added Boot Sound\n* Added modal that asks if you want online or offline install\n* Added new Global Menu widget\n* Added the ability to change folder color based on the accent color\n* Added New Lockscreen\n* Added Notch settings (size, distance, offset)\n* Added dock settings (size, distance, offset, zoom amount, amplitude etc)\n* Added Fix Layout in the Welcome App that restores your layout to the pearOS default one\n* Added CachyOS 6.18 kernel\n* Added Close button that hides a window instead of closing, like in macOS, now need to ctrl/win+Q to quit or ALT+F4\n* Fixed AppStore\n* Fixed Notch glitching when hover\n* Fixed pearOS System Settings ( electron JS -&gt; C++ Qt6 )\n* Fixed top menu (rewrote the plasmoid as standalone package 'pearos-appmenu')\n* Fixed dock problems (rewrote the plasmoid as standalone package ('pearos-dock')\n* Fixed post-install failed to remove user 'default' -&gt; now creates a single-shot linux service that removes the user after installation\n* Fixed pearID (?)\n* Fixed COMMAND + SPACE not opening the App Drawer\n* Fixed Dark-Light theme switching, now it won't restart Plasmashell\n* Fixed Accent-Color switching, not it won't restart Plasmashell\n* Fixed high memory usage and slow Settings Startup ( electron -&gt; C++ Qt6)\n* Fixed Pafari not launching</p>\n<h3>Known bugs:</h3>\n<ul>\n<li>pearOS calculator doesn't let you use keyboard</li>\n<li>Pafari search bar inconsistences (UI)</li>\n<li>Lockscreen sometimes doesn't unlock. You must start a TTY session and use 'loginctl unlock-session x' to get around</li>\n<li>Small Grab Area when trying to move certain windows around</li>\n<li>Some WiFi cards are not working (investigating)</li>\n<li>Other bugs: Please use the Issues tab in this repo. Thank you</li>\n</ul>"
+    },
+    {
+      "title": "09 Apr 2026",
+      "html": "<h2>Information</h2>\n<p>https://pearos.xyz | https://nicec0re.pearos.xyz\n* Fixed missing linux-firmware\n* Fixed unable to get the ky in OOBE screen\n* Fixed notch (finally?)\n* Fixed weird cursors in the AppStore app</p>"
+    },
+    {
+      "title": "08 Apr 2026",
+      "html": "<h2>Information</h2>\n<p>https://pearos.xyz | https://nicec0re.pearos.xyz</p>\n<ul>\n<li>Moved package repository to a better server (Cloudflare R2 Storage)</li>\n<li>Fixed Offline Installer (hopefully)</li>\n<li>Installing packages from the packages repo now require public key, included in the pearos-keyring package</li>\n<li>Add pearos-keyring</li>\n<li>Add better ZSH Config</li>\n<li>Add boot chime (hope it works)</li>\n<li>Fix updater</li>\n<li>Fix light theme</li>\n<li>Fix online installer (I guess)</li>\n</ul>\n<h3>Known Bugs</h3>\n<ul>\n<li>Some WiFi cards are not working (?)</li>\n<li>automatic theme not yer implemented</li>\n<li>pearOS Notch Not working smoothly, expecting fix in 26.4</li>\n<li>Other bugs: Please use the Issues tab in this repo. Thank you</li>\n</ul>"
+    },
+    {
+      "title": "11 Mar 2026",
+      "html": "<h2>Information</h2>\n<p>https://pearos.xyz</p>\n<ul>\n<li>Add Dual Boot Support</li>\n<li>Add Offline Installer Support(hold ⌥ while clicking Continue with Install pearOS selected in installer to enable Offline &amp; Dualboot)</li>\n<li>Add Calculator App</li>\n<li>Add To-Do App</li>\n<li>Add Contacts App</li>\n<li>Add Notes App</li>\n<li>Add Calendar App</li>\n<li>Add Notch</li>\n<li>Add nVidia drivers</li>\n<li>Add Qemu Guest utils</li>\n<li>Add Better Wayland Support</li>\n<li>Add Close button will HIDE the app instead of closing(the bitten fruit way)</li>\n<li>Add Hover effects to the CLS/MIN/MAX buttons</li>\n<li>Fixed Better LiquidGel Rules</li>\n<li>Fixed Most of the rounded corners</li>\n<li>Fixed Launcher Dark Icon</li>\n<li>Fixed wrong Window Borders</li>\n<li>Fixed Piri Download Quota Exceeded</li>\n<li>About pearOS app: Switched from Electron to C++</li>\n<li>Switched ark -&gt; file-roller</li>\n</ul>\n<h3>Known Bugs</h3>\n<ul>\n<li>Some WiFi cards are not working (?)</li>\n<li>automatic theme not yer implemented</li>\n<li>pearOS Notch Not working smoothly, expecting fix in 26.4</li>\n<li>Other bugs: Please use the Issues tab in this repo. Thank you</li>\n</ul>"
+    },
+    {
+      "title": "09 Feb 2026",
+      "html": "<h2>Information</h2>\n<p>https://pearos.xyz</p>\n<ul>\n<li>X11 -&gt; Wayland</li>\n<li>Added Liquid Gel</li>\n<li>Added Touchpad Settings into Settings Application</li>\n<li>Added Pir Voice Assistant</li>\n<li>Added Profile Picture in installer &amp; Lock Screen</li>\n<li>Added cusotm profile Picture (Requires pearID)</li>\n<li>New lockscren</li>\n<li>Custom Watch Fonts in lockscreen</li>\n<li>New Fonts in Setting &gt; Wallpapers &gt; Customise Clock Appearance</li>\n<li>Fixed installer</li>\n<li>UI fixes</li>\n<li>Fixed Dowloads Folder fan view effect</li>\n<li>... probably more which I forgot to mention :)</li>\n</ul>\n<h3>Known Bugs</h3>\n<ul>\n<li>Some WiFi cards are not working</li>\n<li>automatic theme not yer implemented</li>\n<li>Other bugs: Please use the Issues tab in this repo. Thank you</li>\n</ul>"
+    },
+    {
+      "title": "11 Dec 2025",
+      "html": "<h2>Information</h2>\n<pre><code>The ISO file is now on an S3 bucket so expect high download speeds now\nThis update features pearID and a new settings app, with various updates\n</code></pre>\n<p>https://pearos.xyz</p>\n<ul>\n<li>fix rubbish bin icon</li>\n<li>fix light theme</li>\n<li>fix plasmoids not working on plasma 6.5.3</li>\n<li>UPDATE plasma to 6.5.3 (previous: 6.3.x)</li>\n<li>WORKAROUND: Plasma 6.5 set Wayland as defaule, I forced it to X11</li>\n<li>NEW settings app</li>\n<li>NEW about app</li>\n<li>NEW global menu plasmoid</li>\n<li>NEW downloads folder with fan view effect</li>\n<li>NEW Finder-like icon in the dock</li>\n<li>NEW Dock rework</li>\n<li>NEW pearID</li>\n</ul>\n<h3>Known bugs</h3>\n<ul>\n<li>Some apps not working good on Wayland seessions(see workaround)</li>\n<li>Graphical BUG in  Settings &gt; Game Center</li>\n<li>Sometimes on fresh installs theme is not applied properly. To fix this you have to\n   get into System Settings &gt; Appearance &gt; and reapply a theme (dark/light)</li>\n<li>Automatic theme not yet implemented</li>\n<li>Other bugs: Please use the Issues tab in this repo. Thank you</li>\n</ul>"
+    },
+    {
+      "title": "31 October 2025",
+      "html": "<h2>Information</h2>\n<pre><code>ISO file moved to the personal server, it is 3.3GB in size, and GitHub file size limitation is only 2 GB\n</code></pre>\n<p>https://pearos.xyz</p>\n<ul>\n<li>fixed installer (hopefully it should auto repair itself when a package breaks or a signature gets expired/revoked)</li>\n<li>fixed progress bar</li>\n<li>updated design</li>\n<li>updated broken packages</li>\n<li>updated package repository(github -&gt; personal server)</li>\n<li>added boot sound</li>\n<li>added plymouth theme</li>\n<li>added Hello screen after install</li>\n<li>added Activity bar to the installer</li>\n<li>added (half broken) control center (WIP)</li>\n<li>updated kernel to 6.17_MANJARO</li>\n<li>updated to plasma 6</li>\n<li>updated to Tahoe design</li>\n<li>updated Splash Screen</li>\n<li>removed useless packages</li>\n<li>removed gambas dependency</li>\n<li>removed all previously made pearOS apps, new apps are coming soon</li>\n</ul>"
+    },
+    {
+      "title": "18 October 2023",
+      "html": "<ul>\n<li>fixed the gnome package kit error</li>\n<li>updated packages</li>\n<li>refreshed keys</li>\n</ul>"
+    },
+    {
+      "title": "30 January 2023:",
+      "html": "<ul>\n<li>fixed pearOS installer</li>\n<li>updated packages</li>\n<li>refreshed keys</li>\n</ul>"
+    },
+    {
+      "title": "9 August 2022:",
+      "html": "<ul>\n<li>fixed failed install due to the wrong electron version ( <code>electron11</code> instead of <code>electron</code> package was installed)</li>\n</ul>"
+    },
+    {
+      "title": "5 July 2022:",
+      "html": "<ul>\n<li>The installer no longer lets the user to install on a USB (resoves the 'I accidentally installed pearOS on the bootable usb instead of my HDD' problem)</li>\n<li>The installer no longer lets the user to install pearOS without an internet connection. (resolves the 'I pressed install, but it fails here is the install log alex' problem)</li>\n</ul>"
+    }
+  ],
+  "debian": null,
+  "bsd": null,
+  "aarch64": null
+}
