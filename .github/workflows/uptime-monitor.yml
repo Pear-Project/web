@@ -1,0 +1,70 @@
+name: Uptime monitor
+
+# Checks pearos.xyz every 15 minutes (offset off the exact quarter-hour, same
+# congestion reasoning as the other crons) and sends a WhatsApp alert only on
+# a state *transition* (up->down or down->up) -- never repeats the same
+# alert every run while it stays down, and never spams if it stays up.
+on:
+  schedule:
+    - cron: "4,19,34,49 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking out source code
+        uses: actions/checkout@v4
+
+      - name: Check pearos.xyz and detect a state change
+        id: check
+        run: |
+          STATE_FILE="assets/data/uptime-state.json"
+          [ -f "$STATE_FILE" ] || echo '{"status":"up"}' > "$STATE_FILE"
+          prev_status=$(jq -r '.status' "$STATE_FILE")
+
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://pearos.xyz/ || echo "000")
+          if [ "$code" = "200" ]; then
+            new_status="up"
+          else
+            new_status="down"
+          fi
+          echo "Previous: $prev_status, now: $new_status (HTTP $code)"
+
+          jq -n --arg status "$new_status" --arg checked_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{status:$status, checked_at:$checked_at}' > "$STATE_FILE"
+
+          if [ "$prev_status" != "$new_status" ]; then
+            echo "transitioned=true" >> "$GITHUB_OUTPUT"
+            echo "new_status=$new_status" >> "$GITHUB_OUTPUT"
+          else
+            echo "transitioned=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send WhatsApp alert on state change
+        if: steps.check.outputs.transitioned == 'true'
+        env:
+          WHATSER_APPKEY: ${{ secrets.WHATSER_APPKEY }}
+          WHATSER_AUTHKEY: ${{ secrets.WHATSER_AUTHKEY }}
+          WHATSER_TO: ${{ secrets.WHATSER_TO }}
+        run: |
+          python3 .github/scripts/uptime_alert.py "${{ steps.check.outputs.new_status }}"
+          curl --location --request POST "https://whatser.xyz/api/create-message" \
+            --form "appkey=$WHATSER_APPKEY" \
+            --form "authkey=$WHATSER_AUTHKEY" \
+            --form "to=$WHATSER_TO" \
+            --form "message=$ALERT_MESSAGE"
+
+      - name: Commit updated state
+        run: |
+          git config user.name "pearOS build bot"
+          git config user.email "actions@users.noreply.github.com"
+          if git diff --quiet -- assets/data/uptime-state.json; then
+            exit 0
+          fi
+          git add assets/data/uptime-state.json
+          git commit -m "Update uptime state"
+          git push origin HEAD:main
