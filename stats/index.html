@@ -2,7 +2,10 @@
   window.NC_IDS={
     gtm:'GTM-N9KWQZLC',            // Google Tag Manager container ID
     ga:'G-M5YQ4NE7DR',            // GA4 measurement ID
-    adsense:'ca-pub-2120727219771886', // AdSense publisher ID (from the current site, matches ads.txt)
+    adsense:'XXXX', // deliberately not loaded here -- this page has no manual ad slot
+    // (NC_AD_SLOTS is empty below), and loading the AdSense script would still
+    // let Auto Ads inject its own placement anyway, which broke the mobile
+    // layout by shoving a huge ad above the stat cards.
     clarity:'xs709y21du'          // Microsoft Clarity project ID
   };
   window.NC_AD_SLOTS={};
