@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-09-05T20:19:38Z",
-  "total_all_time": 113,
-  "last_30d": 113,
-  "last_24h": 113,
+  "generated_at": "2026-09-06T04:03:11Z",
+  "total_all_time": 384,
+  "last_30d": 384,
+  "last_24h": 384,
   "by_file": [
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
       "tier": "free",
-      "downloads": "33",
-      "bytes": 71211368448
+      "downloads": "112",
+      "bytes": 241687068672
     },
     {
       "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
@@ -19,8 +19,8 @@
     {
       "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
       "tier": "free",
-      "downloads": "77",
-      "bytes": 258637524992
+      "downloads": "269",
+      "bytes": 903551873024
     },
     {
       "file": "iso/health.check",
@@ -33,79 +33,100 @@
     {
       "date": "2026-09-05",
       "tier": "free",
-      "downloads": 112
+      "downloads": 262
     },
     {
       "date": "2026-09-05",
       "tier": "paid",
       "downloads": 1
+    },
+    {
+      "date": "2026-09-06",
+      "tier": "free",
+      "downloads": 121
     }
   ],
   "by_country": [
     {
       "country": "US",
-      "downloads": 28
+      "downloads": 114
+    },
+    {
+      "country": "BR",
+      "downloads": 31
     },
     {
       "country": "",
       "downloads": 20
     },
     {
+      "country": "AR",
+      "downloads": 18
+    },
+    {
+      "country": "MX",
+      "downloads": 16
+    },
+    {
+      "country": "FR",
+      "downloads": 16
+    },
+    {
+      "country": "DE",
+      "downloads": 15
+    },
+    {
+      "country": "IN",
+      "downloads": 15
+    },
+    {
       "country": "RO",
       "downloads": 11
     },
     {
-      "country": "BR",
-      "downloads": 11
-    },
-    {
-      "country": "FR",
+      "country": "GB",
       "downloads": 9
-    },
-    {
-      "country": "DE",
-      "downloads": 6
-    },
-    {
-      "country": "ID",
-      "downloads": 4
-    },
-    {
-      "country": "PL",
-      "downloads": 3
-    },
-    {
-      "country": "GR",
-      "downloads": 2
-    },
-    {
-      "country": "DO",
-      "downloads": 2
     }
   ],
   "by_referrer": [
     {
       "referrer": "pearos.xyz",
-      "downloads": 69
+      "downloads": 329
+    },
+    {
+      "referrer": "direct",
+      "downloads": 28
     },
     {
       "referrer": "",
       "downloads": 20
     },
     {
-      "referrer": "direct",
-      "downloads": 20
+      "referrer": "iso.pearos.xyz",
+      "downloads": 4
     },
     {
       "referrer": "pearos-xyz.translate.goog",
       "downloads": 3
-    },
-    {
-      "referrer": "iso.pearos.xyz",
-      "downloads": 1
     }
   ],
   "by_hour": [
+    {
+      "hour": 0,
+      "downloads": 28
+    },
+    {
+      "hour": 1,
+      "downloads": 33
+    },
+    {
+      "hour": 2,
+      "downloads": 31
+    },
+    {
+      "hour": 3,
+      "downloads": 29
+    },
     {
       "hour": 17,
       "downloads": 11
@@ -120,7 +141,19 @@
     },
     {
       "hour": 20,
-      "downloads": 14
+      "downloads": 55
+    },
+    {
+      "hour": 21,
+      "downloads": 30
+    },
+    {
+      "hour": 22,
+      "downloads": 31
+    },
+    {
+      "hour": 23,
+      "downloads": 48
     }
   ],
   "friend_all_time": 0,
