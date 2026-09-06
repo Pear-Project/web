@@ -314,7 +314,34 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     el.style.top = n.y + 'px';
     el.style.borderLeftColor = CATS[n.cat].token;
     el.innerHTML = '<div class="fn-sub">'+n.sub+'</div><div class="fn-title">'+n.title+'</div>';
-    el.addEventListener('click', function(e){ e.stopPropagation(); selectNode(n); });
+
+    // Per-node drag-to-reposition, distinguished from a plain click (which
+    // opens the detail panel) by a small movement threshold. Needs its own
+    // pointer capture + early-return in the viewport's own pan handler
+    // below -- without that, the viewport's pointer capture hijacks the
+    // click event entirely and neither dragging nor clicking a node works.
+    var nodeDrag = null;
+    el.addEventListener('pointerdown', function(e){
+      e.stopPropagation();
+      el.setPointerCapture(e.pointerId);
+      nodeDrag = {startX:e.clientX, startY:e.clientY, origX:n.x, origY:n.y, moved:false};
+    });
+    el.addEventListener('pointermove', function(e){
+      if(!nodeDrag) return;
+      var dx=(e.clientX-nodeDrag.startX)/state.scale, dy=(e.clientY-nodeDrag.startY)/state.scale;
+      if(!nodeDrag.moved && (Math.abs(dx)>4||Math.abs(dy)>4)) nodeDrag.moved=true;
+      if(nodeDrag.moved){
+        n.x=nodeDrag.origX+dx; n.y=nodeDrag.origY+dy;
+        el.style.left=n.x+'px'; el.style.top=n.y+'px';
+        drawEdges();
+      }
+    });
+    el.addEventListener('pointerup', function(e){
+      if(nodeDrag && !nodeDrag.moved){ selectNode(n); }
+      nodeDrag=null;
+    });
+    el.addEventListener('pointercancel', function(){ nodeDrag=null; });
+
     nodesEl.appendChild(el);
     nodeEls[n.id] = el;
   });
@@ -375,6 +402,10 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
 
   var dragging=false, dragStart=null, stateStart=null;
   viewport.addEventListener('pointerdown', function(e){
+    // Let clicks/drags on a node, or clicks on an edge, work normally --
+    // starting a canvas-pan capture on top of them breaks both.
+    if(e.target.closest && e.target.closest('.flow-node')) return;
+    if(e.target.tagName === 'path') return;
     dragging = true; viewport.classList.add('dragging');
     dragStart = {x:e.clientX, y:e.clientY}; stateStart = {x:state.x, y:state.y};
     viewport.setPointerCapture(e.pointerId);
