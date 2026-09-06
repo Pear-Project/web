@@ -195,11 +195,16 @@ async function handleDownload(request, env, url) {
   // UptimeRobot etc.) -- always servable, no signature required.
   const isHealthCheck = key === "iso/health.check";
 
-  // Every other /iso/ request now requires a valid, unexpired signature --
+  // HEAD reveals only metadata (size/etag), never file bytes, and can't be
+  // throttle-bypassed -- safe to leave unsigned. Our own update-sha.yml
+  // automation relies on exactly this (a plain HEAD to check file size).
+  const isHead = request.method === "HEAD";
+
+  // Every other /iso/ GET now requires a valid, unexpired signature --
   // free-tier links get one from /freepoint, paid ones from /verify. This
   // is what actually stops the popup being bypassed by hitting the .iso URL
   // directly (a real chunk of traffic was doing exactly that).
-  if (!validSigned && !isHealthCheck) {
+  if (!validSigned && !isHealthCheck && !isHead) {
     const filename = key.replace(/^iso\//, "");
 
     // wget follows a 302 by default and (unlike curl) happily saves the
