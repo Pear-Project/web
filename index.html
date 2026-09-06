@@ -617,9 +617,20 @@
   // Anchor links (#choose-build etc.) can land short: ads and images below
   // the target load in after the browser's initial scroll-to-hash and push
   // the page down, leaving you in whatever section happened to be there
-  // first. Re-scroll a couple times as the page settles.
+  // first. Re-scroll a couple times as the page settles -- but only until
+  // the visitor actually scrolls themselves; otherwise a late reScroll()
+  // yanks them back up mid-read (reported as "the page scrolls itself back
+  // up" / needing to click Download several times to get it to stick).
   if(!location.hash) return;
+  var userScrolled=false;
+  function markUserScrolled(){ userScrolled=true; }
+  window.addEventListener('wheel',markUserScrolled,{passive:true});
+  window.addEventListener('touchmove',markUserScrolled,{passive:true});
+  window.addEventListener('keydown',function(e){
+    if(['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].indexOf(e.key)>-1) markUserScrolled();
+  });
   function reScroll(){
+    if(userScrolled) return;
     var el;
     try{ el=document.querySelector(location.hash); }catch(e){ return; }
     if(el) el.scrollIntoView({block:'start'});
