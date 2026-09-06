@@ -53,12 +53,17 @@ jobs:
           WHATSER_AUTHKEY: ${{ secrets.WHATSER_AUTHKEY }}
           WHATSER_TO: ${{ secrets.WHATSER_TO }}
         run: |
-          python3 .github/scripts/uptime_alert.py "${{ steps.check.outputs.new_status }}"
-          curl --location --request POST "https://whatser.xyz/api/create-message" \
+          ALERT_MESSAGE=$(python3 .github/scripts/uptime_alert.py "${{ steps.check.outputs.new_status }}")
+          RESPONSE=$(curl -s --location --request POST "https://whatser.xyz/api/create-message" \
             --form "appkey=$WHATSER_APPKEY" \
             --form "authkey=$WHATSER_AUTHKEY" \
             --form "to=$WHATSER_TO" \
-            --form "message=$ALERT_MESSAGE"
+            --form "message=$ALERT_MESSAGE")
+          echo "$RESPONSE"
+          # curl alone doesn't fail this step on a 200 that carries an error
+          # body (e.g. Whatser's own validation errors) -- check its JSON
+          # "success" field explicitly so a broken alert is loud, not silent.
+          echo "$RESPONSE" | jq -e '.success == true' > /dev/null
 
       - name: DNS failover to Cloudflare Pages mirror if GitHub Pages is down
         # Runs every check (not just on a transition) and is stateless -- it

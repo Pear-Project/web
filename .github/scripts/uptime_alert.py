@@ -1,4 +1,3 @@
-import os
 import sys
 
 MIRROR_URL = "https://pearos-mirror.pages.dev/"
@@ -20,5 +19,3 @@ else:
     msg = f"*pearOS site recovered*\n\n{SITE_URL} is responding normally again."
 
 print(msg)
-with open(os.environ["GITHUB_ENV"], "a") as f:
-    f.write("ALERT_MESSAGE<<EOF\n" + msg + "\nEOF\n")
