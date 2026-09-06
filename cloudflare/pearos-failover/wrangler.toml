@@ -1,0 +1,25 @@
+name = "pearos-failover"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# Independent of GitHub entirely (Pages AND Actions) -- checks GitHub Pages'
+# own origin directly (via the *.github.io fallback URL, which always
+# resolves through GitHub's infra regardless of what pearos.xyz's DNS
+# currently points at) and flips pearos.xyz's apex DNS to the Cloudflare
+# Pages mirror when it's down, then flips it back once it recovers.
+# Runs alongside (not instead of) the GitHub Actions uptime-monitor.yml,
+# which still sends the WhatsApp alert -- this worker only owns the DNS
+# switch, and is stateless: it always re-derives what to do from the DNS
+# records' *current* content, so running from two places never conflicts.
+triggers.crons = ["*/5 * * * *"]
+
+# Secrets (set via `wrangler secret put`, NOT stored here):
+#   CF_API_TOKEN - Cloudflare API token, Zone:DNS:Edit + Zone:Zone:Read on pearos.xyz
+
+[vars]
+ZONE_ID = "3bd9eff34b060a2dbc18592f957b9eb1"
+RECORD_NAME = "pearos.xyz"
+MIRROR_TARGET = "pearos-mirror.pages.dev"
+
+[observability]
+enabled = true

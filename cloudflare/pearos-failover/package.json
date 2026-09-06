@@ -1,0 +1,16 @@
+{
+  "name": "pearos-failover",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker that flips pearos.xyz's apex DNS to the Cloudflare Pages mirror when GitHub Pages is down, and reverts it once GitHub Pages recovers. Runs independently of GitHub entirely.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "wrangler": "^4.129.0"
+  }
+}

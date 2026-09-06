@@ -60,6 +60,17 @@ jobs:
             --form "to=$WHATSER_TO" \
             --form "message=$ALERT_MESSAGE"
 
+      - name: DNS failover to Cloudflare Pages mirror if GitHub Pages is down
+        # Runs every check (not just on a transition) and is stateless -- it
+        # re-derives what to do from the DNS records' current content, same
+        # as the independent `pearos-failover` Cloudflare Worker. Runs
+        # alongside that worker so the switch still happens even if GitHub
+        # Actions itself is unavailable when GitHub Pages goes down.
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_DNS_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+        run: python3 .github/scripts/dns_failover.py
+
       - name: Commit updated state
         run: |
           git config user.name "pearOS build bot"
