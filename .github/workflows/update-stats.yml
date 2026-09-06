@@ -11,6 +11,17 @@ on:
     # exact-hour ("0 * * * *") schedules are the most congested slot on their
     # infrastructure and get delayed/dropped more often; a few minutes' offset
     # avoids that pile-up.
+  push:
+    branches: [main]
+    paths-ignore:
+      # This job's own commit only ever touches these two files -- excluding
+      # them stops its PAT-authored push (which, unlike the default token,
+      # does trigger other workflows) from re-triggering itself in a loop.
+      # Any other push (new/changed pages, a redeploy, etc.) still fires it,
+      # so /stats/ reflects a rebuild immediately instead of waiting up to an
+      # hour for the next cron tick.
+      - 'assets/data/download-stats.json'
+      - 'assets/data/download-chart.png'
   workflow_dispatch:
 
 permissions:
