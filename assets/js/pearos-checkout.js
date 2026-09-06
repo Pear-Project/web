@@ -115,14 +115,26 @@
         startCheckout(Math.round(dollars*100),showError);
       });
       body.querySelector('#pos-skip-btn').addEventListener('click',function(){
-        var href=pendingHref;
-        closeModal();
-        openFreeDownload(href);
+        openFreeDownload(pendingHref);
       });
     }
 
     function fileFromHref(href){
       return href.split('/').pop().split('?')[0];
+    }
+
+    // Session recordings showed visitors re-clicking Download or navigating
+    // back to the builds page minutes later, seemingly unsure whether
+    // anything had happened -- window.open() alone gives no on-page
+    // confirmation, just a new tab the visitor might not have noticed. This
+    // keeps the modal open with an explicit confirmation + manual fallback
+    // link instead of silently closing it.
+    function startedHtml(url){
+      return '<div class="pos-picker" style="text-align:center">'
+        + '<h3>Download started</h3>'
+        + '<p>Check your browser\'s downloads. If nothing happened, <a href="'+url+'" target="_blank" rel="noopener">click here to open it directly</a>.</p>'
+        + '<p>Once it\'s done, verify the SHA256 checksum before installing — <a href="https://support.pearos.xyz/articles/how-to-verify-the-sha256-checksum-on-your-system" target="_blank" rel="noopener noreferrer">here\'s how</a>.</p>'
+        + '</div>';
     }
 
     // Every /iso/ download now requires a valid signed URL (free or paid) --
@@ -134,16 +146,18 @@
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({file:fileFromHref(href)})
       }).then(function(r){ return r.json(); }).then(function(data){
-        window.open((data&&data.url)||href,'_blank','noopener');
+        var url=(data&&data.url)||href;
+        window.open(url,'_blank','noopener');
+        body.innerHTML=startedHtml(url);
       }).catch(function(){
         window.open(href,'_blank','noopener');
+        body.innerHTML=startedHtml(href);
       });
     }
 
     function startCheckout(amountCents,onError){
       if(amountCents<=0){
         var href=pendingHref;
-        closeModal();
         openFreeDownload(href);
         return;
       }
