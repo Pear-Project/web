@@ -86,4 +86,15 @@ jobs:
           fi
           git add assets/data/uptime-state.json
           git commit -m "Update uptime state"
+          # Other workflows (hourly stats sync, DNS failover reruns) commit
+          # to main independently -- a plain push here can lose a race and
+          # fail outright, which then leaves this state file stuck stale
+          # (causing every later run to see a wrong transition and re-alert).
+          # Retry with a rebase instead of failing on the first collision.
+          for i in 1 2 3 4 5; do
+            git push origin HEAD:main && exit 0
+            git fetch origin main
+            git rebase origin/main
+            sleep $((RANDOM % 5 + 1))
+          done
           git push origin HEAD:main

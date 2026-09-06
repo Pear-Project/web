@@ -117,4 +117,13 @@ jobs:
 
           git add assets/data/download-stats.json assets/data/download-chart.png
           git commit -m "Sync download stats"
+          # Other workflows (uptime state, DNS failover reruns) commit to
+          # main independently -- a plain push here can lose a race and fail
+          # outright. Retry with a rebase instead of failing on collision.
+          for i in 1 2 3 4 5; do
+            git push origin HEAD:main && exit 0
+            git fetch origin main
+            git rebase origin/main
+            sleep $((RANDOM % 5 + 1))
+          done
           git push origin HEAD:main
