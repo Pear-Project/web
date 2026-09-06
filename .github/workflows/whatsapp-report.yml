@@ -5,7 +5,9 @@ name: WhatsApp status report
 # and just controls what time the WhatsApp message actually goes out.
 on:
   schedule:
-    - cron: "0 11 * * *" # 11:00 UTC = 13:00 Romania time
+    - cron: "7 11 * * *" # ~11:00 UTC = ~13:00 Romania time -- offset a few
+    # minutes off the exact hour, since GitHub's docs warn exact-hour crons
+    # are the most congested slot and get delayed/dropped more often.
   workflow_dispatch:
 
 jobs:

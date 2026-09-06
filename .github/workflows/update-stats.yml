@@ -7,7 +7,10 @@ name: Sync download stats
 # schedule (whatsapp-report.yml, 11:00 UTC) and isn't affected by this cadence.
 on:
   schedule:
-    - cron: "0 * * * *" # every hour, on the hour
+    - cron: "7 * * * *" # every hour, at :07 -- GitHub's own docs warn that
+    # exact-hour ("0 * * * *") schedules are the most congested slot on their
+    # infrastructure and get delayed/dropped more often; a few minutes' offset
+    # avoids that pile-up.
   workflow_dispatch:
 
 permissions:
