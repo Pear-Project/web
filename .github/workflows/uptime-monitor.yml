@@ -34,10 +34,12 @@ jobs:
           fi
           echo "Previous: $prev_status, now: $new_status (HTTP $code)"
 
-          jq -n --arg status "$new_status" --arg checked_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            '{status:$status, checked_at:$checked_at}' > "$STATE_FILE"
-
           if [ "$prev_status" != "$new_status" ]; then
+            # Only rewrite (and later commit) the state file on an actual
+            # transition -- otherwise checked_at would differ every single
+            # run and force a commit every 15 minutes for no real reason.
+            jq -n --arg status "$new_status" --arg checked_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              '{status:$status, checked_at:$checked_at}' > "$STATE_FILE"
             echo "transitioned=true" >> "$GITHUB_OUTPUT"
             echo "new_status=$new_status" >> "$GITHUB_OUTPUT"
           else
