@@ -1,0 +1,24 @@
+name = "gh-cron-dispatcher"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# GitHub's own `schedule:` cron trigger is unreliable (workflows silently
+# missing their windows for hours, see the incident that led to this worker)
+# -- Cloudflare's Cron Triggers are the reliable clock; this worker just
+# calls `workflow_dispatch` on the GitHub REST API, which has never failed
+# to fire on this repo (unlike `schedule`).
+triggers.crons = [
+  "7 * * * *",         # update-stats.yml -- hourly download stats sync
+  "7 11 * * *",        # whatsapp-report.yml -- daily WhatsApp status report
+  "4,19,34,49 * * * *" # uptime-monitor.yml -- pearos.xyz uptime check
+]
+
+# Secrets (set via `wrangler secret put`, NOT stored here):
+#   GITHUB_PAT - fine-grained PAT scoped to Pear-Project/web, Actions: Read and write
+
+[vars]
+GITHUB_OWNER = "Pear-Project"
+GITHUB_REPO = "web"
+
+[observability]
+enabled = true

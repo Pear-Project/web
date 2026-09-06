@@ -1,0 +1,16 @@
+{
+  "name": "gh-cron-dispatcher",
+  "version": "1.0.0",
+  "description": "Reliable Cloudflare Cron Trigger that dispatches Pear-Project/web's GitHub Actions workflows, standing in for GitHub's own unreliable `schedule:` trigger.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "wrangler": "^4.129.0"
+  }
+}
