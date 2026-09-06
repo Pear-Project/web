@@ -1,0 +1,29 @@
+name: Deploy Cloudflare Pages mirror
+
+# Keeps a full static copy of the site on Cloudflare Pages (a completely
+# separate hosting provider from GitHub Pages), as a failover if GitHub Pages
+# itself ever goes down. Runs on every push to main and can be re-run
+# manually.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking out source code
+        uses: actions/checkout@v4
+
+      - name: Build a clean copy (exclude repo/CI-only dirs)
+        run: |
+          mkdir -p /tmp/pages-mirror
+          rsync -a --exclude='.git' --exclude='.github' --exclude='cloudflare' --exclude='.DS_Store' \
+            ./ /tmp/pages-mirror/
+
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: npx wrangler pages deploy /tmp/pages-mirror --project-name=pearos-mirror --branch=main
