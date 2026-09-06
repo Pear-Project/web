@@ -465,17 +465,41 @@
       var bh=(v/max)*innerH;
       var x=PAD_L+i*barW;
       var y=PAD_T+innerH-bh;
-      return '<rect x="'+(x+1)+'" y="'+y+'" width="'+(barW-2)+'" height="'+bh+'" rx="2" fill="var(--primary)" opacity="'+(v===0?0.15:0.85)+'"><title>'+(i<10?'0'+i:i)+':00 UTC — '+v+' download'+(v===1?'':'s')+'</title></rect>';
+      var label=(i<10?'0'+i:i)+':00 UTC — '+v+' download'+(v===1?'':'s');
+      return '<rect class="hour-bar" data-label="'+label+'" x="'+(x+1)+'" y="'+y+'" width="'+(barW-2)+'" height="'+bh+'" rx="2" fill="var(--primary)" opacity="'+(v===0?0.15:0.85)+'"><title>'+label+'</title></rect>';
     }).join('');
     var labels=[0,6,12,18,23].map(function(i){
       var x=PAD_L+i*barW+barW/2;
       return '<text x="'+x+'" y="'+(H-4)+'" font-size="10" fill="var(--muted-foreground)" text-anchor="middle">'+(i<10?'0'+i:i)+'</text>';
     }).join('');
+    el.style.position='relative';
     el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" class="w-full h-auto" role="img" aria-label="Downloads by hour of day, UTC">'+
       '<line x1="'+PAD_L+'" y1="'+(PAD_T+innerH)+'" x2="'+(W-PAD_R)+'" y2="'+(PAD_T+innerH)+'" stroke="var(--border)" stroke-width="1"/>'+
       '<text x="2" y="'+(PAD_T+8)+'" font-size="10" fill="var(--muted-foreground)">'+max+'</text>'+
       bars+labels+
-    '</svg>';
+    '</svg>'+
+    '<div id="hour-tooltip" style="position:absolute;pointer-events:none;opacity:0;transition:opacity .1s;background:var(--popover);color:var(--popover-foreground);border:1px solid var(--border);border-radius:8px;padding:4px 9px;font-size:12px;font-weight:600;white-space:nowrap;transform:translate(-50%,-100%);z-index:10"></div>';
+
+    var svgEl=el.querySelector('svg');
+    var tooltip=el.querySelector('#hour-tooltip');
+    function showTooltip(rect,evt){
+      tooltip.textContent=rect.getAttribute('data-label');
+      tooltip.style.opacity='1';
+      var elRect=el.getBoundingClientRect();
+      tooltip.style.left=(evt.clientX-elRect.left)+'px';
+      tooltip.style.top=(rect.getBoundingClientRect().top-elRect.top-6)+'px';
+    }
+    svgEl.addEventListener('mouseover',function(e){
+      var rect=e.target.closest('.hour-bar');
+      if(rect) showTooltip(rect,e);
+    });
+    svgEl.addEventListener('mousemove',function(e){
+      var rect=e.target.closest('.hour-bar');
+      if(rect) showTooltip(rect,e);
+    });
+    svgEl.addEventListener('mouseout',function(e){
+      if(e.target.closest('.hour-bar')) tooltip.style.opacity='0';
+    });
   }
 
   fetch('../assets/data/download-stats.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(stats){
