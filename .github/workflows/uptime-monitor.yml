@@ -61,9 +61,10 @@ jobs:
             --form "message=$ALERT_MESSAGE")
           echo "$RESPONSE"
           # curl alone doesn't fail this step on a 200 that carries an error
-          # body (e.g. Whatser's own validation errors) -- check its JSON
-          # "success" field explicitly so a broken alert is loud, not silent.
-          echo "$RESPONSE" | jq -e '.success == true' > /dev/null
+          # body -- Whatser returns {"message_status":"Success",...} when it
+          # actually sent, or {"success":false,...} on a validation error, so
+          # check explicitly instead of trusting the HTTP status.
+          echo "$RESPONSE" | jq -e '.message_status == "Success"' > /dev/null
 
       - name: DNS failover to Cloudflare Pages mirror if GitHub Pages is down
         # Runs every check (not just on a transition) and is stateless -- it
