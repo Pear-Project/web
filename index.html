@@ -274,6 +274,11 @@
     buttons.forEach(function(btn,i){
       btn.addEventListener('mouseenter',function(){activate(i);});
       btn.addEventListener('focus',function(){activate(i);});
+      // mouseenter/focus alone means these only ever "worked" on desktop
+      // hover -- a real click did nothing (Clarity flagged it as a dead
+      // click), and touch devices had no way to switch tabs at all, since
+      // there's no hover concept on tap.
+      btn.addEventListener('click',function(){activate(i);});
     });
   }
   if(document.readyState==='loading'){
