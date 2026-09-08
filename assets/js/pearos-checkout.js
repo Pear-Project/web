@@ -8,15 +8,20 @@
   var FREEPOINT_ENDPOINT='https://iso.pearos.xyz/freepoint';
   var CURRENCY_ENDPOINT='https://iso.pearos.xyz/currency';
 
-  // Same numeric price, local symbol -- not a real FX conversion, just
-  // matches what most international SaaS does (Netflix/Spotify-style).
   // Derived server-side from the visitor's country (Cloudflare geo, no
-  // extra lookup needed) so the symbol shown here always matches the
-  // currency the /checkout endpoint actually charges in. Defaults to $
-  // until the (very fast, same-edge) lookup resolves.
+  // extra lookup needed) so what's shown here always matches what the
+  // /checkout endpoint actually charges. USD/EUR/GBP just reuse the same
+  // numeric price with a different symbol (Netflix/Spotify-style display
+  // pricing); INR/BRL aren't at parity with USD so they get their own
+  // rounded preset amounts from the server instead. Defaults to USD
+  // presets until the (very fast, same-edge) lookup resolves.
   var currencySymbol='$';
+  var presets=[299,499,999];
+  var minCents=100;
   fetch(CURRENCY_ENDPOINT).then(function(r){ return r.json(); }).then(function(d){
     if(d&&d.symbol) currencySymbol=d.symbol;
+    if(d&&Array.isArray(d.presets)&&d.presets.length===3) presets=d.presets;
+    if(d&&Number.isFinite(d.minCents)) minCents=d.minCents;
   }).catch(function(){});
 
   var CSS='\
@@ -60,15 +65,22 @@
     return overlay;
   }
 
+  // e.g. 24900 -> "₹249", 299 -> "$2.99" -- whole units stay whole (INR
+  // presets), fractional ones keep two decimals (everything else).
+  function fmtAmt(cents){
+    var v=cents/100;
+    return currencySymbol+(Number.isInteger(v)?String(v):v.toFixed(2));
+  }
+
   function pickerHtml(){
     var s=currencySymbol;
     return '<div class="pos-picker">'
       + '<h3>Support independent development</h3>'
       + '<p>Uncap maximum Cloudflare CDN download speeds and directly fund full-time development, updates, and infrastructure for pearOS.</p>'
       + '<div class="pos-amt-row">'
-      + '<button type="button" class="pos-amt-btn" data-amount="299">'+s+'2.99</button>'
-      + '<button type="button" class="pos-amt-btn recommended selected" data-amount="499"><span class="pos-badge">Popular</span>'+s+'4.99</button>'
-      + '<button type="button" class="pos-amt-btn" data-amount="999">'+s+'9.99</button>'
+      + '<button type="button" class="pos-amt-btn" data-amount="'+presets[0]+'">'+fmtAmt(presets[0])+'</button>'
+      + '<button type="button" class="pos-amt-btn recommended selected" data-amount="'+presets[1]+'"><span class="pos-badge">Popular</span>'+fmtAmt(presets[1])+'</button>'
+      + '<button type="button" class="pos-amt-btn" data-amount="'+presets[2]+'">'+fmtAmt(presets[2])+'</button>'
       + '</div>'
       + '<div class="pos-custom-row">'
       + '<input type="number" min="0" step="0.01" inputmode="decimal" class="pos-custom-input" id="pos-custom-amount" placeholder="Custom '+s+'"/>'
@@ -107,7 +119,7 @@
       function clearError(){ errorEl.hidden=true; }
 
       var amtBtns=body.querySelectorAll('.pos-amt-btn');
-      var selectedAmount=499; // matches the preset marked "selected" in pickerHtml()
+      var selectedAmount=presets[1]; // matches the preset marked "selected" in pickerHtml()
       amtBtns.forEach(function(btn){
         btn.addEventListener('click',function(){
           clearError();
@@ -174,8 +186,8 @@
         openFreeDownload(href);
         return;
       }
-      if(amountCents<100){
-        if(onError) onError('Minimum card amount is '+currencySymbol+'1.00. Choose "download free" instead for no charge.');
+      if(amountCents<minCents){
+        if(onError) onError('Minimum card amount is '+currencySymbol+(minCents/100).toFixed(2)+'. Choose "download free" instead for no charge.');
         return;
       }
       body.innerHTML='<div class="pos-loading">Loading checkout…</div>';

@@ -105,21 +105,40 @@ async function handleFreepoint(request, env) {
   return json({ url: downloadUrl, expires_at: exp }, 200, request, env);
 }
 
-// ---------- currency: same numeric price, local symbol (Netflix/Spotify-
-// ---------- style display pricing, not a real FX conversion) -- derived
-// ---------- server-side from Cloudflare's own request.cf.country so the
-// ---------- displayed currency and the one actually charged can never
-// ---------- drift apart, and a client can't just claim a cheaper one. ----
+// ---------- currency: derived server-side from Cloudflare's own
+// ---------- request.cf.country, so the displayed currency and the one
+// ---------- actually charged can never drift apart, and a client can't
+// ---------- just claim a cheaper one. ----
+//
+// USD/EUR/GBP are roughly at parity, so those three just reuse the same
+// numeric price with a different symbol (Netflix/Spotify-style display
+// pricing, not a real FX conversion). INR and BRL are NOT at parity --
+// "2.99" would be a meaningless amount in either -- so those get their
+// own rounded, locally-sensible preset amounts instead (approximate
+// purchasing-power equivalents, not a live FX rate; revisit occasionally
+// rather than wiring up a rate API for a $1-10 donation flow).
 
 const EUROZONE = new Set([
   "AT", "BE", "CY", "DE", "EE", "ES", "FI", "FR", "GR", "HR", "IE",
   "IT", "LT", "LU", "LV", "MT", "NL", "PT", "SI", "SK",
 ]);
 
+const CURRENCY_CONFIG = {
+  usd: { symbol: "$", presets: [299, 499, 999], minCents: 100 },
+  eur: { symbol: "€", presets: [299, 499, 999], minCents: 100 },
+  gbp: { symbol: "£", presets: [299, 499, 999], minCents: 100 },
+  // ~85 INR/USD -- 249/449/899 rupees, minimum ~1 USD equivalent
+  inr: { symbol: "₹", presets: [24900, 44900, 89900], minCents: 8500 },
+  // ~5.3 BRL/USD -- 14.99/24.99/49.99 reais, minimum ~1 USD equivalent
+  brl: { symbol: "R$", presets: [1499, 2499, 4999], minCents: 530 },
+};
+
 function currencyForCountry(country) {
-  if (country === "GB") return { code: "gbp", symbol: "£" };
-  if (EUROZONE.has(country)) return { code: "eur", symbol: "€" };
-  return { code: "usd", symbol: "$" };
+  if (country === "GB") return { code: "gbp", ...CURRENCY_CONFIG.gbp };
+  if (country === "IN") return { code: "inr", ...CURRENCY_CONFIG.inr };
+  if (country === "BR") return { code: "brl", ...CURRENCY_CONFIG.brl };
+  if (EUROZONE.has(country)) return { code: "eur", ...CURRENCY_CONFIG.eur };
+  return { code: "usd", ...CURRENCY_CONFIG.usd };
 }
 
 async function handleCurrency(request, env) {
@@ -138,8 +157,13 @@ async function handleCheckout(request, env) {
     return json({ error: "invalid_json" }, 400, request, env);
   }
 
+  const country = (request.cf && request.cf.country) || "XX";
+  const { code: currency, minCents } = currencyForCountry(country);
+
   const amountCents = Math.round(Number(body && body.amount_cents));
-  if (!Number.isFinite(amountCents) || amountCents < 100 || amountCents > 100000000) {
+  // Upper bound is a flat anti-abuse ceiling (not currency-scaled) --
+  // 100,000,000 of any of these smallest units is absurdly high regardless.
+  if (!Number.isFinite(amountCents) || amountCents < minCents || amountCents > 100000000) {
     return json({ error: "invalid_amount" }, 400, request, env);
   }
 
@@ -148,9 +172,6 @@ async function handleCheckout(request, env) {
   const returnUrl = validFile
     ? `https://pearos.xyz/thank-you/?session_id={CHECKOUT_SESSION_ID}&file=${encodeURIComponent(file)}`
     : "https://pearos.xyz/thank-you/?session_id={CHECKOUT_SESSION_ID}";
-
-  const country = (request.cf && request.cf.country) || "XX";
-  const { code: currency } = currencyForCountry(country);
 
   const params = new URLSearchParams({
     mode: "payment",
