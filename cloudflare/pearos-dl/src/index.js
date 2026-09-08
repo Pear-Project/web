@@ -17,6 +17,10 @@ export default {
       return handleCheckout(request, env);
     }
 
+    if (url.pathname === "/currency" && request.method === "GET") {
+      return handleCurrency(request, env);
+    }
+
     if (url.pathname === "/freepoint" && request.method === "POST") {
       return handleFreepoint(request, env);
     }
@@ -101,6 +105,28 @@ async function handleFreepoint(request, env) {
   return json({ url: downloadUrl, expires_at: exp }, 200, request, env);
 }
 
+// ---------- currency: same numeric price, local symbol (Netflix/Spotify-
+// ---------- style display pricing, not a real FX conversion) -- derived
+// ---------- server-side from Cloudflare's own request.cf.country so the
+// ---------- displayed currency and the one actually charged can never
+// ---------- drift apart, and a client can't just claim a cheaper one. ----
+
+const EUROZONE = new Set([
+  "AT", "BE", "CY", "DE", "EE", "ES", "FI", "FR", "GR", "HR", "IE",
+  "IT", "LT", "LU", "LV", "MT", "NL", "PT", "SI", "SK",
+]);
+
+function currencyForCountry(country) {
+  if (country === "GB") return { code: "gbp", symbol: "£" };
+  if (EUROZONE.has(country)) return { code: "eur", symbol: "€" };
+  return { code: "usd", symbol: "$" };
+}
+
+async function handleCurrency(request, env) {
+  const country = (request.cf && request.cf.country) || "XX";
+  return json(currencyForCountry(country), 200, request, env);
+}
+
 // ---------- /checkout: create a Stripe Embedded Checkout session for a ----
 // ---------- custom "pay what you want" donation amount ----------
 
@@ -123,12 +149,15 @@ async function handleCheckout(request, env) {
     ? `https://pearos.xyz/thank-you/?session_id={CHECKOUT_SESSION_ID}&file=${encodeURIComponent(file)}`
     : "https://pearos.xyz/thank-you/?session_id={CHECKOUT_SESSION_ID}";
 
+  const country = (request.cf && request.cf.country) || "XX";
+  const { code: currency } = currencyForCountry(country);
+
   const params = new URLSearchParams({
     mode: "payment",
     ui_mode: "embedded",
     "return_url": returnUrl,
     "line_items[0][quantity]": "1",
-    "line_items[0][price_data][currency]": "usd",
+    "line_items[0][price_data][currency]": currency,
     "line_items[0][price_data][unit_amount]": String(amountCents),
     "line_items[0][price_data][product_data][name]": "pearOS Donation",
   });

@@ -6,6 +6,18 @@
   var STRIPE_PK='pk_live_51NGnKkKJo0lESPTlDtEcHw0Vz9REWIUofe2yc2eGflq2P4397lFszSR9IOZm5VIRns0gVovA9lGUr7nW5XPIJwhj008SkTtvca';
   var CHECKOUT_ENDPOINT='https://iso.pearos.xyz/checkout';
   var FREEPOINT_ENDPOINT='https://iso.pearos.xyz/freepoint';
+  var CURRENCY_ENDPOINT='https://iso.pearos.xyz/currency';
+
+  // Same numeric price, local symbol -- not a real FX conversion, just
+  // matches what most international SaaS does (Netflix/Spotify-style).
+  // Derived server-side from the visitor's country (Cloudflare geo, no
+  // extra lookup needed) so the symbol shown here always matches the
+  // currency the /checkout endpoint actually charges in. Defaults to $
+  // until the (very fast, same-edge) lookup resolves.
+  var currencySymbol='$';
+  fetch(CURRENCY_ENDPOINT).then(function(r){ return r.json(); }).then(function(d){
+    if(d&&d.symbol) currencySymbol=d.symbol;
+  }).catch(function(){});
 
   var CSS='\
 .pos-modal-overlay{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:20px}\
@@ -49,16 +61,17 @@
   }
 
   function pickerHtml(){
+    var s=currencySymbol;
     return '<div class="pos-picker">'
       + '<h3>Support independent development</h3>'
       + '<p>Uncap maximum Cloudflare CDN download speeds and directly fund full-time development, updates, and infrastructure for pearOS.</p>'
       + '<div class="pos-amt-row">'
-      + '<button type="button" class="pos-amt-btn" data-amount="299">$2.99</button>'
-      + '<button type="button" class="pos-amt-btn recommended selected" data-amount="499"><span class="pos-badge">Popular</span>$4.99</button>'
-      + '<button type="button" class="pos-amt-btn" data-amount="999">$9.99</button>'
+      + '<button type="button" class="pos-amt-btn" data-amount="299">'+s+'2.99</button>'
+      + '<button type="button" class="pos-amt-btn recommended selected" data-amount="499"><span class="pos-badge">Popular</span>'+s+'4.99</button>'
+      + '<button type="button" class="pos-amt-btn" data-amount="999">'+s+'9.99</button>'
       + '</div>'
       + '<div class="pos-custom-row">'
-      + '<input type="number" min="0" step="0.01" inputmode="decimal" class="pos-custom-input" id="pos-custom-amount" placeholder="Custom $"/>'
+      + '<input type="number" min="0" step="0.01" inputmode="decimal" class="pos-custom-input" id="pos-custom-amount" placeholder="Custom '+s+'"/>'
       + '<button type="button" class="pos-go-btn" id="pos-custom-go">Go</button>'
       + '</div>'
       + '<p class="pos-error" id="pos-error" hidden></p>'
@@ -162,7 +175,7 @@
         return;
       }
       if(amountCents<100){
-        if(onError) onError('Minimum card amount is $1.00. Choose "download free" instead for no charge.');
+        if(onError) onError('Minimum card amount is '+currencySymbol+'1.00. Choose "download free" instead for no charge.');
         return;
       }
       body.innerHTML='<div class="pos-loading">Loading checkout…</div>';
