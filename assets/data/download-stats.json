@@ -1,14 +1,20 @@
 {
-  "generated_at": "2026-09-09T09:07:48Z",
-  "total_all_time": 3198,
-  "last_30d": 3198,
-  "last_24h": 839,
+  "generated_at": "2026-09-09T09:36:19Z",
+  "total_all_time": 3217,
+  "last_30d": 3217,
+  "last_24h": 825,
   "by_file": [
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": "5",
-      "bytes": 11156848640
+      "downloads": "15",
+      "bytes": 33470545920
+    },
+    {
+      "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
+      "tier": "paid",
+      "downloads": "3",
+      "bytes": 6473760768
     },
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
@@ -18,27 +24,21 @@
     },
     {
       "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
-      "tier": "free",
-      "downloads": "2357",
-      "bytes": 7916995407872
+      "tier": "paid",
+      "downloads": "17",
+      "bytes": 57101791232
     },
     {
-      "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
-      "tier": "paid",
-      "downloads": "3",
-      "bytes": 6473760768
+      "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
+      "tier": "free",
+      "downloads": "2366",
+      "bytes": 7947225767936
     },
     {
       "file": "iso/health.check",
       "tier": "free",
       "downloads": "2",
       "bytes": 6
-    },
-    {
-      "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
-      "tier": "paid",
-      "downloads": "17",
-      "bytes": 57101791232
     }
   ],
   "daily": [
@@ -85,7 +85,7 @@
     {
       "date": "2026-09-09",
       "tier": "free",
-      "downloads": 249
+      "downloads": 268
     },
     {
       "date": "2026-09-09",
@@ -96,11 +96,11 @@
   "by_country": [
     {
       "country": "US",
-      "downloads": 498
+      "downloads": 499
     },
     {
       "country": "IN",
-      "downloads": 354
+      "downloads": 356
     },
     {
       "country": "BR",
@@ -112,7 +112,7 @@
     },
     {
       "country": "FR",
-      "downloads": 132
+      "downloads": 135
     },
     {
       "country": "ID",
@@ -138,7 +138,7 @@
   "by_referrer": [
     {
       "referrer": "pearos.xyz",
-      "downloads": 2931
+      "downloads": 2950
     },
     {
       "referrer": "direct",
@@ -196,7 +196,7 @@
     },
     {
       "hour": 9,
-      "downloads": 117
+      "downloads": 136
     },
     {
       "hour": 10,
