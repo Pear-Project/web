@@ -163,6 +163,20 @@
     var tbody=document.getElementById('nicecore-versions-table');
     if(!tbody) return;
     var COPY_ICON='<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy size-3"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>';
+    var CLOCK_ICON='<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock size-3.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
+    function retireCountdown(retireAt){
+      var diff=new Date(retireAt).getTime()-Date.now();
+      if(diff<=0) return 'Removing shortly';
+      var totalMinutes=Math.floor(diff/60000);
+      var hh=Math.floor(totalMinutes/60);
+      var mm=totalMinutes%60;
+      return 'Removed from R2 in '+hh+':'+String(mm).padStart(2,'0')+' (HH:mm)';
+    }
+    function refreshRetireTooltips(){
+      document.querySelectorAll('.retire-clock').forEach(function(el){
+        el.setAttribute('title',retireCountdown(el.getAttribute('data-retire-at')));
+      });
+    }
     fetch('../assets/data/nicecore-versions.json', {cache: 'no-store'}).then(function(r){return r.json();}).then(function(versions){
       tbody.innerHTML=versions.map(function(v){
         var available=v.status==='Available';
@@ -175,8 +189,13 @@
         var downloadCell=available
           ? '<a class="inline-flex items-center justify-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90" href="'+v.download+'" target="_blank" rel="noopener noreferrer">Download</a>'
           : '<span class="text-muted-foreground text-xs">\u2014</span>';
-        return '<tr><td class="px-4 py-3 font-medium">'+v.name+'</td><td class="px-4 py-3">'+statusBadge+'</td><td class="text-muted-foreground px-4 py-3 text-xs">'+sizeCell+'</td><td class="px-4 py-3">'+shaCell+'</td><td class="px-4 py-3 text-right">'+downloadCell+'</td></tr>';
+        var retireClock=v.retire_at
+          ? '<span class="retire-clock inline-flex align-middle ml-1.5 text-muted-foreground" data-retire-at="'+v.retire_at+'">'+CLOCK_ICON+'</span>'
+          : '';
+        return '<tr><td class="px-4 py-3 font-medium">'+v.name+retireClock+'</td><td class="px-4 py-3">'+statusBadge+'</td><td class="text-muted-foreground px-4 py-3 text-xs">'+sizeCell+'</td><td class="px-4 py-3">'+shaCell+'</td><td class="px-4 py-3 text-right">'+downloadCell+'</td></tr>';
       }).join('');
+      refreshRetireTooltips();
+      setInterval(refreshRetireTooltips,60000);
     }).catch(function(){
       tbody.innerHTML='<tr><td class="text-muted-foreground px-4 py-3 text-sm" colspan="5">Could not load version list.</td></tr>';
     });
