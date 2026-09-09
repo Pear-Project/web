@@ -194,10 +194,9 @@
         var downloadCell=available
           ? '<a class="inline-flex items-center justify-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90" href="'+v.download+'" target="_blank" rel="noopener noreferrer">Download</a>'
           : '<span class="text-muted-foreground text-xs">\u2014</span>';
-        var retireClock=v.retire_at
-          ? '<span class="retire-clock mt-1 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium" style="background:color-mix(in oklab, var(--chart-4) 18%, transparent);color:var(--chart-4)" data-retire-at="'+v.retire_at+'">'+CLOCK_ICON+'<span class="retire-clock-text"></span></span>'
-          : '';
-        var statusCell='<div class="flex flex-col items-start gap-1">'+statusBadge+retireClock+'</div>';
+        var statusCell=v.retire_at
+          ? '<span class="retire-clock inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium" style="background:color-mix(in oklab, var(--chart-4) 18%, transparent);color:var(--chart-4)" data-retire-at="'+v.retire_at+'">'+CLOCK_ICON+'<span class="retire-clock-text"></span></span>'
+          : statusBadge;
         return '<tr><td class="px-4 py-3 font-medium">'+v.name+'</td><td class="px-4 py-3">'+statusCell+'</td><td class="text-muted-foreground px-4 py-3 text-xs">'+sizeCell+'</td><td class="px-4 py-3">'+shaCell+'</td><td class="px-4 py-3 text-right">'+downloadCell+'</td></tr>';
       }).join('');
       refreshRetireTooltips();
