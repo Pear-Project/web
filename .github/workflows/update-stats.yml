@@ -108,7 +108,7 @@ jobs:
       - name: Commit and push if changed
         run: |
           git config user.name "pearOS build bot"
-          git config user.email "actions@users.noreply.github.com"
+          git config user.email "327192259+pear-software@users.noreply.github.com"
 
           if git diff --quiet -- assets/data/download-stats.json assets/data/download-chart.png; then
             echo "Stats unchanged, nothing to commit."
