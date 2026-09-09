@@ -8,11 +8,12 @@ download URL and sha256 are always derived from it directly -- no more
 guessing/hardcoding a filename pattern that breaks when the month rolls
 over.
 
-When the filename changes (new month), the previous entry is kept around
-as its own row (e.g. "NiceC0re (2026.08)") with a `retire_at` timestamp 15
-days out, so the old ISO stays downloadable during the transition. Any row
-whose `retire_at` has passed gets its R2 object deleted and is dropped from
-the table.
+The row's name always includes the version straight from the filename
+(e.g. "NiceC0re 26.09"). When the filename changes (new month), the
+previous entry is kept around as its own row (e.g. "NiceC0re 26.08") with
+a `retire_at` timestamp 15 days out, so the old ISO stays downloadable
+during the transition. Any row whose `retire_at` has passed gets its R2
+object deleted and is dropped from the table.
 """
 import datetime
 import json
@@ -55,6 +56,13 @@ def extract_version(filename):
     return m.group(1) if m else filename
 
 
+def short_version(full_version):
+    # "2026.08" -> "26.08" (drop the century, matches how the site refers
+    # to releases elsewhere)
+    m = re.match(r"^\d{2}(\d{2}\.\d{2})$", full_version)
+    return m.group(1) if m else full_version
+
+
 def delete_r2_object(key, account_id, api_token):
     url = f"{CF_API_BASE}/accounts/{account_id}/r2/buckets/{R2_BUCKET}/objects/{key}"
     req = urllib.request.Request(
@@ -91,13 +99,16 @@ def main():
     with open(VERSIONS_PATH) as f:
         versions = json.load(f)
 
-    main_idx = next((i for i, v in enumerate(versions) if v.get("name") == "NiceC0re"), None)
+    # The main entry is whichever row has no retire_at -- retired rows always
+    # carry one, so this holds even as `name` itself changes every month.
+    main_idx = next((i for i, v in enumerate(versions) if "retire_at" not in v), None)
     if main_idx is None:
-        print('[ ERR ]: No "NiceC0re" entry found in nicecore-versions.json')
+        print('[ ERR ]: No active NiceC0re entry found in nicecore-versions.json')
         sys.exit(1)
     main_entry = versions[main_idx]
 
     old_filename = os.path.basename(main_entry.get("download", ""))
+    new_name = f"NiceC0re {short_version(extract_version(new_filename))}"
     changed = False
 
     if old_filename and old_filename != new_filename:
@@ -106,7 +117,7 @@ def main():
             + datetime.timedelta(days=RETIRE_AFTER_DAYS)
         ).strftime("%Y-%m-%dT%H:%M:%SZ")
         retired_entry = {
-            "name": f"NiceC0re ({extract_version(old_filename)})",
+            "name": main_entry.get("name", "NiceC0re"),
             "status": main_entry.get("status", "Available"),
             "size": main_entry.get("size"),
             "sha256": main_entry.get("sha256"),
@@ -122,7 +133,9 @@ def main():
     new_size_bytes = fetch_content_length(new_download)
     new_size = format_size(new_size_bytes)
 
-    if main_entry.get("sha256") != new_sha or main_entry.get("size") != new_size or main_entry.get("download") != new_download:
+    if (main_entry.get("sha256") != new_sha or main_entry.get("size") != new_size
+            or main_entry.get("download") != new_download or main_entry.get("name") != new_name):
+        main_entry["name"] = new_name
         main_entry["sha256"] = new_sha
         main_entry["size"] = new_size
         main_entry["download"] = new_download

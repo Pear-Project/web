@@ -166,15 +166,20 @@
     var CLOCK_ICON='<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock size-3.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
     function retireCountdown(retireAt){
       var diff=new Date(retireAt).getTime()-Date.now();
-      if(diff<=0) return 'Removing shortly';
+      if(diff<=0) return {short:'Removing shortly',full:'Removing shortly'};
       var totalMinutes=Math.floor(diff/60000);
-      var hh=Math.floor(totalMinutes/60);
-      var mm=totalMinutes%60;
-      return 'Removed from R2 in '+hh+':'+String(mm).padStart(2,'0')+' (HH:mm)';
+      var days=Math.floor(totalMinutes/1440);
+      var hours=Math.floor((totalMinutes%1440)/60);
+      var minutes=totalMinutes%60;
+      var short=days>0?(days+'d '+hours+'h'):(hours+':'+String(minutes).padStart(2,'0'));
+      return {short:short,full:'Removed from R2 in '+days+'d '+hours+'h '+minutes+'m'};
     }
     function refreshRetireTooltips(){
       document.querySelectorAll('.retire-clock').forEach(function(el){
-        el.setAttribute('title',retireCountdown(el.getAttribute('data-retire-at')));
+        var countdown=retireCountdown(el.getAttribute('data-retire-at'));
+        el.setAttribute('title',countdown.full);
+        var text=el.querySelector('.retire-clock-text');
+        if(text) text.textContent=countdown.short;
       });
     }
     fetch('../assets/data/nicecore-versions.json', {cache: 'no-store'}).then(function(r){return r.json();}).then(function(versions){
@@ -190,9 +195,10 @@
           ? '<a class="inline-flex items-center justify-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90" href="'+v.download+'" target="_blank" rel="noopener noreferrer">Download</a>'
           : '<span class="text-muted-foreground text-xs">\u2014</span>';
         var retireClock=v.retire_at
-          ? '<span class="retire-clock inline-flex align-middle ml-1.5 text-muted-foreground" data-retire-at="'+v.retire_at+'">'+CLOCK_ICON+'</span>'
+          ? '<span class="retire-clock mt-1 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium" style="background:color-mix(in oklab, var(--chart-4) 18%, transparent);color:var(--chart-4)" data-retire-at="'+v.retire_at+'">'+CLOCK_ICON+'<span class="retire-clock-text"></span></span>'
           : '';
-        return '<tr><td class="px-4 py-3 font-medium">'+v.name+retireClock+'</td><td class="px-4 py-3">'+statusBadge+'</td><td class="text-muted-foreground px-4 py-3 text-xs">'+sizeCell+'</td><td class="px-4 py-3">'+shaCell+'</td><td class="px-4 py-3 text-right">'+downloadCell+'</td></tr>';
+        var statusCell='<div class="flex flex-col items-start gap-1">'+statusBadge+retireClock+'</div>';
+        return '<tr><td class="px-4 py-3 font-medium">'+v.name+'</td><td class="px-4 py-3">'+statusCell+'</td><td class="text-muted-foreground px-4 py-3 text-xs">'+sizeCell+'</td><td class="px-4 py-3">'+shaCell+'</td><td class="px-4 py-3 text-right">'+downloadCell+'</td></tr>';
       }).join('');
       refreshRetireTooltips();
       setInterval(refreshRetireTooltips,60000);
