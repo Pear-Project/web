@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-09-09T23:07:12Z",
-  "total_all_time": 3838,
-  "last_30d": 3838,
-  "last_24h": 912,
+  "generated_at": "2026-09-10T00:05:24Z",
+  "total_all_time": 3861,
+  "last_30d": 3861,
+  "last_24h": 909,
   "by_file": [
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": "157",
-      "bytes": 350325047296
+      "downloads": "164",
+      "bytes": 365944635392
     },
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
@@ -30,9 +30,15 @@
     },
     {
       "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
+      "tier": "paid",
+      "downloads": "2",
+      "bytes": 6751281152
+    },
+    {
+      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": "82",
-      "bytes": 276802527232
+      "downloads": "96",
+      "bytes": 324061495296
     },
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
@@ -97,18 +103,23 @@
     {
       "date": "2026-09-09",
       "tier": "free",
-      "downloads": 888
+      "downloads": 906
     },
     {
       "date": "2026-09-09",
       "tier": "paid",
-      "downloads": 4
+      "downloads": 6
+    },
+    {
+      "date": "2026-09-10",
+      "tier": "free",
+      "downloads": 3
     }
   ],
   "by_country": [
     {
       "country": "US",
-      "downloads": 664
+      "downloads": 671
     },
     {
       "country": "IN",
@@ -116,7 +127,7 @@
     },
     {
       "country": "BR",
-      "downloads": 218
+      "downloads": 226
     },
     {
       "country": "DE",
@@ -128,7 +139,7 @@
     },
     {
       "country": "ID",
-      "downloads": 128
+      "downloads": 134
     },
     {
       "country": "ES",
@@ -150,11 +161,11 @@
   "by_referrer": [
     {
       "referrer": "pearos.xyz",
-      "downloads": 3437
+      "downloads": 3454
     },
     {
       "referrer": "direct",
-      "downloads": 308
+      "downloads": 314
     },
     {
       "referrer": "iso.pearos.xyz",
@@ -172,7 +183,7 @@
   "by_hour": [
     {
       "hour": 0,
-      "downloads": 101
+      "downloads": 104
     },
     {
       "hour": 1,
@@ -264,7 +275,7 @@
     },
     {
       "hour": 23,
-      "downloads": 104
+      "downloads": 124
     }
   ],
   "friend_all_time": 0,
