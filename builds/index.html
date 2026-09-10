@@ -45,7 +45,19 @@
       document.head.appendChild(ga);
       gtag('config',ids.ga);
     }
-// Microsoft Clarity
+    // AdSense
+    if(live(ids.adsense)){
+      var ad=document.createElement('script');ad.async=true;ad.crossOrigin='anonymous';
+      ad.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ids.adsense;
+      document.head.appendChild(ad);
+      // Auto Ads is enabled from the AdSense account dashboard itself, which
+      // makes adsbygoogle.js auto-initialize page-level ads on load. Do NOT
+      // also push {enable_page_level_ads:true} here — that fires it a second
+      // time and throws "Only one 'enable_page_level_ads' allowed per page".
+      // Manual <ins class="adsbygoogle"> slots elsewhere on the page still
+      // work fine, they push their own empty {} independently of this.
+    }
+    // Microsoft Clarity
     if(live(ids.clarity))
     (function(c,l,a,r,i,t,y){
       c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -433,7 +445,7 @@
   }else{
     init();
   }
-})();</script><div class="nc-ad-side nc-ad-side-left"><span class="nc-ad-label">Advertisement</span><script>ezstandalone.cmd.push(function(){ezstandalone.showAds({});});</script></div><div class="nc-ad-side nc-ad-side-right"><span class="nc-ad-label">Advertisement</span><script>ezstandalone.cmd.push(function(){ezstandalone.showAds({});});</script></div><div id="nc-ad-bottom" class="nc-ad-bottom-ready"><script>ezstandalone.cmd.push(function(){ezstandalone.showAds({});});</script><button type="button" id="nc-ad-bottom-close" aria-label="Dismiss">&times;</button></div><script>document.getElementById("nc-ad-bottom-close").addEventListener("click",function(){document.getElementById("nc-ad-bottom").style.display="none";});</script><script src="https://js.stripe.com/v3/"></script><script src="../assets/js/pearos-checkout.js" defer></script><script>var NC_ASSETS_PREFIX="../";</script><script>// Ad-blocker detection, layered:
+})();</script><div class="nc-ad-side nc-ad-side-left"><span class="nc-ad-label">Advertisement</span><ins class="adsbygoogle" style="display:block;width:100%" data-ad-client="ca-pub-2120727219771886" data-ad-slot="6266534173" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(function(){var p=function(){(adsbygoogle=window.adsbygoogle||[]).push({});};if(document.readyState==="complete")p();else window.addEventListener("load",p);})();</script></div><div class="nc-ad-side nc-ad-side-right"><span class="nc-ad-label">Advertisement</span><ins class="adsbygoogle" style="display:block;width:100%" data-ad-client="ca-pub-2120727219771886" data-ad-slot="4245775417" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(function(){var p=function(){(adsbygoogle=window.adsbygoogle||[]).push({});};if(document.readyState==="complete")p();else window.addEventListener("load",p);})();</script></div><div id="nc-ad-bottom" class="nc-ad-bottom-ready"><ins class="adsbygoogle" style="display:inline-block;width:468px;height:60px" data-ad-client="ca-pub-2120727219771886" data-ad-slot="5311445079"></ins><script>(function(){var p=function(){(adsbygoogle=window.adsbygoogle||[]).push({});};if(document.readyState==="complete")p();else window.addEventListener("load",p);})();</script><button type="button" id="nc-ad-bottom-close" aria-label="Dismiss">&times;</button></div><script>document.getElementById("nc-ad-bottom-close").addEventListener("click",function(){document.getElementById("nc-ad-bottom").style.display="none";});</script><script src="https://js.stripe.com/v3/"></script><script src="../assets/js/pearos-checkout.js" defer></script><script>var NC_ASSETS_PREFIX="../";</script><script>// Ad-blocker detection, layered:
 // 1. Real network requests to known third-party ad domains (googlesyndication,
 //    doubleclick).
 // 2. Same-origin requests to files literally named ads.js / advertisement.js.
@@ -586,9 +598,7 @@
   var baitUrls = [
     'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js',
     'https://www.googletagservices.com/tag/js/gpt.js',
-    'https://googleads.g.doubleclick.net/pagead/id',
-    'https://www.ezojs.com/ezoic/sa.min.js',
-    'https://ezoicanalytics.com/analytics.js'
+    'https://googleads.g.doubleclick.net/pagead/id'
   ];
   baitUrls.forEach(function (url) {
     fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
@@ -602,11 +612,6 @@
   probe.async = true;
   probe.onerror = showWall;
   document.head.appendChild(probe);
-  var ezProbe = document.createElement('script');
-  ezProbe.src = 'https://www.ezojs.com/ezoic/sa.min.js?nc_probe=1';
-  ezProbe.async = true;
-  ezProbe.onerror = showWall;
-  document.head.appendChild(ezProbe);
 
   // --- signal 2: same-origin bait files named like generic ad scripts.
   // Resolved off ASSETS_BASE so this fires the same way regardless of page
