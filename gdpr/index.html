@@ -365,7 +365,9 @@
   var baitUrls = [
     'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js',
     'https://www.googletagservices.com/tag/js/gpt.js',
-    'https://googleads.g.doubleclick.net/pagead/id'
+    'https://googleads.g.doubleclick.net/pagead/id',
+    'https://www.ezojs.com/ezoic/sa.min.js',
+    'https://ezoicanalytics.com/analytics.js'
   ];
   baitUrls.forEach(function (url) {
     fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
@@ -379,6 +381,11 @@
   probe.async = true;
   probe.onerror = showWall;
   document.head.appendChild(probe);
+  var ezProbe = document.createElement('script');
+  ezProbe.src = 'https://www.ezojs.com/ezoic/sa.min.js?nc_probe=1';
+  ezProbe.async = true;
+  ezProbe.onerror = showWall;
+  document.head.appendChild(ezProbe);
 
   // --- signal 2: same-origin bait files named like generic ad scripts.
   // Resolved off ASSETS_BASE so this fires the same way regardless of page
