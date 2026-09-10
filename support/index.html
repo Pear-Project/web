@@ -366,17 +366,7 @@
     fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
       .catch(function () { showWall(); });
   });
-  var probe = document.createElement('script');
-  probe.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?nc_probe=1';
-  probe.async = true;
-  probe.onerror = showWall;
-  document.head.appendChild(probe);
-  var ezProbe = document.createElement('script');
-  ezProbe.src = 'https://www.ezojs.com/ezoic/sa.min.js?nc_probe=1';
-  ezProbe.async = true;
-  ezProbe.onerror = showWall;
-  document.head.appendChild(ezProbe);
-
+  
   [ASSETS_BASE + 'ads.js', ASSETS_BASE + 'advertisement.js'].forEach(function (path) {
     fetch(path, { cache: 'no-store' })
       .then(function (r) { if (!r.ok) showWall(); })
