@@ -60,12 +60,6 @@
       document.head.appendChild(ga);
       gtag('config',ids.ga);
     }
-    // AdSense
-    if(live(ids.adsense)){
-      var ad=document.createElement('script');ad.async=true;ad.crossOrigin='anonymous';
-      ad.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ids.adsense;
-      document.head.appendChild(ad);
-    }
     // Microsoft Clarity
     if(live(ids.clarity))
     (function(c,l,a,r,i,t,y){
@@ -686,18 +680,15 @@
   var baitUrls = [
     'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js',
     'https://www.googletagservices.com/tag/js/gpt.js',
-    'https://googleads.g.doubleclick.net/pagead/id'
+    'https://googleads.g.doubleclick.net/pagead/id',
+    'https://www.ezojs.com/ezoic/sa.min.js',
+    'https://ezoicanalytics.com/analytics.js'
   ];
   baitUrls.forEach(function (url) {
     fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
       .catch(function () { showWall(); });
   });
-  var probe = document.createElement('script');
-  probe.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?nc_probe=1';
-  probe.async = true;
-  probe.onerror = showWall;
-  document.head.appendChild(probe);
-
+  
   [ASSETS_BASE + 'ads.js', ASSETS_BASE + 'advertisement.js'].forEach(function (path) {
     fetch(path, { cache: 'no-store' })
       .then(function (r) { if (!r.ok) showWall(); })
