@@ -33,6 +33,10 @@ export default {
       return handleDistrowatchBadge(request, ctx);
     }
 
+    if (url.pathname === "/revenue" && request.method === "GET") {
+      return handleRevenue(request, env, ctx);
+    }
+
     return new Response("Not found", { status: 404 });
   },
 };
@@ -413,6 +417,80 @@ async function handleDistrowatchBadge(request, ctx) {
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "public, max-age=21600", // 6h: DistroWatch itself only updates ~daily
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+  ctx.waitUntil(cache.put(cacheKey, response.clone()));
+  return response;
+}
+
+// ---------- /revenue: aggregated Stripe totals for the public stats page ----
+//
+// Public and unauthenticated on purpose -- the numbers it returns (donation
+// totals by currency, no card/customer/session details) are meant to be
+// shown on /stats/ anyway, so gating the read would just move the same data
+// behind a secret the stats-sync GitHub Action would then also need. Edge
+// caching is what actually matters here: it keeps a public route from
+// hammering the Stripe API on every hit instead of once per cache window.
+
+const REVENUE_CACHE_TTL_SECONDS = 900; // 15m -- frequent enough for a stats page, rare enough Stripe never notices
+
+async function handleRevenue(request, env, ctx) {
+  const cacheKey = new Request("https://iso.pearos.xyz/revenue", request);
+  const cache = caches.default;
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+
+  const nowSec = Math.floor(Date.now() / 1000);
+  const since30d = nowSec - 30 * 86400;
+  const since24h = nowSec - 86400;
+
+  // Charges (not just PaymentIntents) carry `amount_refunded` directly, so a
+  // partial refund nets out without a second API call. Paginated because a
+  // single /v1/charges page caps at 100 -- 10 pages is far more than this
+  // donation volume will ever produce, but keeps a runaway account from
+  // making this handler loop forever.
+  let charges = [];
+  let startingAfter;
+  for (let page = 0; page < 10; page++) {
+    const params = new URLSearchParams({ limit: "100" });
+    if (startingAfter) params.set("starting_after", startingAfter);
+    const res = await fetch(`https://api.stripe.com/v1/charges?${params}`, {
+      headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` },
+    });
+    if (!res.ok) break;
+    const data = await res.json();
+    charges = charges.concat(data.data);
+    if (!data.has_more || data.data.length === 0) break;
+    startingAfter = data.data[data.data.length - 1].id;
+  }
+
+  // paid && !refunded keeps fully-refunded charges out entirely; a partial
+  // refund still counts, net of the refunded amount, via amount_refunded.
+  const succeeded = charges.filter((c) => c.paid && c.status === "succeeded" && !c.refunded);
+
+  function aggregate(list) {
+    const byCurrency = {};
+    for (const c of list) {
+      const cur = c.currency;
+      if (!byCurrency[cur]) byCurrency[cur] = { amount_cents: 0, count: 0 };
+      byCurrency[cur].amount_cents += c.amount - (c.amount_refunded || 0);
+      byCurrency[cur].count += 1;
+    }
+    return byCurrency;
+  }
+
+  const result = {
+    generated_at: new Date().toISOString(),
+    all_time: aggregate(succeeded),
+    last_30d: aggregate(succeeded.filter((c) => c.created >= since30d)),
+    last_24h: aggregate(succeeded.filter((c) => c.created >= since24h)),
+  };
+
+  const response = new Response(JSON.stringify(result), {
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": `public, max-age=${REVENUE_CACHE_TTL_SECONDS}`,
       "Access-Control-Allow-Origin": "*",
     },
   });
