@@ -365,15 +365,21 @@
   var baitUrls = [
     'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js',
     'https://www.googletagservices.com/tag/js/gpt.js',
-    'https://googleads.g.doubleclick.net/pagead/id',
-    'https://www.ezojs.com/ezoic/sa.min.js',
-    'https://ezoicanalytics.com/analytics.js'
+    'https://googleads.g.doubleclick.net/pagead/id'
   ];
   baitUrls.forEach(function (url) {
     fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
       .catch(function () { showWall(); });
   });
-    
+  // belt-and-suspenders: a real <script> tag pointing at the AdSense loader.
+  // onerror fires when the network request itself is blocked (ERR_BLOCKED
+  // BY_CLIENT), which is exactly what ad blockers do to this URL.
+  var probe = document.createElement('script');
+  probe.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?nc_probe=1';
+  probe.async = true;
+  probe.onerror = showWall;
+  document.head.appendChild(probe);
+
   // --- signal 2: same-origin bait files named like generic ad scripts.
   // Resolved off ASSETS_BASE so this fires the same way regardless of page
   // depth or whether the site sits at a domain root or a subfolder. ---
