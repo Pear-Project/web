@@ -223,9 +223,7 @@
       <thead><tr><th>Currency</th><th>Last 24h</th><th>Last 30 days</th><th>All-time</th></tr></thead>
       <tbody id="stats-revenue-body"><tr><td colspan="4" class="text-muted-foreground text-center py-8">Loading…</td></tr></tbody>
     </table>
-  </div>
-  <p class="text-muted-foreground mt-2 text-xs">Gross amounts from succeeded Stripe charges, net of refunds. USD/EUR/GBP are priced at numeric parity on checkout (see donate page), not converted at a live FX rate -- so summing them into one figure would be misleading; each currency is its own row instead.</p>
-</div>
+  </div></div>
 
 <div class="mt-10 grid gap-6 md:grid-cols-2">
   <div>
@@ -665,6 +663,23 @@
     return symbol+(amountCents/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   }
 
+  // Approximate, manually-maintained EUR rates for the table's TOTAL row
+  // only -- matches this project's existing approach to non-parity
+  // currencies (see CURRENCY_CONFIG in cloudflare/pearos-dl/src/index.js):
+  // not a live FX rate, revisit occasionally rather than wiring up a rate
+  // API for a donations table this small.
+  var EUR_RATES={usd:0.92,eur:1,gbp:1.16,inr:0.011,brl:0.17};
+
+  function sumInEurCents(bucket){
+    var total=0;
+    Object.keys(bucket||{}).forEach(function(cur){
+      var rate=EUR_RATES[cur];
+      if(rate===undefined) return; // unknown currency: excluded rather than guessed
+      total+=(bucket[cur].amount_cents||0)*rate;
+    });
+    return total;
+  }
+
   function renderRevenueTable(donations){
     var tbody=document.getElementById('stats-revenue-body');
     donations=donations||{};
@@ -681,7 +696,7 @@
     }
     currencies.sort(function(a,b){ return (allTime[b].amount_cents||0)-(allTime[a].amount_cents||0); });
 
-    tbody.innerHTML=currencies.map(function(cur){
+    var rowsHtml=currencies.map(function(cur){
       var at=allTime[cur]||{amount_cents:0,count:0};
       var d30=last30d[cur]||{amount_cents:0,count:0};
       var d24=last24h[cur]||{amount_cents:0,count:0};
@@ -691,7 +706,16 @@
         '<td>'+formatMoney(d30.amount_cents,cur)+'</td>'+
         '<td class="font-medium">'+formatMoney(at.amount_cents,cur)+' <span class="text-muted-foreground font-normal">('+fmt(at.count)+')</span></td>'+
       '</tr>';
-    }).join('');
+    });
+
+    var totalRow='<tr style="border-top:2px solid var(--border)">'+
+      '<td class="font-medium">TOTAL (EUR)</td>'+
+      '<td class="font-medium">'+formatMoney(sumInEurCents(last24h),'eur')+'</td>'+
+      '<td class="font-medium">'+formatMoney(sumInEurCents(last30d),'eur')+'</td>'+
+      '<td class="font-medium">'+formatMoney(sumInEurCents(allTime),'eur')+'</td>'+
+    '</tr>';
+
+    tbody.innerHTML=rowsHtml.join('')+totalRow;
   }
 
   function renderHourChart(byHour){
