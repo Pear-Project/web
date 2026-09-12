@@ -472,9 +472,23 @@ async function handleRevenue(request, env, ctx) {
     startingAfter = data.data[data.data.length - 1].id;
   }
 
+  // This Stripe account isn't dedicated to pearOS donations alone -- charges
+  // from unrelated sales land in the same /v1/charges list with no field
+  // distinguishing them (the Checkout Session created in handleCheckout()
+  // never set metadata to tag its charges). Manually confirmed non-pearOS
+  // charges are excluded here by id suffix (last 6 chars is unique enough
+  // across this account's charge volume) rather than guessed at by date,
+  // since an early real donation would look the same as an old unrelated
+  // sale by timestamp alone.
+  const EXCLUDED_CHARGE_ID_SUFFIXES = new Set([
+    "elL3eF", // 2024-11-07, $102.00 USD -- pre-dates pearos-dl/checkout entirely; a different sale on this account, confirmed not a pearOS donation
+  ]);
+
   // paid && !refunded keeps fully-refunded charges out entirely; a partial
   // refund still counts, net of the refunded amount, via amount_refunded.
-  const succeeded = charges.filter((c) => c.paid && c.status === "succeeded" && !c.refunded);
+  const succeeded = charges.filter(
+    (c) => c.paid && c.status === "succeeded" && !c.refunded && !EXCLUDED_CHARGE_ID_SUFFIXES.has(c.id.slice(-6))
+  );
 
   function aggregate(list) {
     const byCurrency = {};
