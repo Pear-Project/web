@@ -66,7 +66,14 @@ jobs:
           by_file=$(query "SELECT blob1 AS file, blob2 AS tier, count() AS downloads, sum(double1) AS bytes FROM pearos_downloads GROUP BY blob1, blob2" | jq -c '.data // []')
           # Grouped by file too (not just tier) so /stats/ can chart each
           # edition's free/paid line separately instead of one blended total.
-          daily=$(query "SELECT toStartOfInterval(timestamp, INTERVAL '1' DAY) AS day, blob1 AS file, blob2 AS tier, count() AS downloads FROM pearos_downloads WHERE timestamp > NOW() - INTERVAL '30' DAY GROUP BY day, file, tier ORDER BY day" | jq -c '[.data[]? | {date: (.day[0:10]), file: .file, tier: .tier, downloads: (.downloads | tonumber)}]')
+          # 90-day window backs the site's 30D/90D/custom range picker --
+          # custom range is a client-side filter over whatever's in this
+          # array, so it can't show a wider span than we actually queried.
+          daily=$(query "SELECT toStartOfInterval(timestamp, INTERVAL '1' DAY) AS day, blob1 AS file, blob2 AS tier, count() AS downloads FROM pearos_downloads WHERE timestamp > NOW() - INTERVAL '90' DAY GROUP BY day, file, tier ORDER BY day" | jq -c '[.data[]? | {date: (.day[0:10]), file: .file, tier: .tier, downloads: (.downloads | tonumber)}]')
+          # Same breakdown at hourly resolution, only for the last 48h --
+          # backs the site's "1D" range option (a daily bucket is useless
+          # for "downloads in the last 24 hours").
+          hourly=$(query "SELECT toStartOfInterval(timestamp, INTERVAL '1' HOUR) AS hour, blob1 AS file, blob2 AS tier, count() AS downloads FROM pearos_downloads WHERE timestamp > NOW() - INTERVAL '2' DAY GROUP BY hour, file, tier ORDER BY hour" | jq -c '[.data[]? | {hour: .hour, file: .file, tier: .tier, downloads: (.downloads | tonumber)}]')
           by_country=$(query "SELECT blob3 AS country, count() AS downloads FROM pearos_downloads GROUP BY blob3 ORDER BY downloads DESC LIMIT 10" | jq -c '[.data[]? | {country: .country, downloads: (.downloads | tonumber)}]')
           by_referrer=$(query "SELECT blob4 AS referrer, count() AS downloads FROM pearos_downloads GROUP BY blob4 ORDER BY downloads DESC LIMIT 10" | jq -c '[.data[]? | {referrer: .referrer, downloads: (.downloads | tonumber)}]')
           by_hour=$(query "SELECT toHour(timestamp) AS hour, count() AS downloads FROM pearos_downloads GROUP BY hour ORDER BY hour" | jq -c '[.data[]? | {hour: (.hour | tonumber), downloads: (.downloads | tonumber)}]')
@@ -82,6 +89,7 @@ jobs:
           echo "All-time: $total_all_time, last 30d: $last_30d, last 24h: $last_24h"
           echo "By file: $by_file"
           echo "Daily: $daily"
+          echo "Hourly: $hourly"
           echo "By country: $by_country"
           echo "By referrer: $by_referrer"
           echo "By hour: $by_hour"
@@ -94,12 +102,13 @@ jobs:
             --argjson last_24h "$last_24h" \
             --argjson by_file "$by_file" \
             --argjson daily "$daily" \
+            --argjson hourly "$hourly" \
             --argjson by_country "$by_country" \
             --argjson by_referrer "$by_referrer" \
             --argjson by_hour "$by_hour" \
             --argjson friend_all_time "$friend_all_time" \
             --argjson friend_last_24h "$friend_last_24h" \
-            '{generated_at:$generated_at, total_all_time:$total_all_time, last_30d:$last_30d, last_24h:$last_24h, by_file:$by_file, daily:$daily, by_country:$by_country, by_referrer:$by_referrer, by_hour:$by_hour, friend_all_time:$friend_all_time, friend_last_24h:$friend_last_24h}' \
+            '{generated_at:$generated_at, total_all_time:$total_all_time, last_30d:$last_30d, last_24h:$last_24h, by_file:$by_file, daily:$daily, hourly:$hourly, by_country:$by_country, by_referrer:$by_referrer, by_hour:$by_hour, friend_all_time:$friend_all_time, friend_last_24h:$friend_last_24h}' \
             > assets/data/download-stats.json
 
       - name: Render trend chart PNG (for WhatsApp / anywhere a plain image is needed)
