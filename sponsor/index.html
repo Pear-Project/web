@@ -5,21 +5,6 @@
     adsense:'ca-pub-2120727219771886', // AdSense publisher ID (from the current site, matches ads.txt)
     clarity:'xs709y21du'          // Microsoft Clarity project ID
   };
-  // Manual AdSense slot for this page. Fill in the real AdSense ad-unit ID
-  // below once one exists for this placement -- until then the section
-  // removes itself instead of shipping an empty/broken ad box.
-  window.NC_AD_SLOTS={content:'9001134411'};
-  window.NC_initAdSlots=function(){
-    document.querySelectorAll('[data-ad-key]').forEach(function(el){
-      var id=(window.NC_AD_SLOTS||{})[el.getAttribute('data-ad-key')];
-      if(id){
-        var ins=el.querySelector('ins.adsbygoogle');
-        if(ins){ins.setAttribute('data-ad-slot',id);ins.setAttribute('data-ad-format','auto');ins.setAttribute('data-full-width-responsive','true');(window.adsbygoogle=window.adsbygoogle||[]).push({});}
-      }else{el.remove();}
-    });
-  };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',window.NC_initAdSlots);
-  else window.NC_initAdSlots();
   // Consent Mode v2: everything starts denied, the cookie banner flips it
   window.dataLayer=window.dataLayer||[];
   function gtag(){
@@ -60,19 +45,7 @@
       document.head.appendChild(ga);
       gtag('config',ids.ga);
     }
-    // AdSense
-    if(live(ids.adsense)){
-      var ad=document.createElement('script');ad.async=true;ad.crossOrigin='anonymous';
-      ad.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ids.adsense;
-      document.head.appendChild(ad);
-      // Auto Ads is enabled from the AdSense account dashboard itself, which
-      // makes adsbygoogle.js auto-initialize page-level ads on load. Do NOT
-      // also push {enable_page_level_ads:true} here — that fires it a second
-      // time and throws "Only one 'enable_page_level_ads' allowed per page".
-      // Manual <ins class="adsbygoogle"> slots elsewhere on the page still
-      // work fine, they push their own empty {} independently of this.
-    }
-    // Microsoft Clarity
+// Microsoft Clarity
     if(live(ids.clarity))
     (function(c,l,a,r,i,t,y){
       c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -624,21 +597,15 @@
   var baitUrls = [
     'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js',
     'https://www.googletagservices.com/tag/js/gpt.js',
-    'https://googleads.g.doubleclick.net/pagead/id'
+    'https://googleads.g.doubleclick.net/pagead/id',
+    'https://www.ezojs.com/ezoic/sa.min.js',
+    'https://ezoicanalytics.com/analytics.js'
   ];
   baitUrls.forEach(function (url) {
     fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
       .catch(function () { showWall(); });
   });
-  // belt-and-suspenders: a real <script> tag pointing at the AdSense loader.
-  // onerror fires when the network request itself is blocked (ERR_BLOCKED
-  // BY_CLIENT), which is exactly what ad blockers do to this URL.
-  var probe = document.createElement('script');
-  probe.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?nc_probe=1';
-  probe.async = true;
-  probe.onerror = showWall;
-  document.head.appendChild(probe);
-
+    
   // --- signal 2: same-origin bait files named like generic ad scripts.
   // Resolved off ASSETS_BASE so this fires the same way regardless of page
   // depth or whether the site sits at a domain root or a subfolder. ---
