@@ -432,6 +432,13 @@ async function handleDistrowatchBadge(request, ctx) {
 // behind a secret the stats-sync GitHub Action would then also need. Edge
 // caching is what actually matters here: it keeps a public route from
 // hammering the Stripe API on every hit instead of once per cache window.
+//
+// `charges` (below) is a per-charge list -- amount, currency, timestamp,
+// refund status, and the last 6 chars of the charge id, nothing else (no
+// customer id, email, card details, or Checkout Session id) -- included so
+// a specific number (e.g. "why did all-time jump but not last_30d") can be
+// traced back to one real charge without opening the Stripe Dashboard. It's
+// exposed on the same public, unauthenticated route as everything else here.
 
 const REVENUE_CACHE_TTL_SECONDS = 900; // 15m -- frequent enough for a stats page, rare enough Stripe never notices
 
@@ -485,6 +492,15 @@ async function handleRevenue(request, env, ctx) {
     all_time: aggregate(succeeded),
     last_30d: aggregate(succeeded.filter((c) => c.created >= since30d)),
     last_24h: aggregate(succeeded.filter((c) => c.created >= since24h)),
+    charges: succeeded
+      .sort((a, b) => b.created - a.created)
+      .map((c) => ({
+        id_suffix: c.id.slice(-6),
+        amount_cents: c.amount - (c.amount_refunded || 0),
+        currency: c.currency,
+        created: new Date(c.created * 1000).toISOString(),
+        partially_refunded: (c.amount_refunded || 0) > 0,
+      })),
   };
 
   const response = new Response(JSON.stringify(result), {
