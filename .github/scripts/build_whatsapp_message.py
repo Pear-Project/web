@@ -13,6 +13,22 @@ def format_money(amount_cents, currency):
     return f"{symbol}{amount_cents / 100:,.2f}"
 
 
+# Approximate, manually-maintained EUR rates -- matches stats/index.html's
+# EUR_RATES and pearos-dl's own CURRENCY_CONFIG approach for non-parity
+# currencies. Not a live FX rate; only used for the one combined total line.
+EUR_RATES = {"usd": 0.92, "eur": 1, "gbp": 1.16, "inr": 0.011, "brl": 0.17}
+
+
+def sum_in_eur_cents(bucket):
+    total = 0
+    for cur, v in (bucket or {}).items():
+        rate = EUR_RATES.get(cur)
+        if rate is None:
+            continue
+        total += (v.get("amount_cents", 0) or 0) * rate
+    return total
+
+
 def edition_name(file):
     f = file.lower()
     if "nicec0re" in f:
@@ -88,6 +104,20 @@ if all_time_rev:
             f"{cur.upper()}: *{format_money(at['amount_cents'], cur)}* all-time "
             f"({format_money(d30['amount_cents'], cur)} last 30d, {at['count']} donations)"
         )
+
+ad_revenue = stats.get("ad_revenue") or {}
+ad_all_time = ad_revenue.get("all_time") or {}
+ad_30d = ad_revenue.get("last_30d") or {}
+if ad_all_time:
+    lines.append("")
+    lines.append("*Ad revenue (Ezoic):*")
+    ad_at_usd = ad_all_time.get("usd", {"amount_cents": 0})["amount_cents"]
+    ad_30d_usd = ad_30d.get("usd", {"amount_cents": 0})["amount_cents"]
+    lines.append(f"USD: *{format_money(ad_at_usd, 'usd')}* all-time ({format_money(ad_30d_usd, 'usd')} last 30d)")
+
+if all_time_rev or ad_all_time:
+    total_eur_cents = sum_in_eur_cents(all_time_rev) + sum_in_eur_cents(ad_all_time)
+    lines.append(f"*Total revenue (EUR, approx.):* {format_money(total_eur_cents, 'eur')}")
 
 if by_edition:
     lines.append("")

@@ -46,17 +46,29 @@ dates_sorted = sorted(by_date.keys())
 donations = stats.get("donations") or {}
 all_time_rev = donations.get("all_time") or {}
 last_30d_rev = donations.get("last_30d") or {}
-donations_subtitle = None
+ad_revenue = stats.get("ad_revenue") or {}
+ad_all_time = ad_revenue.get("all_time") or {}
+ad_30d = ad_revenue.get("last_30d") or {}
+
+subtitle_parts = []
 if all_time_rev:
     currencies = sorted(all_time_rev.keys(), key=lambda c: all_time_rev[c].get("amount_cents", 0), reverse=True)
-    parts = [
+    donation_parts = [
         f"{format_money(all_time_rev[c]['amount_cents'], c)} all-time "
         f"({format_money(last_30d_rev.get(c, {'amount_cents': 0})['amount_cents'], c)} last 30d)"
         for c in currencies
     ]
+    subtitle_parts.append("Donations: " + "  ·  ".join(donation_parts))
+if ad_all_time:
+    ad_at_usd = ad_all_time.get("usd", {"amount_cents": 0})["amount_cents"]
+    ad_30d_usd = ad_30d.get("usd", {"amount_cents": 0})["amount_cents"]
+    subtitle_parts.append(f"Ads: {format_money(ad_at_usd, 'usd')} all-time ({format_money(ad_30d_usd, 'usd')} last 30d)")
+
+donations_subtitle = None
+if subtitle_parts:
     # matplotlib's mathtext parser treats a bare "$" as a math-mode delimiter
     # (mangling the text into garbled italics/minus-signs) unless it's escaped.
-    donations_subtitle = ("Donations: " + "  ·  ".join(parts)).replace("$", r"\$")
+    donations_subtitle = "   |   ".join(subtitle_parts).replace("$", r"\$")
 
 fig, ax = plt.subplots(figsize=(10, 5), dpi=150)
 fig.patch.set_facecolor(BG)
