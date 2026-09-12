@@ -191,13 +191,24 @@ jobs:
 
           git add assets/data/download-stats.json assets/data/download-chart.png
           git commit -m "Sync download stats"
-          # Other workflows (uptime state, DNS failover reruns) commit to
-          # main independently -- a plain push here can lose a race and fail
-          # outright. Retry with a rebase instead of failing on collision.
+          # Other workflows (uptime state, DNS failover reruns), and even a
+          # second run of this same workflow (push-triggered + a manual
+          # workflow_dispatch landing within the same second), can push to
+          # main first and make a plain push here lose the race. A rebase
+          # retry handles a *stale ref* fine, but these two files are a full
+          # regenerated snapshot each run -- two runs racing genuinely
+          # overlap their diffs, which rebase reports as a real conflict it
+          # can't auto-resolve (confirmed: exactly this happened once, run
+          # 34711731058 racing 34711725896). Since neither snapshot is more
+          # "correct" than the other, just keep discarding origin's copy of
+          # these two generated files and recommitting ours on top, instead
+          # of trying to merge content that was never meant to be merged.
           for i in 1 2 3 4 5; do
             git push origin HEAD:main && exit 0
             git fetch origin main
-            git rebase origin/main
+            git reset --soft origin/main
+            git add assets/data/download-stats.json assets/data/download-chart.png
+            git commit -m "Sync download stats"
             sleep $((RANDOM % 5 + 1))
           done
           git push origin HEAD:main
