@@ -107,9 +107,18 @@ jobs:
           ezoic_ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           ezoic_body=$(jq -n --argjson ids '[802586]' --arg start "$since90" --arg end "$today" \
             '{domain_ids:$ids, start_date:$start, end_date:$end, dimensions:["report_day"], metrics:["revenue"], aggregate:"none", limit:500}')
-          ezoic_raw=$(curl -fsSL --max-time 20 -X POST "https://api-gateway.ezoic.com/bigdata/v2/query" \
+          # -f dropped deliberately: it makes curl exit non-zero *and* discard
+          # the response body on a non-2xx status, which is exactly the
+          # diagnostic info needed when this fails. Status/body are captured
+          # separately instead and both logged (the body's shape is safe to
+          # print -- it's Ezoic's own error JSON, never the API key).
+          ezoic_http_code=$(curl -sSL -o /tmp/ezoic_response.json -w "%{http_code}" --max-time 20 \
+            -X POST "https://api-gateway.ezoic.com/bigdata/v2/query" \
             -H "X-API-Key: ${EZOIC_API_KEY}" -H "Content-Type: application/json" \
-            --data "$ezoic_body" 2>/dev/null || echo "")
+            --data "$ezoic_body")
+          ezoic_raw=$(cat /tmp/ezoic_response.json 2>/dev/null || echo "")
+          echo "Ezoic BDA HTTP status: $ezoic_http_code"
+          echo "Ezoic BDA response body: $ezoic_raw"
 
           ad_revenue='{}'
           if echo "$ezoic_raw" | jq -e '.rows | type == "array"' >/dev/null 2>&1; then
