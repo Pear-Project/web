@@ -216,6 +216,17 @@
   </table>
 </div>
 
+<div class="mt-10">
+  <h2 class="text-lg font-semibold mb-4">Donations revenue</h2>
+  <div class="overflow-x-auto rounded-2xl border border-border">
+    <table class="stats-table">
+      <thead><tr><th>Currency</th><th>Last 24h</th><th>Last 30 days</th><th>All-time</th></tr></thead>
+      <tbody id="stats-revenue-body"><tr><td colspan="4" class="text-muted-foreground text-center py-8">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <p class="text-muted-foreground mt-2 text-xs">Gross amounts from succeeded Stripe charges, net of refunds. USD/EUR/GBP are priced at numeric parity on checkout (see donate page), not converted at a live FX rate -- so summing them into one figure would be misleading; each currency is its own row instead.</p>
+</div>
+
 <div class="mt-10 grid gap-6 md:grid-cols-2">
   <div>
     <h2 class="text-lg font-semibold mb-4">Top countries</h2>
@@ -644,6 +655,45 @@
     }).join('');
   }
 
+  // Matches pearos-dl's own CURRENCY_CONFIG (cloudflare/pearos-dl/src/index.js)
+  // -- just the display symbol, since /revenue already reports amounts in
+  // each charge's own currency rather than converting anything.
+  var CURRENCY_SYMBOLS={usd:'$',eur:'€',gbp:'£',inr:'₹',brl:'R$'};
+
+  function formatMoney(amountCents,currency){
+    var symbol=CURRENCY_SYMBOLS[currency]||(currency?currency.toUpperCase()+' ':'');
+    return symbol+(amountCents/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  function renderRevenueTable(donations){
+    var tbody=document.getElementById('stats-revenue-body');
+    donations=donations||{};
+    var allTime=donations.all_time||{};
+    var last30d=donations.last_30d||{};
+    var last24h=donations.last_24h||{};
+
+    var currencies=Object.keys(allTime);
+    if(!currencies.length){
+      tbody.innerHTML='<tr><td colspan="4" class="text-muted-foreground text-center py-8">'+
+        (donations.generated_at?'No donations logged yet.':'Revenue data not available yet -- check back after the next sync.')+
+        '</td></tr>';
+      return;
+    }
+    currencies.sort(function(a,b){ return (allTime[b].amount_cents||0)-(allTime[a].amount_cents||0); });
+
+    tbody.innerHTML=currencies.map(function(cur){
+      var at=allTime[cur]||{amount_cents:0,count:0};
+      var d30=last30d[cur]||{amount_cents:0,count:0};
+      var d24=last24h[cur]||{amount_cents:0,count:0};
+      return '<tr>'+
+        '<td class="font-medium">'+cur.toUpperCase()+'</td>'+
+        '<td>'+formatMoney(d24.amount_cents,cur)+'</td>'+
+        '<td>'+formatMoney(d30.amount_cents,cur)+'</td>'+
+        '<td class="font-medium">'+formatMoney(at.amount_cents,cur)+' <span class="text-muted-foreground font-normal">('+fmt(at.count)+')</span></td>'+
+      '</tr>';
+    }).join('');
+  }
+
   function renderHourChart(byHour){
     var el=document.getElementById('stats-hours');
     var hours=[];
@@ -789,6 +839,8 @@
         return '<tr><td class="font-medium">'+name+'</td><td>'+fmt(row.free)+'</td><td>'+fmt(row.paid)+'</td><td class="font-medium">'+fmt(total)+'</td></tr>';
       }).join('');
     }
+
+    renderRevenueTable(stats.donations);
 
     if(stats.generated_at){
       var d=new Date(stats.generated_at);
