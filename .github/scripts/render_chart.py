@@ -18,6 +18,17 @@ FREE_COLOR = "#5c6b64"
 PAID_COLOR = "#cbef63"
 GRID = "#efefe930"
 
+# Matches pearos-dl's own CURRENCY_CONFIG (cloudflare/pearos-dl/src/index.js)
+# -- just the display symbol, since /revenue reports amounts in each charge's
+# own currency rather than converting anything.
+CURRENCY_SYMBOLS = {"usd": "$", "eur": "€", "gbp": "£", "inr": "₹", "brl": "R$"}
+
+
+def format_money(amount_cents, currency):
+    symbol = CURRENCY_SYMBOLS.get(currency, f"{currency.upper()} ")
+    return f"{symbol}{amount_cents / 100:,.2f}"
+
+
 with open("assets/data/download-stats.json") as f:
     stats = json.load(f)
 
@@ -27,6 +38,25 @@ for row in stats.get("daily", []):
     by_date[row["date"]][tier] += row.get("downloads", 0)
 
 dates_sorted = sorted(by_date.keys())
+
+# Revenue is a rolling-window snapshot from Stripe (not a daily series like
+# downloads are), so it's shown as a subtitle line rather than plotted -- a
+# second axis for ~5 currencies with wildly different magnitudes (a few cents
+# of INR next to tens of USD) would be more confusing than useful.
+donations = stats.get("donations") or {}
+all_time_rev = donations.get("all_time") or {}
+last_30d_rev = donations.get("last_30d") or {}
+donations_subtitle = None
+if all_time_rev:
+    currencies = sorted(all_time_rev.keys(), key=lambda c: all_time_rev[c].get("amount_cents", 0), reverse=True)
+    parts = [
+        f"{format_money(all_time_rev[c]['amount_cents'], c)} all-time "
+        f"({format_money(last_30d_rev.get(c, {'amount_cents': 0})['amount_cents'], c)} last 30d)"
+        for c in currencies
+    ]
+    # matplotlib's mathtext parser treats a bare "$" as a math-mode delimiter
+    # (mangling the text into garbled italics/minus-signs) unless it's escaped.
+    donations_subtitle = ("Donations: " + "  ·  ".join(parts)).replace("$", r"\$")
 
 fig, ax = plt.subplots(figsize=(10, 5), dpi=150)
 fig.patch.set_facecolor(BG)
@@ -57,7 +87,19 @@ else:
         alpha=0.85,
         labels=["Free", "Paid"],
     )
-    ax.set_title("pearOS Downloads — Last 30 Days", fontsize=16, fontweight="semibold", color=FG, pad=16)
+    # Two separate axes-anchored texts (not fig.suptitle, which interacts
+    # unpredictably with bbox_inches="tight" -- it can end up rendered below
+    # an axes-level title instead of above it). The subtitle sits just above
+    # the axes edge; the title's extra pad keeps it further up, above that.
+    ax.set_title(
+        "pearOS Downloads — Last 30 Days",
+        fontsize=16,
+        fontweight="semibold",
+        color=FG,
+        pad=28 if donations_subtitle else 16,
+    )
+    if donations_subtitle:
+        ax.text(0.5, 1.03, donations_subtitle, transform=ax.transAxes, ha="center", va="bottom", fontsize=10.5, color=MUTED)
 
     legend = ax.legend(loc="upper left", frameon=False, labelcolor=FG, fontsize=11)
 

@@ -2,6 +2,16 @@ import json
 import os
 from collections import defaultdict
 
+# Matches pearos-dl's own CURRENCY_CONFIG (cloudflare/pearos-dl/src/index.js)
+# and the /stats/ page's CURRENCY_SYMBOLS -- just the display symbol, since
+# /revenue already reports amounts in each charge's own currency.
+CURRENCY_SYMBOLS = {"usd": "$", "eur": "€", "gbp": "£", "inr": "₹", "brl": "R$"}
+
+
+def format_money(amount_cents, currency):
+    symbol = CURRENCY_SYMBOLS.get(currency, f"{currency.upper()} ")
+    return f"{symbol}{amount_cents / 100:,.2f}"
+
 
 def edition_name(file):
     f = file.lower()
@@ -64,6 +74,20 @@ friend_all_time = stats.get("friend_all_time", 0)
 friend_last_24h = stats.get("friend_last_24h", 0)
 if friend_all_time:
     lines.append(f"Friends & family link: *{friend_all_time}* all-time (*{friend_last_24h}* in last 24h)")
+
+donations = stats.get("donations") or {}
+all_time_rev = donations.get("all_time") or {}
+last_30d_rev = donations.get("last_30d") or {}
+if all_time_rev:
+    lines.append("")
+    lines.append("*Donations revenue:*")
+    for cur in sorted(all_time_rev.keys(), key=lambda c: all_time_rev[c].get("amount_cents", 0), reverse=True):
+        at = all_time_rev.get(cur, {"amount_cents": 0, "count": 0})
+        d30 = last_30d_rev.get(cur, {"amount_cents": 0, "count": 0})
+        lines.append(
+            f"{cur.upper()}: *{format_money(at['amount_cents'], cur)}* all-time "
+            f"({format_money(d30['amount_cents'], cur)} last 30d, {at['count']} donations)"
+        )
 
 if by_edition:
     lines.append("")
