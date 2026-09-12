@@ -372,7 +372,9 @@
     // stacked: free from 0, paid stacked on top of free
     var freeAreaD='M'+xAt(0)+','+(PAD_T+innerH)+' L'+daily.map(function(d,i){ return xAt(i)+','+yAt(d.free); }).join(' L')+' L'+xAt(n-1)+','+(PAD_T+innerH)+' Z';
     var totalLinePts=daily.map(function(d,i){ return xAt(i)+','+yAt(d.total); }).join(' ');
-    var totalAreaD='M'+xAt(0)+','+yAt(daily[0].free)+' L'+daily.map(function(d,i){ return xAt(i)+','+yAt(d.total); }).join(' L')+' L'+xAt(n-1)+','+yAt(daily[n-1].free)+' Z';
+    var totalTopPts=daily.map(function(d,i){ return xAt(i)+','+yAt(d.total); });
+    var freeBottomPtsRev=daily.map(function(d,i){ return xAt(i)+','+yAt(d.free); }).reverse();
+    var totalAreaD='M'+totalTopPts.join(' L')+' L'+freeBottomPtsRev.join(' L')+' Z';
     var freeLinePts=daily.map(function(d,i){ return xAt(i)+','+yAt(d.free); }).join(' ');
 
     var labelIdx=[0, Math.floor((n-1)/2), n-1];
