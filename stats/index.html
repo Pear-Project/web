@@ -107,6 +107,13 @@
   .stats-barrow .brtrack{flex:1;height:8px;border-radius:999px;background:var(--muted);overflow:hidden}
   .stats-barrow .brfill{height:100%;border-radius:999px;background:var(--primary)}
   .stats-barrow .brval{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--muted-foreground);min-width:2.5ch;text-align:right}
+  .chart-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.8rem}
+  .chart-legend label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--foreground);user-select:none}
+  .chart-legend input{accent-color:var(--primary);width:13px;height:13px;cursor:pointer;margin:0}
+  .chart-legend .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;flex:0 0 auto}
+  .chart-legend label.off{color:var(--muted-foreground);opacity:.5}
+  .stats-axis-label{fill:var(--muted-foreground)}
+  .stats-gridline{stroke:var(--border)}
 </style>
 <div class="cookies" id="cookies" role="dialog" aria-live="polite" aria-label="Cookie consent">
   <p>We use cookies for analytics and ads. Nothing loads until you allow it.</p>
@@ -168,10 +175,7 @@
 <div class="mt-10">
   <div class="mb-4 flex items-center justify-between flex-wrap gap-2">
     <h2 class="text-lg font-semibold">Downloads, last 30 days</h2>
-    <div class="flex items-center gap-4 text-xs text-muted-foreground">
-      <span class="inline-flex items-center gap-1.5"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--muted-foreground)"></span>Free</span>
-      <span class="inline-flex items-center gap-1.5"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--primary)"></span>Paid</span>
-    </div>
+    <div class="chart-legend" id="stats-chart-legend"></div>
   </div>
   <div id="stats-chart-wrap" class="rounded-2xl border border-border p-4 md:p-6" style="position:relative">
     <div id="stats-chart"></div>
@@ -343,59 +347,130 @@
     return String.fromCodePoint(A+(code.charCodeAt(0)-base))+String.fromCodePoint(A+(code.charCodeAt(1)-base));
   }
 
+  // Four fixed series (not derived from whatever files happen to be in the
+  // data) -- each edition's free and paid tier plotted as its own line, so a
+  // tiny paid count is never buried under a much bigger free count sharing
+  // the same stacked band (see the misleading stacked-area chart this
+  // replaced).
+  var CHART_SERIES=[
+    {id:'nicecore_free', match:/NiceC0re/i, tier:'free', label:'NiceC0re — Free', color:'var(--muted-foreground)'},
+    {id:'nicecore_paid', match:/NiceC0re/i, tier:'paid', label:'NiceC0re — Paid', color:'var(--primary)'},
+    {id:'debian_free', match:/Goldwing/i, tier:'free', label:'Debian — Free', color:'#3b82f6'},
+    {id:'debian_paid', match:/Goldwing/i, tier:'paid', label:'Debian — Paid', color:'#f59e0b'}
+  ];
+  var chartHidden={}; // series id -> true when toggled off via the legend
+
+  // Picks a human "round" step for axis ticks (1/2/5 x 10^n) so labels read
+  // as 200/400/600 instead of an ugly 213.7 -- same idea as D3's ticks().
+  function niceStep(roughStep){
+    var mag=Math.pow(10,Math.floor(Math.log(roughStep)/Math.LN10));
+    var norm=roughStep/mag;
+    var step=norm<1.5?1:(norm<3?2:(norm<7?5:10));
+    return step*mag;
+  }
+
   function renderChart(dailyRaw){
     var wrap=document.getElementById('stats-chart-wrap');
     var chartEl=document.getElementById('stats-chart');
     var tooltip=document.getElementById('stats-tooltip');
+    var legendEl=document.getElementById('stats-chart-legend');
 
-    var byDate={};
-    (dailyRaw||[]).forEach(function(row){
-      if(!byDate[row.date]) byDate[row.date]={free:0,paid:0};
-      byDate[row.date][row.tier==='paid'?'paid':'free']+=row.downloads||0;
-    });
-    var daily=Object.keys(byDate).sort().map(function(date){
-      var d=byDate[date];
-      return {date:date, free:d.free, paid:d.paid, total:d.free+d.paid};
-    });
+    var rows=dailyRaw||[];
+    var hasFileBreakdown=rows.some(function(r){ return !!r.file; });
+    if(!hasFileBreakdown){
+      legendEl.innerHTML='';
+      chartEl.innerHTML='<p class="text-muted-foreground text-sm text-center py-10">Per-edition breakdown lands after the next hourly sync -- check back shortly.</p>';
+      return;
+    }
 
-    if(daily.length<2){
+    var dateSet={};
+    rows.forEach(function(r){ dateSet[r.date]=true; });
+    var dates=Object.keys(dateSet).sort();
+    var n=dates.length;
+    if(n<2){
+      legendEl.innerHTML='';
       chartEl.innerHTML='<p class="text-muted-foreground text-sm text-center py-10">Not enough data yet for a trend chart.</p>';
       return;
     }
-    var W=800,H=220,PAD_L=32,PAD_R=8,PAD_T=14,PAD_B=22;
+
+    // seriesId -> array of per-date totals, aligned index-for-index with `dates`
+    var seriesValues={};
+    CHART_SERIES.forEach(function(s){ seriesValues[s.id]=dates.map(function(){ return 0; }); });
+    var dateIndex={};
+    dates.forEach(function(d,i){ dateIndex[d]=i; });
+    rows.forEach(function(r){
+      var i=dateIndex[r.date];
+      if(i===undefined) return;
+      CHART_SERIES.forEach(function(s){
+        if(s.tier===r.tier && s.match.test(r.file||'')){
+          seriesValues[s.id][i]+=r.downloads||0;
+        }
+      });
+    });
+
+    var visibleSeries=CHART_SERIES.filter(function(s){ return !chartHidden[s.id]; });
+    var maxVal=1;
+    visibleSeries.forEach(function(s){
+      seriesValues[s.id].forEach(function(v){ if(v>maxVal) maxVal=v; });
+    });
+
+    var W=800,H=260,PAD_L=44,PAD_R=8,PAD_T=14,PAD_B=26;
     var innerW=W-PAD_L-PAD_R, innerH=H-PAD_T-PAD_B;
-    var n=daily.length;
-    var maxVal=Math.max.apply(null,daily.map(function(d){return d.total;}).concat([1]));
     function xAt(i){ return PAD_L+(n===1?0:(i/(n-1))*innerW); }
     function yAt(v){ return PAD_T+innerH-(v/maxVal)*innerH; }
 
-    // stacked: free from 0, paid stacked on top of free
-    var freeAreaD='M'+xAt(0)+','+(PAD_T+innerH)+' L'+daily.map(function(d,i){ return xAt(i)+','+yAt(d.free); }).join(' L')+' L'+xAt(n-1)+','+(PAD_T+innerH)+' Z';
-    var totalLinePts=daily.map(function(d,i){ return xAt(i)+','+yAt(d.total); }).join(' ');
-    var totalTopPts=daily.map(function(d,i){ return xAt(i)+','+yAt(d.total); });
-    var freeBottomPtsRev=daily.map(function(d,i){ return xAt(i)+','+yAt(d.free); }).reverse();
-    var totalAreaD='M'+totalTopPts.join(' L')+' L'+freeBottomPtsRev.join(' L')+' Z';
-    var freeLinePts=daily.map(function(d,i){ return xAt(i)+','+yAt(d.free); }).join(' ');
+    // ---- Y axis: ~5 gridlines at round numbers ----
+    var tickStep=niceStep(maxVal/5)||1;
+    var yTicks=[];
+    for(var t=0; t<=maxVal+tickStep*0.001; t+=tickStep){ yTicks.push(Math.round(t)); }
+    var yGrid=yTicks.map(function(v){
+      var y=yAt(v);
+      return '<line class="stats-gridline" x1="'+PAD_L+'" y1="'+y+'" x2="'+(W-PAD_R)+'" y2="'+y+'" stroke-width="1"/>'+
+        '<text class="stats-axis-label" x="'+(PAD_L-8)+'" y="'+(y+3)+'" font-size="10" text-anchor="end">'+v.toLocaleString('en-US')+'</text>';
+    }).join('');
 
-    var labelIdx=[0, Math.floor((n-1)/2), n-1];
-    var labels=labelIdx.map(function(i){
-      var d=new Date(daily[i].date+'T00:00:00Z');
-      var text=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    // ---- X axis: a label per day when there's room, thinned out otherwise ----
+    var maxLabels=Math.max(2,Math.floor(innerW/60));
+    var labelStride=Math.max(1,Math.ceil((n-1)/(maxLabels-1)));
+    var xLabels='', xGridV='';
+    for(var i=0;i<n;i++){
+      if(i%labelStride!==0 && i!==n-1) continue;
+      var dObj=new Date(dates[i]+'T00:00:00Z');
+      var text=dObj.toLocaleDateString('en-US',{month:'short',day:'numeric'});
       var anchor=i===0?'start':(i===n-1?'end':'middle');
-      return '<text x="'+xAt(i)+'" y="'+(H-4)+'" font-size="10" fill="var(--muted-foreground)" text-anchor="'+anchor+'">'+text+'</text>';
+      xLabels+='<text class="stats-axis-label" x="'+xAt(i)+'" y="'+(H-6)+'" font-size="10" text-anchor="'+anchor+'">'+text+'</text>';
+      xGridV+='<line class="stats-gridline" x1="'+xAt(i)+'" y1="'+PAD_T+'" x2="'+xAt(i)+'" y2="'+(PAD_T+innerH)+'" stroke-width="1"/>';
+    }
+
+    var linesSvg=visibleSeries.map(function(s){
+      var pts=seriesValues[s.id].map(function(v,i){ return xAt(i)+','+yAt(v); }).join(' ');
+      return '<polyline data-series="'+s.id+'" points="'+pts+'" fill="none" stroke="'+s.color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>';
     }).join('');
 
     chartEl.innerHTML=
-      '<svg viewBox="0 0 '+W+' '+H+'" class="w-full h-auto" role="img" aria-label="Downloads per day, last 30 days, free vs paid" id="stats-svg">'+
+      '<svg viewBox="0 0 '+W+' '+H+'" class="w-full h-auto" role="img" aria-label="Downloads per day, last 30 days, by edition and tier" id="stats-svg">'+
+        yGrid+xGridV+
         '<line x1="'+PAD_L+'" y1="'+(PAD_T+innerH)+'" x2="'+(W-PAD_R)+'" y2="'+(PAD_T+innerH)+'" stroke="var(--border)" stroke-width="1"/>'+
-        '<text x="2" y="'+(PAD_T+5)+'" font-size="10" fill="var(--muted-foreground)">'+maxVal.toLocaleString('en-US')+'</text>'+
-        '<text x="2" y="'+(PAD_T+innerH)+'" font-size="10" fill="var(--muted-foreground)">0</text>'+
-        '<path d="'+freeAreaD+'" fill="var(--muted-foreground)" opacity="0.15"></path>'+
-        '<path d="'+totalAreaD+'" fill="var(--primary)" opacity="0.2"></path>'+
-        '<polyline points="'+freeLinePts+'" fill="none" stroke="var(--muted-foreground)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"></polyline>'+
-        '<polyline points="'+totalLinePts+'" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>'+
-        labels+
+        '<line x1="'+PAD_L+'" y1="'+PAD_T+'" x2="'+PAD_L+'" y2="'+(PAD_T+innerH)+'" stroke="var(--border)" stroke-width="1"/>'+
+        linesSvg+
+        xLabels+
       '</svg>';
+
+    // ---- Legend: checkboxes toggle each line on/off and re-render ----
+    legendEl.innerHTML=CHART_SERIES.map(function(s){
+      var checked=chartHidden[s.id]?'':' checked';
+      var offClass=chartHidden[s.id]?' off':'';
+      return '<label class="'+offClass.trim()+'" data-series-label="'+s.id+'">'+
+        '<input type="checkbox" data-series-toggle="'+s.id+'"'+checked+'>'+
+        '<span class="swatch" style="background:'+s.color+'"></span>'+s.label+
+      '</label>';
+    }).join('');
+    legendEl.querySelectorAll('[data-series-toggle]').forEach(function(cb){
+      cb.addEventListener('change',function(){
+        chartHidden[cb.getAttribute('data-series-toggle')]=!cb.checked;
+        renderChart(dailyRaw);
+      });
+    });
 
     var svg=document.getElementById('stats-svg');
     function nearestIndex(clientX){
@@ -410,16 +485,18 @@
       return best;
     }
     wrap.addEventListener('mousemove',function(e){
+      if(!visibleSeries.length) return;
       var i=nearestIndex(e.clientX);
-      var d=daily[i];
       var rect=svg.getBoundingClientRect();
       var px=rect.left+(xAt(i)/W)*rect.width;
-      var py=rect.top+(yAt(d.total)/H)*rect.height;
       var wrapRect=wrap.getBoundingClientRect();
+      var dObj=new Date(dates[i]+'T00:00:00Z');
+      var lines=visibleSeries.map(function(s){
+        return s.label+': '+fmt(seriesValues[s.id][i]);
+      });
       tooltip.style.left=(px-wrapRect.left)+'px';
-      tooltip.style.top=(py-wrapRect.top)+'px';
-      var dObj=new Date(d.date+'T00:00:00Z');
-      tooltip.textContent=dObj.toLocaleDateString('en-US',{month:'short',day:'numeric'})+': '+fmt(d.total)+' total ('+fmt(d.paid)+' paid)';
+      tooltip.style.top=(rect.top+(yAt(seriesValues[visibleSeries[0].id][i])/H)*rect.height-wrapRect.top)+'px';
+      tooltip.innerHTML=dObj.toLocaleDateString('en-US',{month:'short',day:'numeric'})+'<br>'+lines.join('<br>');
       tooltip.hidden=false;
     });
     wrap.addEventListener('mouseleave',function(){ tooltip.hidden=true; });
