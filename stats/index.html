@@ -217,13 +217,38 @@
 </div>
 
 <div class="mt-10">
-  <h2 class="text-lg font-semibold mb-4">Donations revenue</h2>
-  <div class="overflow-x-auto rounded-2xl border border-border">
+  <div class="mb-3 flex items-center justify-between flex-wrap gap-3">
+    <h2 class="text-lg font-semibold" id="rev-chart-title">Donations revenue</h2>
+    <div class="flex items-center gap-3 flex-wrap">
+      <div class="stats-range-group" id="rev-range-group" role="group" aria-label="Time range">
+        <button type="button" data-range="1d">1D</button>
+        <button type="button" data-range="30d" class="active">30D</button>
+        <button type="button" data-range="90d">90D</button>
+        <button type="button" data-range="custom">Custom</button>
+      </div>
+      <div class="stats-range-custom" id="rev-range-custom" hidden>
+        <input type="date" id="rev-range-from" aria-label="Start date">
+        <span>–</span>
+        <input type="date" id="rev-range-to" aria-label="End date">
+      </div>
+      <button type="button" class="stats-export-btn" id="rev-export-csv">Export CSV</button>
+    </div>
+  </div>
+  <div class="mb-4 flex justify-end">
+    <div class="chart-legend" id="rev-chart-legend"></div>
+  </div>
+  <div id="rev-chart-wrap" class="rounded-2xl border border-border p-4 md:p-6" style="position:relative">
+    <div id="rev-chart"></div>
+    <div class="stats-tooltip" id="rev-tooltip" hidden></div>
+  </div>
+
+  <div class="mt-6 overflow-x-auto rounded-2xl border border-border">
     <table class="stats-table">
       <thead><tr><th>Currency</th><th>Last 24h</th><th>Last 30 days</th><th>All-time</th></tr></thead>
       <tbody id="stats-revenue-body"><tr><td colspan="4" class="text-muted-foreground text-center py-8">Loading…</td></tr></tbody>
     </table>
-  </div></div>
+  </div>
+</div>
 
 <div class="mt-10 grid gap-6 md:grid-cols-2">
   <div>
@@ -680,9 +705,10 @@
     return total;
   }
 
-  function renderRevenueTable(donations){
+  function renderRevenueTable(donations,adRevenue){
     var tbody=document.getElementById('stats-revenue-body');
     donations=donations||{};
+    adRevenue=adRevenue||{};
     var allTime=donations.all_time||{};
     var last30d=donations.last_30d||{};
     var last24h=donations.last_24h||{};
@@ -708,14 +734,266 @@
       '</tr>';
     });
 
-    var totalRow='<tr style="border-top:2px solid var(--border)">'+
-      '<td class="font-medium">TOTAL (EUR)</td>'+
-      '<td class="font-medium">'+formatMoney(sumInEurCents(last24h),'eur')+'</td>'+
-      '<td class="font-medium">'+formatMoney(sumInEurCents(last30d),'eur')+'</td>'+
-      '<td class="font-medium">'+formatMoney(sumInEurCents(allTime),'eur')+'</td>'+
+    var adAllTimeEur=sumInEurCents(adRevenue.all_time||{});
+    var ad30dEur=sumInEurCents(adRevenue.last_30d||{});
+    var ad24hEur=sumInEurCents(adRevenue.last_24h||{});
+    var hasAdRevenue=!!(adRevenue.all_time||adRevenue.last_30d||adRevenue.last_24h);
+
+    var donationsAllTimeEur=sumInEurCents(allTime);
+    var donations30dEur=sumInEurCents(last30d);
+    var donations24hEur=sumInEurCents(last24h);
+
+    var adRow=hasAdRevenue
+      ? '<tr style="border-top:2px solid var(--border)">'+
+          '<td class="font-medium">AD REVENUE (EUR)</td>'+
+          '<td class="font-medium">'+formatMoney(ad24hEur,'eur')+'</td>'+
+          '<td class="font-medium">'+formatMoney(ad30dEur,'eur')+'</td>'+
+          '<td class="font-medium">'+formatMoney(adAllTimeEur,'eur')+'</td>'+
+        '</tr>'
+      : '';
+
+    var donationsTotalRow='<tr'+(hasAdRevenue?'':' style="border-top:2px solid var(--border)"')+'>'+
+      '<td class="font-medium">Donations Total (EUR)</td>'+
+      '<td class="font-medium">'+formatMoney(donations24hEur,'eur')+'</td>'+
+      '<td class="font-medium">'+formatMoney(donations30dEur,'eur')+'</td>'+
+      '<td class="font-medium">'+formatMoney(donationsAllTimeEur,'eur')+'</td>'+
     '</tr>';
 
-    tbody.innerHTML=rowsHtml.join('')+totalRow;
+    var grandTotalRow=hasAdRevenue
+      ? '<tr style="border-top:2px solid var(--border)">'+
+          '<td class="font-medium">Total (EUR)</td>'+
+          '<td class="font-medium">'+formatMoney(donations24hEur+ad24hEur,'eur')+'</td>'+
+          '<td class="font-medium">'+formatMoney(donations30dEur+ad30dEur,'eur')+'</td>'+
+          '<td class="font-medium">'+formatMoney(donationsAllTimeEur+adAllTimeEur,'eur')+'</td>'+
+        '</tr>'
+      : '';
+
+    tbody.innerHTML=rowsHtml.join('')+adRow+donationsTotalRow+grandTotalRow;
+  }
+
+  // ---- Donations chart: one line per currency, built from /revenue's
+  // per-charge list rather than a pre-aggregated series (there isn't one --
+  // charges span years with long gaps, unlike downloads' dense daily rows). ----
+  var REV_CHART_RANGE='30d';
+  var REV_CHART_CUSTOM_FROM=null, REV_CHART_CUSTOM_TO=null;
+  var REV_CHART_HIDDEN={};
+  var REV_CHART_EXPORT_DATA=null;
+  var REV_COLOR_PALETTE=['var(--primary)','#3b82f6','#f59e0b','#ef4444','#a855f7','#14b8a6'];
+  var REV_CURRENCY_COLORS={};
+
+  function getRevColor(cur){
+    if(!REV_CURRENCY_COLORS[cur]){
+      var idx=Object.keys(REV_CURRENCY_COLORS).length%REV_COLOR_PALETTE.length;
+      REV_CURRENCY_COLORS[cur]=REV_COLOR_PALETTE[idx];
+    }
+    return REV_CURRENCY_COLORS[cur];
+  }
+
+  function getRevRangeRows(){
+    var charges=(STATS_DATA&&STATS_DATA.donations&&STATS_DATA.donations.charges)||[];
+    if(REV_CHART_RANGE==='1d'){
+      var cutoff=Date.now()-24*3600*1000;
+      var hourRows=charges.filter(function(c){ return new Date(c.created).getTime()>=cutoff; }).map(function(c){
+        var d=new Date(c.created);
+        d.setUTCMinutes(0,0,0);
+        return {bucket:d.toISOString(), currency:c.currency, amount_cents:c.amount_cents};
+      });
+      return {granularity:'hour', rows:hourRows};
+    }
+
+    var dayRows=charges.map(function(c){
+      var date=c.created.slice(0,10);
+      return {bucket:date+'T00:00:00Z', date:date, currency:c.currency, amount_cents:c.amount_cents};
+    });
+
+    if(REV_CHART_RANGE==='90d'){
+      var cutoff90=Date.now()-90*86400000;
+      return {granularity:'day', rows:dayRows.filter(function(r){ return new Date(r.bucket).getTime()>=cutoff90; })};
+    }
+    if(REV_CHART_RANGE==='custom'){
+      if(!REV_CHART_CUSTOM_FROM||!REV_CHART_CUSTOM_TO) return {granularity:'day', rows:dayRows};
+      return {granularity:'day', rows:dayRows.filter(function(r){ return r.date>=REV_CHART_CUSTOM_FROM && r.date<=REV_CHART_CUSTOM_TO; })};
+    }
+    // default '30d'
+    var cutoff30=Date.now()-30*86400000;
+    return {granularity:'day', rows:dayRows.filter(function(r){ return new Date(r.bucket).getTime()>=cutoff30; })};
+  }
+
+  function updateRevChart(){
+    var res=getRevRangeRows();
+    renderRevChart(res.rows, res.granularity);
+  }
+
+  function renderRevChart(rows, granularity){
+    var wrap=document.getElementById('rev-chart-wrap');
+    var chartEl=document.getElementById('rev-chart');
+    var tooltip=document.getElementById('rev-tooltip');
+    var legendEl=document.getElementById('rev-chart-legend');
+    var exportBtn=document.getElementById('rev-export-csv');
+
+    rows=rows||[];
+    granularity=granularity||'day';
+    REV_CHART_EXPORT_DATA=null;
+    if(exportBtn) exportBtn.disabled=true;
+
+    if(!rows.length){
+      legendEl.innerHTML='';
+      chartEl.innerHTML='<p class="text-muted-foreground text-sm text-center py-10">No donations in this range.</p>';
+      return;
+    }
+
+    var currencies=[];
+    var seenCur={};
+    rows.forEach(function(r){ if(!seenCur[r.currency]){ seenCur[r.currency]=true; currencies.push(r.currency); } });
+    currencies.sort();
+
+    var bucketSet={};
+    rows.forEach(function(r){ bucketSet[r.bucket]=true; });
+    var buckets=Object.keys(bucketSet).sort();
+    var n=buckets.length;
+    if(n<2){
+      legendEl.innerHTML='';
+      chartEl.innerHTML='<p class="text-muted-foreground text-sm text-center py-10">Not enough data yet for a trend chart.</p>';
+      return;
+    }
+
+    var seriesValues={};
+    currencies.forEach(function(cur){ seriesValues[cur]=buckets.map(function(){ return 0; }); });
+    var bucketIndex={};
+    buckets.forEach(function(b,i){ bucketIndex[b]=i; });
+    rows.forEach(function(r){
+      var i=bucketIndex[r.bucket];
+      if(i===undefined) return;
+      seriesValues[r.currency][i]+=(r.amount_cents||0)/100;
+    });
+
+    if(exportBtn) exportBtn.disabled=false;
+    REV_CHART_EXPORT_DATA={buckets:buckets, seriesValues:seriesValues, currencies:currencies, granularity:granularity};
+
+    var visibleCurrencies=currencies.filter(function(cur){ return !REV_CHART_HIDDEN[cur]; });
+    var maxVal=1;
+    visibleCurrencies.forEach(function(cur){
+      seriesValues[cur].forEach(function(v){ if(v>maxVal) maxVal=v; });
+    });
+
+    var W=800,H=260,PAD_L=44,PAD_R=8,PAD_T=14,PAD_B=26;
+    var innerW=W-PAD_L-PAD_R, innerH=H-PAD_T-PAD_B;
+    function xAt(i){ return PAD_L+(n===1?0:(i/(n-1))*innerW); }
+    function yAt(v){ return PAD_T+innerH-(v/maxVal)*innerH; }
+
+    var tickStep=niceStep(maxVal/5)||1;
+    var yTicks=[];
+    for(var t=0; t<=maxVal+tickStep*0.001; t+=tickStep){ yTicks.push(t); }
+    var yGrid=yTicks.map(function(v){
+      var y=yAt(v);
+      return '<line class="stats-gridline" x1="'+PAD_L+'" y1="'+y+'" x2="'+(W-PAD_R)+'" y2="'+y+'" stroke-width="1"/>'+
+        '<text class="stats-axis-label" x="'+(PAD_L-8)+'" y="'+(y+3)+'" font-size="10" text-anchor="end">'+v.toLocaleString('en-US',{maximumFractionDigits:v<10?2:0})+'</text>';
+    }).join('');
+
+    var maxLabels=Math.max(2,Math.floor(innerW/60));
+    var labelStride=Math.max(1,Math.ceil((n-1)/(maxLabels-1)));
+    var xLabels='', xGridV='';
+    for(var i=0;i<n;i++){
+      if(i%labelStride!==0 && i!==n-1) continue;
+      var dObj=new Date(buckets[i]);
+      var text=granularity==='hour'
+        ? dObj.toLocaleTimeString('en-US',{hour:'numeric',hour12:true})
+        : dObj.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      var anchor=i===0?'start':(i===n-1?'end':'middle');
+      xLabels+='<text class="stats-axis-label" x="'+xAt(i)+'" y="'+(H-6)+'" font-size="10" text-anchor="'+anchor+'">'+text+'</text>';
+      xGridV+='<line class="stats-gridline" x1="'+xAt(i)+'" y1="'+PAD_T+'" x2="'+xAt(i)+'" y2="'+(PAD_T+innerH)+'" stroke-width="1"/>';
+    }
+
+    var linesSvg=visibleCurrencies.map(function(cur){
+      var color=getRevColor(cur);
+      var pts=seriesValues[cur].map(function(v,i){ return xAt(i)+','+yAt(v); }).join(' ');
+      return '<polyline data-series="'+cur+'" points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>';
+    }).join('');
+
+    chartEl.innerHTML=
+      '<svg viewBox="0 0 '+W+' '+H+'" class="w-full h-auto" role="img" aria-label="Donation amounts over the selected range, by currency" id="rev-svg">'+
+        yGrid+xGridV+
+        '<line x1="'+PAD_L+'" y1="'+(PAD_T+innerH)+'" x2="'+(W-PAD_R)+'" y2="'+(PAD_T+innerH)+'" stroke="var(--border)" stroke-width="1"/>'+
+        '<line x1="'+PAD_L+'" y1="'+PAD_T+'" x2="'+PAD_L+'" y2="'+(PAD_T+innerH)+'" stroke="var(--border)" stroke-width="1"/>'+
+        linesSvg+
+        xLabels+
+      '</svg>';
+
+    legendEl.innerHTML=currencies.map(function(cur){
+      var checked=REV_CHART_HIDDEN[cur]?'':' checked';
+      var offClass=REV_CHART_HIDDEN[cur]?' off':'';
+      return '<label class="'+offClass.trim()+'" data-series-label="'+cur+'">'+
+        '<input type="checkbox" data-series-toggle="'+cur+'"'+checked+'>'+
+        '<span class="swatch" style="background:'+getRevColor(cur)+'"></span>'+cur.toUpperCase()+
+      '</label>';
+    }).join('');
+    legendEl.querySelectorAll('[data-series-toggle]').forEach(function(cb){
+      cb.addEventListener('change',function(){
+        REV_CHART_HIDDEN[cb.getAttribute('data-series-toggle')]=!cb.checked;
+        renderRevChart(rows, granularity);
+      });
+    });
+
+    var svg=document.getElementById('rev-svg');
+    function nearestIndex(clientX){
+      var rect=svg.getBoundingClientRect();
+      var xFrac=(clientX-rect.left)/rect.width;
+      var xVal=xFrac*W;
+      var best=0,bestDist=Infinity;
+      for(var i=0;i<n;i++){
+        var dist=Math.abs(xAt(i)-xVal);
+        if(dist<bestDist){ bestDist=dist; best=i; }
+      }
+      return best;
+    }
+    wrap.onmousemove=function(e){
+      if(!visibleCurrencies.length) return;
+      var i=nearestIndex(e.clientX);
+      var rect=svg.getBoundingClientRect();
+      var px=rect.left+(xAt(i)/W)*rect.width;
+      var wrapRect=wrap.getBoundingClientRect();
+      var dObj=new Date(buckets[i]);
+      var dateLabel=granularity==='hour'
+        ? dObj.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',hour12:true})
+        : dObj.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      var lines=visibleCurrencies.map(function(cur){
+        return cur.toUpperCase()+': '+formatMoney(Math.round(seriesValues[cur][i]*100),cur);
+      });
+      tooltip.style.left=(px-wrapRect.left)+'px';
+      tooltip.style.top=(rect.top+(yAt(seriesValues[visibleCurrencies[0]][i])/H)*rect.height-wrapRect.top)+'px';
+      tooltip.innerHTML=dateLabel+'<br>'+lines.join('<br>');
+      tooltip.hidden=false;
+    };
+    wrap.onmouseleave=function(){ tooltip.hidden=true; };
+  }
+
+  function exportRevCSV(){
+    var data=REV_CHART_EXPORT_DATA;
+    if(!data||!data.buckets||!data.buckets.length) return;
+    var header=['Date'].concat(data.currencies.map(function(c){ return c.toUpperCase(); }));
+    var rows=data.buckets.map(function(b,i){
+      var dObj=new Date(b);
+      var dateStr=data.granularity==='hour'
+        ? dObj.toISOString().slice(0,13).replace('T',' ')+':00 UTC'
+        : dObj.toISOString().slice(0,10);
+      var vals=data.currencies.map(function(cur){ return data.seriesValues[cur][i].toFixed(2); });
+      return [dateStr].concat(vals);
+    });
+    var csv=[header].concat(rows).map(function(cols){
+      return cols.map(function(v){
+        var s=String(v);
+        return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+      }).join(',');
+    }).join('\r\n');
+    var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;
+    a.download='pearos-donations-'+data.granularity+'-'+toDateStr(new Date())+'.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function renderHourChart(byHour){
@@ -819,6 +1097,43 @@
   });
   document.getElementById('stats-export-csv').addEventListener('click', exportChartCSV);
 
+  function setActiveRevRangeButton(mode){
+    document.querySelectorAll('#rev-range-group button').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-range')===mode);
+    });
+  }
+
+  document.querySelectorAll('#rev-range-group button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var mode=btn.getAttribute('data-range');
+      REV_CHART_RANGE=mode;
+      setActiveRevRangeButton(mode);
+      document.getElementById('rev-range-custom').hidden=mode!=='custom';
+      if(mode==='custom'){
+        var fromInput=document.getElementById('rev-range-from');
+        var toInput=document.getElementById('rev-range-to');
+        if(!fromInput.value || !toInput.value){
+          var today=new Date();
+          var from=new Date(today.getTime()-29*86400000);
+          toInput.value=toDateStr(today);
+          fromInput.value=toDateStr(from);
+          REV_CHART_CUSTOM_FROM=fromInput.value;
+          REV_CHART_CUSTOM_TO=toInput.value;
+        }
+      }
+      if(STATS_DATA) updateRevChart();
+    });
+  });
+  document.getElementById('rev-range-from').addEventListener('change',function(){
+    REV_CHART_CUSTOM_FROM=this.value;
+    if(STATS_DATA && REV_CHART_RANGE==='custom') updateRevChart();
+  });
+  document.getElementById('rev-range-to').addEventListener('change',function(){
+    REV_CHART_CUSTOM_TO=this.value;
+    if(STATS_DATA && REV_CHART_RANGE==='custom') updateRevChart();
+  });
+  document.getElementById('rev-export-csv').addEventListener('click', exportRevCSV);
+
   fetch('../assets/data/download-stats.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(stats){
     document.getElementById('stat-all-time').textContent=fmt(stats.total_all_time);
     document.getElementById('stat-30d').textContent=fmt(stats.last_30d);
@@ -864,7 +1179,8 @@
       }).join('');
     }
 
-    renderRevenueTable(stats.donations);
+    renderRevenueTable(stats.donations, stats.ad_revenue);
+    updateRevChart();
 
     if(stats.generated_at){
       var d=new Date(stats.generated_at);

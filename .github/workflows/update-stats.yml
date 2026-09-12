@@ -44,6 +44,7 @@ jobs:
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_ANALYTICS_TOKEN: ${{ secrets.CF_ANALYTICS_TOKEN }}
+          EZOIC_API_KEY: ${{ secrets.EZOIC_API_KEY }}
         run: |
           query() {
             curl -fsSL -X POST \
@@ -94,8 +95,43 @@ jobs:
           donations=$(curl -fsSL "https://iso.pearos.xyz/revenue" || echo '{}')
           echo "$donations" | jq -e . >/dev/null 2>&1 || donations='{}'
 
+          # Ad revenue, straight from Ezoic's Big Data Analytics API (a
+          # separate publisher-managed key, not something pearos-dl or any
+          # Cloudflare secret can front for). This account may not have BDA
+          # access yet -- if the call 404s/401s or doesn't come back shaped
+          # like {rows: [...]}, this falls back to an empty object exactly
+          # like the /revenue call above, rather than failing the sync.
+          today=$(date -u +%Y-%m-%d)
+          since30=$(date -u -d '29 days ago' +%Y-%m-%d)
+          since90=$(date -u -d '90 days ago' +%Y-%m-%d)
+          ezoic_ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          ezoic_body=$(jq -n --argjson ids '[802586]' --arg start "$since90" --arg end "$today" \
+            '{domain_ids:$ids, start_date:$start, end_date:$end, dimensions:["report_day"], metrics:["revenue"], aggregate:"none", limit:500}')
+          ezoic_raw=$(curl -fsSL --max-time 20 -X POST "https://api-gateway.ezoic.com/bigdata/v2/query" \
+            -H "X-API-Key: ${EZOIC_API_KEY}" -H "Content-Type: application/json" \
+            --data "$ezoic_body" 2>/dev/null || echo "")
+
+          ad_revenue='{}'
+          if echo "$ezoic_raw" | jq -e '.rows | type == "array"' >/dev/null 2>&1; then
+            ad_revenue=$(echo "$ezoic_raw" | jq -c --arg since30 "$since30" --arg ts "$ezoic_ts" '
+              (.rows // []) as $rows
+              | (($rows | map(.revenue // 0) | add) // 0) as $all
+              | (($rows | map(select(.report_day >= $since30) | (.revenue // 0)) | add) // 0) as $d30
+              | (($rows | sort_by(.report_day) | last | (.revenue // 0)) // 0) as $latest
+              | {
+                  generated_at: $ts,
+                  all_time: {usd: {amount_cents: (($all*100)|round)}},
+                  last_30d: {usd: {amount_cents: (($d30*100)|round)}},
+                  last_24h: {usd: {amount_cents: (($latest*100)|round)}}
+                }
+            ')
+          else
+            echo "Ezoic BDA query failed or returned an unexpected shape (no BDA access yet?): $ezoic_raw"
+          fi
+
           echo "All-time: $total_all_time, last 30d: $last_30d, last 24h: $last_24h"
           echo "Donations: $donations"
+          echo "Ad revenue: $ad_revenue"
           echo "By file: $by_file"
           echo "Daily: $daily"
           echo "Hourly: $hourly"
@@ -118,7 +154,8 @@ jobs:
             --argjson friend_all_time "$friend_all_time" \
             --argjson friend_last_24h "$friend_last_24h" \
             --argjson donations "$donations" \
-            '{generated_at:$generated_at, total_all_time:$total_all_time, last_30d:$last_30d, last_24h:$last_24h, by_file:$by_file, daily:$daily, hourly:$hourly, by_country:$by_country, by_referrer:$by_referrer, by_hour:$by_hour, friend_all_time:$friend_all_time, friend_last_24h:$friend_last_24h, donations:$donations}' \
+            --argjson ad_revenue "$ad_revenue" \
+            '{generated_at:$generated_at, total_all_time:$total_all_time, last_30d:$last_30d, last_24h:$last_24h, by_file:$by_file, daily:$daily, hourly:$hourly, by_country:$by_country, by_referrer:$by_referrer, by_hour:$by_hour, friend_all_time:$friend_all_time, friend_last_24h:$friend_last_24h, donations:$donations, ad_revenue:$ad_revenue}' \
             > assets/data/download-stats.json
 
       - name: Render trend chart PNG (for WhatsApp / anywhere a plain image is needed)
