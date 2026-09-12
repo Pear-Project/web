@@ -97,23 +97,30 @@ jobs:
 
           # Ad revenue, straight from Ezoic's Big Data Analytics API (a
           # separate publisher-managed key, not something pearos-dl or any
-          # Cloudflare secret can front for). This account may not have BDA
-          # access yet -- if the call 404s/401s or doesn't come back shaped
-          # like {rows: [...]}, this falls back to an empty object exactly
-          # like the /revenue call above, rather than failing the sync.
+          # Cloudflare secret can front for). Real request shape confirmed
+          # against Ezoic's own published OpenAPI doc (there is no generic
+          # "reporting API" distinct from BDA -- this IS the only endpoint):
+          # https://api-gateway.ezoic.com/gateway/bdaservices/v2/docs.md
+          # domain_id is singular (not domain_ids), date_range is a nested
+          # object (not top-level start_date/end_date), and data_set is
+          # required -- "pageview" is what the docs recommend for revenue
+          # reporting. This account may not have BDA access yet -- if the
+          # call comes back other than {rows: [...]}, this falls back to an
+          # empty object exactly like the /revenue call above, rather than
+          # failing the sync.
           today=$(date -u +%Y-%m-%d)
           since30=$(date -u -d '29 days ago' +%Y-%m-%d)
           since90=$(date -u -d '90 days ago' +%Y-%m-%d)
           ezoic_ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          ezoic_body=$(jq -n --argjson ids '[802586]' --arg start "$since90" --arg end "$today" \
-            '{domain_ids:$ids, start_date:$start, end_date:$end, dimensions:["report_day"], metrics:["revenue"], aggregate:"none", limit:500}')
+          ezoic_body=$(jq -n --arg start "$since90" --arg end "$today" \
+            '{data_set:"pageview", date_range:{start_date:$start, end_date:$end}, dimensions:["report_day"], metrics:["revenue"], domain_id:802586, limit:500}')
           # -f dropped deliberately: it makes curl exit non-zero *and* discard
           # the response body on a non-2xx status, which is exactly the
           # diagnostic info needed when this fails. Status/body are captured
           # separately instead and both logged (the body's shape is safe to
           # print -- it's Ezoic's own error JSON, never the API key).
           ezoic_http_code=$(curl -sSL -o /tmp/ezoic_response.json -w "%{http_code}" --max-time 20 \
-            -X POST "https://api-gateway.ezoic.com/bigdata/v2/query" \
+            -X POST "https://api-gateway.ezoic.com/gateway/bdaservices/v2/query" \
             -H "X-API-Key: ${EZOIC_API_KEY}" -H "Content-Type: application/json" \
             --data "$ezoic_body")
           ezoic_raw=$(cat /tmp/ezoic_response.json 2>/dev/null || echo "")
