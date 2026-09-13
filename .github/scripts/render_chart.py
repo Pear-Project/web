@@ -14,8 +14,6 @@ import matplotlib.pyplot as plt
 BG = "#002b28"
 FG = "#efefe9"
 MUTED = "#acb0a2"
-FREE_COLOR = "#5c6b64"
-PAID_COLOR = "#cbef63"
 GRID = "#efefe930"
 
 # Matches pearos-dl's own CURRENCY_CONFIG (cloudflare/pearos-dl/src/index.js)
@@ -32,12 +30,28 @@ def format_money(amount_cents, currency):
 with open("assets/data/download-stats.json") as f:
     stats = json.load(f)
 
-by_date = defaultdict(lambda: {"free": 0, "paid": 0})
-for row in stats.get("daily", []):
-    tier = row.get("tier") if row.get("tier") == "paid" else "free"
-    by_date[row["date"]][tier] += row.get("downloads", 0)
+# Four fixed series, matching /stats/'s own CHART_SERIES exactly (same
+# colors too) -- each edition/tier plotted as its own line, not stacked, so
+# a tiny paid count is never buried under a much bigger free count sharing
+# one band. Previously this stacked all editions' Free+Paid into one area,
+# which didn't match what the site itself shows.
+SERIES = [
+    {"id": "nicecore_free", "match": "nicec0re", "tier": "free", "label": "NiceC0re — Free", "color": "#5c6b64"},
+    {"id": "nicecore_paid", "match": "nicec0re", "tier": "paid", "label": "NiceC0re — Paid", "color": "#cbef63"},
+    {"id": "debian_free", "match": "goldwing", "tier": "free", "label": "Debian — Free", "color": "#3b82f6"},
+    {"id": "debian_paid", "match": "goldwing", "tier": "paid", "label": "Debian — Paid", "color": "#f59e0b"},
+]
 
-dates_sorted = sorted(by_date.keys())
+by_date_series = defaultdict(lambda: defaultdict(int))
+for row in stats.get("daily", []):
+    file_lower = (row.get("file") or "").lower()
+    tier = "paid" if row.get("tier") == "paid" else "free"
+    for series in SERIES:
+        if series["match"] in file_lower and series["tier"] == tier:
+            by_date_series[row["date"]][series["id"]] += row.get("downloads", 0)
+            break
+
+dates_sorted = sorted(by_date_series.keys())
 
 # Revenue is a rolling-window snapshot from Stripe (not a daily series like
 # downloads are), so it's shown as a subtitle line rather than plotted -- a
@@ -88,17 +102,10 @@ if len(dates_sorted) < 2:
     ax.axis("off")
 else:
     xs = [datetime.strptime(d, "%Y-%m-%d") for d in dates_sorted]
-    free = [by_date[d]["free"] for d in dates_sorted]
-    paid = [by_date[d]["paid"] for d in dates_sorted]
 
-    ax.stackplot(
-        xs,
-        free,
-        paid,
-        colors=[FREE_COLOR, PAID_COLOR],
-        alpha=0.85,
-        labels=["Free", "Paid"],
-    )
+    for series in SERIES:
+        ys = [by_date_series[d].get(series["id"], 0) for d in dates_sorted]
+        ax.plot(xs, ys, color=series["color"], linewidth=2, label=series["label"])
     # Two separate axes-anchored texts (not fig.suptitle, which interacts
     # unpredictably with bbox_inches="tight" -- it can end up rendered below
     # an axes-level title instead of above it). The subtitle sits just above
@@ -113,7 +120,11 @@ else:
     if donations_subtitle:
         ax.text(0.5, 1.03, donations_subtitle, transform=ax.transAxes, ha="center", va="bottom", fontsize=10.5, color=MUTED)
 
-    legend = ax.legend(loc="upper left", frameon=False, labelcolor=FG, fontsize=11)
+    # Anchored outside the axes (to the right) rather than "upper left"
+    # inside the plot -- with 4 lines instead of 2 stacked bands, an inline
+    # legend box collided with the NiceC0re line and the y-axis labels.
+    # bbox_inches="tight" at save time expands the canvas to fit it.
+    legend = ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, frameon=False, labelcolor=FG, fontsize=11)
 
     for spine in ax.spines.values():
         spine.set_visible(False)
