@@ -91,7 +91,19 @@ async function main() {
     }
 
     await page.waitForSelector('table', { timeout: 30000 });
-    await page.waitForTimeout(2000); // let the table finish populating
+    // The table paints early with a handful of rows and fills in the rest
+    // via follow-up requests - wait for the "Showing X to Y of Z entries"
+    // footer text (DataTables-style) before trusting the row count, rather
+    // than a fixed delay that can race a slow load and only capture 1-2 days.
+    try {
+      await page.waitForFunction(
+        () => /Showing\s+\d+\s+to\s+\d+\s+of\s+\d+\s+entries/i.test(document.body.textContent || ''),
+        { timeout: 20000 }
+      );
+    } catch {
+      console.warn('Timed out waiting for the "Showing X to Y of Z entries" footer - reading whatever is there.');
+    }
+    await page.waitForTimeout(1500); // let the last batch of rows settle in
 
     const rawRows = await page.evaluate(readDailyTable);
     if (!rawRows || rawRows.length === 0) {
