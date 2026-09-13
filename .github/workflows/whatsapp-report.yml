@@ -20,7 +20,7 @@ jobs:
       - name: Check site statuses
         run: |
           status_site() {
-            curl -s --max-time 5 "$1" >/dev/null && echo "Online" || echo "Down"
+            curl -s --max-time 5 "$1" >/dev/null && echo "Up" || echo "Down"
           }
           echo "S1=$(status_site "https://pearos.xyz")" >> "$GITHUB_ENV"
           echo "S2=$(status_site "https://eqane.com")" >> "$GITHUB_ENV"
@@ -37,10 +37,21 @@ jobs:
         run: |
           MSG=$(python3 .github/scripts/build_whatsapp_message.py)
           echo "$MSG"
+          echo "Message length: $(echo -n "$MSG" | wc -c) characters"
 
-          curl --location --request POST "https://whatser.xyz/api/create-message" \
+          # A real run once "succeeded" here while Whatser's API actually
+          # rejected the message (over its 1000-char limit) with a 200-ish
+          # response the old plain curl call never inspected -- check the
+          # response body's own success field instead of trusting the exit code.
+          response=$(curl -sS --location --request POST "https://whatser.xyz/api/create-message" \
             --form "appkey=$WHATSER_APPKEY" \
             --form "authkey=$WHATSER_AUTHKEY" \
             --form "to=$WHATSER_TO" \
             --form "message=$MSG" \
-            --form "file=https://pearos.xyz/assets/data/download-chart.png"
+            --form "file=https://pearos.xyz/assets/data/download-chart.png")
+          echo "Whatser response: $response"
+
+          if ! echo "$response" | jq -e '.success == true' >/dev/null 2>&1; then
+            echo "::error::Whatser API did not report success -- see response above."
+            exit 1
+          fi

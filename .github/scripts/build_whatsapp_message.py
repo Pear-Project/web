@@ -141,9 +141,12 @@ referrers = [r for r in stats.get("by_referrer", []) if r.get("referrer")]
 if referrers:
     lines.append("")
     lines.append("*Traffic sources:*")
-    for r in referrers[:8]:
+    for r in referrers[:3]:
         label = "Direct" if r["referrer"] == "direct" else r["referrer"]
         lines.append(f"{label}: *{r['downloads']}*")
+    other_ref_total = sum(r["downloads"] for r in referrers[3:])
+    if other_ref_total:
+        lines.append(f"Other: *{other_ref_total}*")
 
 by_hour = stats.get("by_hour", [])
 if by_hour:
@@ -154,4 +157,17 @@ if by_hour:
 lines.append("")
 lines.append(f"_Updated: {stats.get('generated_at', '?')}_")
 
-print("\n".join(lines))
+message = "\n".join(lines)
+
+# Whatser's API hard-rejects anything over 1000 characters (confirmed: a
+# real run silently "succeeded" in CI while the API actually returned a
+# validation error, because the curl call didn't check the response body).
+# Trimming a couple of list sections keeps this under that in practice, but
+# truncate as a last resort instead of risking another silently-dropped
+# report if the data grows further.
+MAX_LEN = 1000
+if len(message) > MAX_LEN:
+    suffix = "\n… (truncated)"
+    message = message[: MAX_LEN - len(suffix)] + suffix
+
+print(message)

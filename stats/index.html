@@ -694,7 +694,7 @@
   // currencies (see CURRENCY_CONFIG in cloudflare/pearos-dl/src/index.js):
   // not a live FX rate, revisit occasionally rather than wiring up a rate
   // API for a donations table this small.
-  var EUR_RATES={usd:0.92,eur:1,gbp:1.16,inr:0.011,brl:0.17};
+  var EUR_RATES={usd:0.92,eur:1,gbp:1.16,inr:0.011,brl:0.17,ad:0.92};
 
   function sumInEurCents(bucket){
     var total=0;
@@ -887,10 +887,21 @@
     if(exportBtn) exportBtn.disabled=false;
     REV_CHART_EXPORT_DATA={buckets:buckets, seriesValues:seriesValues, currencies:currencies, granularity:granularity};
 
+    // Plot in EUR-equivalent, not each currency's raw face value: a 30-unit
+    // BRL line would otherwise tower over a 5-unit EUR line even though BRL
+    // is worth far less, which misrepresents which currency actually
+    // contributes more. Tooltip/legend/CSV still show genuine native
+    // amounts (seriesValues, untouched) -- only the line heights are scaled.
+    var seriesValuesEur={};
+    currencies.forEach(function(cur){
+      var rate=EUR_RATES[cur]||0;
+      seriesValuesEur[cur]=seriesValues[cur].map(function(v){ return v*rate; });
+    });
+
     var visibleCurrencies=currencies.filter(function(cur){ return !REV_CHART_HIDDEN[cur]; });
     var maxVal=1;
     visibleCurrencies.forEach(function(cur){
-      seriesValues[cur].forEach(function(v){ if(v>maxVal) maxVal=v; });
+      seriesValuesEur[cur].forEach(function(v){ if(v>maxVal) maxVal=v; });
     });
 
     var W=800,H=260,PAD_L=44,PAD_R=8,PAD_T=14,PAD_B=26;
@@ -904,7 +915,7 @@
     var yGrid=yTicks.map(function(v){
       var y=yAt(v);
       return '<line class="stats-gridline" x1="'+PAD_L+'" y1="'+y+'" x2="'+(W-PAD_R)+'" y2="'+y+'" stroke-width="1"/>'+
-        '<text class="stats-axis-label" x="'+(PAD_L-8)+'" y="'+(y+3)+'" font-size="10" text-anchor="end">'+v.toLocaleString('en-US',{maximumFractionDigits:v<10?2:0})+'</text>';
+        '<text class="stats-axis-label" x="'+(PAD_L-8)+'" y="'+(y+3)+'" font-size="10" text-anchor="end">€'+v.toLocaleString('en-US',{maximumFractionDigits:v<10?2:0})+'</text>';
     }).join('');
 
     var maxLabels=Math.max(2,Math.floor(innerW/60));
@@ -923,12 +934,12 @@
 
     var linesSvg=visibleCurrencies.map(function(cur){
       var color=getRevColor(cur);
-      var pts=seriesValues[cur].map(function(v,i){ return xAt(i)+','+yAt(v); }).join(' ');
+      var pts=seriesValuesEur[cur].map(function(v,i){ return xAt(i)+','+yAt(v); }).join(' ');
       return '<polyline data-series="'+cur+'" points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>';
     }).join('');
 
     chartEl.innerHTML=
-      '<svg viewBox="0 0 '+W+' '+H+'" class="w-full h-auto" role="img" aria-label="Donation amounts over the selected range, by currency" id="rev-svg">'+
+      '<svg viewBox="0 0 '+W+' '+H+'" class="w-full h-auto" role="img" aria-label="Donation amounts over the selected range, by currency, scaled to EUR-equivalent for fair comparison" id="rev-svg">'+
         yGrid+xGridV+
         '<line x1="'+PAD_L+'" y1="'+(PAD_T+innerH)+'" x2="'+(W-PAD_R)+'" y2="'+(PAD_T+innerH)+'" stroke="var(--border)" stroke-width="1"/>'+
         '<line x1="'+PAD_L+'" y1="'+PAD_T+'" x2="'+PAD_L+'" y2="'+(PAD_T+innerH)+'" stroke="var(--border)" stroke-width="1"/>'+
@@ -977,7 +988,7 @@
         return cur.toUpperCase()+': '+formatMoney(Math.round(seriesValues[cur][i]*100),cur);
       });
       tooltip.style.left=(px-wrapRect.left)+'px';
-      tooltip.style.top=(rect.top+(yAt(seriesValues[visibleCurrencies[0]][i])/H)*rect.height-wrapRect.top)+'px';
+      tooltip.style.top=(rect.top+(yAt(seriesValuesEur[visibleCurrencies[0]][i])/H)*rect.height-wrapRect.top)+'px';
       tooltip.innerHTML=dateLabel+'<br>'+lines.join('<br>');
       tooltip.hidden=false;
     };
