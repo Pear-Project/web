@@ -44,7 +44,6 @@ jobs:
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_ANALYTICS_TOKEN: ${{ secrets.CF_ANALYTICS_TOKEN }}
-          EZOIC_API_KEY: ${{ secrets.EZOIC_API_KEY }}
         run: |
           query() {
             curl -fsSL -X POST \
@@ -95,54 +94,33 @@ jobs:
           donations=$(curl -fsSL "https://iso.pearos.xyz/revenue" || echo '{}')
           echo "$donations" | jq -e . >/dev/null 2>&1 || donations='{}'
 
-          # Ad revenue, straight from Ezoic's Big Data Analytics API (a
-          # separate publisher-managed key, not something pearos-dl or any
-          # Cloudflare secret can front for). Real request shape confirmed
-          # against Ezoic's own published OpenAPI doc (there is no generic
-          # "reporting API" distinct from BDA -- this IS the only endpoint):
-          # https://api-gateway.ezoic.com/gateway/bdaservices/v2/docs.md
-          # domain_id is singular (not domain_ids), date_range is a nested
-          # object (not top-level start_date/end_date), and data_set is
-          # required -- "pageview" is what the docs recommend for revenue
-          # reporting. This account may not have BDA access yet -- if the
-          # call comes back other than {rows: [...]}, this falls back to an
-          # empty object exactly like the /revenue call above, rather than
-          # failing the sync.
-          today=$(date -u +%Y-%m-%d)
+          # Ad revenue, from stats/ezoic-daily-revenue.json -- a per-day
+          # history built by a headless read of Ezoic's own Real-Time
+          # dashboard (update-ezoic-revenue.yml, hourly), keyed by calendar
+          # date. This account has no working access to Ezoic's Big Data
+          # Analytics API (every BDA call came back empty), so that's no
+          # longer attempted here; the scraped file is the only real source
+          # for this. Tolerant of that file not existing yet (first run
+          # before the other workflow has ever committed it).
           since30=$(date -u -d '29 days ago' +%Y-%m-%d)
-          since90=$(date -u -d '90 days ago' +%Y-%m-%d)
           ezoic_ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          ezoic_body=$(jq -n --arg start "$since90" --arg end "$today" \
-            '{data_set:"pageview", date_range:{start_date:$start, end_date:$end}, dimensions:["report_day"], metrics:["revenue"], domain_id:802586, limit:500}')
-          # -f dropped deliberately: it makes curl exit non-zero *and* discard
-          # the response body on a non-2xx status, which is exactly the
-          # diagnostic info needed when this fails. Status/body are captured
-          # separately instead and both logged (the body's shape is safe to
-          # print -- it's Ezoic's own error JSON, never the API key).
-          ezoic_http_code=$(curl -sSL -o /tmp/ezoic_response.json -w "%{http_code}" --max-time 20 \
-            -X POST "https://api-gateway.ezoic.com/gateway/bdaservices/v2/query" \
-            -H "X-API-Key: ${EZOIC_API_KEY}" -H "Content-Type: application/json" \
-            --data "$ezoic_body")
-          ezoic_raw=$(cat /tmp/ezoic_response.json 2>/dev/null || echo "")
-          echo "Ezoic BDA HTTP status: $ezoic_http_code"
-          echo "Ezoic BDA response body: $ezoic_raw"
-
           ad_revenue='{}'
-          if echo "$ezoic_raw" | jq -e '.rows | type == "array"' >/dev/null 2>&1; then
-            ad_revenue=$(echo "$ezoic_raw" | jq -c --arg since30 "$since30" --arg ts "$ezoic_ts" '
-              (.rows // []) as $rows
-              | (($rows | map(.revenue // 0) | add) // 0) as $all
-              | (($rows | map(select(.report_day >= $since30) | (.revenue // 0)) | add) // 0) as $d30
-              | (($rows | sort_by(.report_day) | last | (.revenue // 0)) // 0) as $latest
+          if [ -f stats/ezoic-daily-revenue.json ]; then
+            echo "Ezoic daily revenue history: $(cat stats/ezoic-daily-revenue.json)"
+            ad_revenue=$(jq -c --arg since30 "$since30" --arg ts "$ezoic_ts" '
+              to_entries as $entries
+              | (($entries | map(.value) | add) // 0) as $all
+              | (($entries | map(select(.key >= $since30) | .value) | add) // 0) as $d30
+              | (($entries | sort_by(.key) | last | .value) // 0) as $latest
               | {
                   generated_at: $ts,
                   all_time: {usd: {amount_cents: (($all*100)|round)}},
                   last_30d: {usd: {amount_cents: (($d30*100)|round)}},
                   last_24h: {usd: {amount_cents: (($latest*100)|round)}}
                 }
-            ')
+            ' stats/ezoic-daily-revenue.json)
           else
-            echo "Ezoic BDA query failed or returned an unexpected shape (no BDA access yet?): $ezoic_raw"
+            echo "stats/ezoic-daily-revenue.json not found yet -- ad revenue will be empty."
           fi
 
           echo "All-time: $total_all_time, last 30d: $last_30d, last 24h: $last_24h"
