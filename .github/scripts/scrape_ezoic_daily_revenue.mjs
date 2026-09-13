@@ -82,8 +82,14 @@ async function selectAllTimeRange(page) {
   const select = page.locator('select.custom-select');
   await select.waitFor({ state: 'visible', timeout: 5000 });
   await select.selectOption({ label: 'All Time' });
+  const selectedLabel = await select.evaluate((el) => el.options[el.selectedIndex]?.textContent?.trim());
+  console.log('Period dropdown now set to:', selectedLabel);
+
   await page.getByRole('button', { name: 'Apply', exact: true }).click();
   await page.getByRole('button', { name: 'RUN REPORT', exact: true }).click();
+
+  const rangeText = await page.locator('.range-display').first().textContent().catch(() => null);
+  console.log('Date range display now reads:', rangeText);
 }
 
 async function main() {
@@ -92,7 +98,11 @@ async function main() {
   }
 
   const browser = await chromium.launch();
-  const context = await browser.newContext({ storageState: SESSION_PATH });
+  // Playwright's default 1280x720 viewport is much narrower than a normal
+  // desktop window - this dashboard is responsive, and a narrow viewport may
+  // render a different (collapsed/limited) layout. Match a normal wide
+  // desktop window to get the same behavior confirmed live.
+  const context = await browser.newContext({ storageState: SESSION_PATH, viewport: { width: 1920, height: 1080 } });
   const page = await context.newPage();
 
   try {
