@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Ezoic Live Earnings Tracker",
+  "version": "1.0",
+  "description": "Tracks Projected Revenue from Ezoic Analytics Real-Time and shows the running total, plus a 24h projection.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://analytics.ezoic.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Ezoic Earnings Tracker"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://analytics.ezoic.com/reports/realtime*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -2,3 +2,8 @@ node_modules/
 .DS_Store
 .wrangler/
 *.log
+
+# Local-only Ezoic login session captured by ezoic_login_capture.mjs - this
+# holds live login cookies and must never be committed; it's copied into the
+# EZOIC_SESSION_STATE GitHub secret instead, then deleted locally.
+ezoic-session.json

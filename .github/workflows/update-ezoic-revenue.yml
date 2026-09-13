@@ -1,0 +1,76 @@
+name: Sync Ezoic revenue stats
+
+# Hourly headless read of Ezoic's Real-Time "Projected Revenue" chart. There
+# is no working Ezoic reporting API access on this account (see
+# update-stats.yml's ad_revenue step), so this drives a real headless browser
+# against the same dashboard a human would look at, reusing the sweep logic
+# from the pearOS Ezoic Live Earnings Tracker Chrome extension
+# (.github/scripts/scrape_ezoic_revenue.mjs has the full explanation).
+#
+# Auth relies on a previously-captured Google-SSO session stored as the
+# EZOIC_SESSION_STATE secret (see .github/scripts/ezoic_login_capture.mjs) -
+# that session will expire every so often, at which point this job starts
+# failing with "Ezoic session looks expired" until the secret is refreshed.
+on:
+  schedule:
+    - cron: "23 * * * *" # hourly, offset from update-stats.yml's :07 slot
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-ezoic-revenue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking out source code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.WEB_REPO_PAT }}
+
+      - name: Install scraper dependencies
+        working-directory: .github/scripts
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Decode Ezoic session
+        env:
+          EZOIC_SESSION_STATE: ${{ secrets.EZOIC_SESSION_STATE }}
+        run: |
+          if [ -z "$EZOIC_SESSION_STATE" ]; then
+            echo "EZOIC_SESSION_STATE secret is not set - run ezoic_login_capture.mjs locally first." >&2
+            exit 1
+          fi
+          echo "$EZOIC_SESSION_STATE" | base64 -d > /tmp/ezoic-session.json
+
+      - name: Scrape Ezoic real-time revenue
+        env:
+          EZOIC_SESSION_PATH: /tmp/ezoic-session.json
+        run: node .github/scripts/scrape_ezoic_revenue.mjs
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "pearOS build bot"
+          git config user.email "327192259+pear-software@users.noreply.github.com"
+
+          if git diff --quiet -- stats/ezoic-revenue.json; then
+            echo "Stats unchanged, nothing to commit."
+            exit 0
+          fi
+
+          git add stats/ezoic-revenue.json
+          git commit -m "Sync Ezoic revenue stats"
+
+          # Same overlapping-run race as update-stats.yml: this file is a
+          # full regenerated snapshot each run, so a conflict is resolved by
+          # discarding origin's copy and recommitting ours, not merging.
+          for i in 1 2 3 4 5; do
+            git push origin HEAD:main && exit 0
+            git fetch origin main
+            git reset --soft origin/main
+            git add stats/ezoic-revenue.json
+            git commit -m "Sync Ezoic revenue stats"
+            sleep $((RANDOM % 5 + 1))
+          done
+          git push origin HEAD:main
