@@ -1149,8 +1149,7 @@
       sub.textContent='Not available yet.';
       return;
     }
-    var spanText=latest.spanHours?latest.spanHours.toFixed(1)+'h':'live window';
-    el.textContent='$'+latest.sum.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' ('+spanText+')';
+    el.textContent='$'+latest.sum.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     sub.textContent=(typeof latest.projected24h==='number')
       ? '$'+latest.projected24h.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' projected over the next 24h'
       : '';
