@@ -1144,13 +1144,16 @@
     var latest=(history||[]).slice(-1)[0];
     var el=document.getElementById('stat-ezoic-revenue');
     var sub=document.getElementById('stat-ezoic-revenue-sub');
-    if(!latest || typeof latest.projected24h!=='number'){
+    if(!latest || typeof latest.sum!=='number'){
       el.textContent='—';
       sub.textContent='Not available yet.';
       return;
     }
-    el.textContent='$'+latest.projected24h.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-    sub.textContent='Next 24h, projected from the last '+(latest.spanHours?latest.spanHours.toFixed(1)+'h':'live window');
+    var spanText=latest.spanHours?latest.spanHours.toFixed(1)+'h':'live window';
+    el.textContent='$'+latest.sum.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' ('+spanText+')';
+    sub.textContent=(typeof latest.projected24h==='number')
+      ? '$'+latest.projected24h.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' projected over the next 24h'
+      : '';
   }).catch(function(){
     document.getElementById('stat-ezoic-revenue-sub').textContent='Not available yet.';
   });
