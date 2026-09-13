@@ -100,6 +100,12 @@ async function selectAllTimeRange(page) {
   const rangeText = await page.locator('.range-display').first().textContent().catch(() => null);
   console.log('Date range display now reads:', rangeText);
 
+  // An "All Time" aggregation can be a genuinely slow query on Ezoic's end,
+  // especially cold - give it real headroom before giving up.
+  await page.waitForLoadState('networkidle', { timeout: 45000 }).catch(() => {
+    console.warn('Network did not go idle within 45s after RUN REPORT.');
+  });
+
   // RUN REPORT re-populates the SAME table element in place rather than
   // replacing it, so a generic "is there a table with a footer" wait can
   // resolve instantly against the stale pre-refresh footer text. Wait for
