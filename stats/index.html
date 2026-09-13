@@ -180,6 +180,7 @@
   <div class="stat-card"><div class="stat-label">Last 24 hours</div><div class="stat-value" id="stat-24h">—</div></div>
   <div class="stat-card"><div class="stat-label">Friends &amp; family link</div><div class="stat-value" id="stat-friend">—</div><div class="text-muted-foreground mt-1 text-xs" id="stat-friend-24h"></div></div>
   <div class="stat-card"><div class="stat-label">Paid conversion</div><div class="stat-value" id="stat-conversion">—</div><div class="text-muted-foreground mt-1 text-xs" id="stat-conversion-count"></div></div>
+  <div class="stat-card"><div class="stat-label">Projected Revenue</div><div class="stat-value" id="stat-ezoic-revenue">—</div><div class="text-muted-foreground mt-1 text-xs" id="stat-ezoic-revenue-sub"></div></div>
 </div>
 
 <div class="mt-10">
@@ -1133,6 +1134,26 @@
     if(STATS_DATA && REV_CHART_RANGE==='custom') updateRevChart();
   });
   document.getElementById('rev-export-csv').addEventListener('click', exportRevCSV);
+
+  // Ad revenue projection, read separately from download-stats.json since it
+  // comes from a different pipeline (a headless read of Ezoic's own
+  // Real-Time dashboard, not the Ezoic reporting API -- this account has no
+  // working access to that). Independent fetch so a hiccup here can't break
+  // the main stats render above.
+  fetch('ezoic-revenue.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(history){
+    var latest=(history||[]).slice(-1)[0];
+    var el=document.getElementById('stat-ezoic-revenue');
+    var sub=document.getElementById('stat-ezoic-revenue-sub');
+    if(!latest || typeof latest.projected24h!=='number'){
+      el.textContent='—';
+      sub.textContent='Not available yet.';
+      return;
+    }
+    el.textContent='$'+latest.projected24h.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    sub.textContent='Next 24h, projected from the last '+(latest.spanHours?latest.spanHours.toFixed(1)+'h':'live window');
+  }).catch(function(){
+    document.getElementById('stat-ezoic-revenue-sub').textContent='Not available yet.';
+  });
 
   fetch('../assets/data/download-stats.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(stats){
     document.getElementById('stat-all-time').textContent=fmt(stats.total_all_time);

@@ -199,6 +199,41 @@ function saveHistory(history) {
   writeFileSync(OUTPUT_FILE, JSON.stringify(trimmed, null, 2) + '\n');
 }
 
+const INTERVAL_LABEL = '30 Minutes';
+const INTERVAL_OPTIONS = ['1 Minute', '5 Minutes', '15 Minutes', '30 Minutes'];
+
+// The dashboard defaults to a "1 Minute" bucket, which only covers ~30
+// minutes of history across its fixed number of points - confirmed live: the
+// interval dropdown is a plain ARIA listbox/option pair (button showing the
+// current selection, options "1 Minute"/"5 Minutes"/"15 Minutes"/
+// "30 Minutes"), one click each to open and pick. Switching to 30 Minutes
+// gives a ~14h window instead, which is what the 24h projection is meant to
+// be extrapolated from.
+async function selectThirtyMinuteInterval(page) {
+  let trigger = null;
+  for (const label of INTERVAL_OPTIONS) {
+    const candidate = page.getByRole('button', { name: label, exact: true });
+    if ((await candidate.count()) > 0) {
+      trigger = candidate.first();
+      break;
+    }
+  }
+  if (!trigger) {
+    console.warn('Interval dropdown not found - continuing with whatever interval is already selected.');
+    return;
+  }
+
+  const currentLabel = (await trigger.textContent())?.trim();
+  if (currentLabel === INTERVAL_LABEL) return;
+
+  await trigger.click();
+  const option = page.getByRole('option', { name: INTERVAL_LABEL, exact: true });
+  await option.waitFor({ state: 'visible', timeout: 5000 });
+  await option.click();
+  // Let the chart finish re-rendering with the new window before sweeping it.
+  await page.waitForTimeout(2000);
+}
+
 async function main() {
   if (!existsSync(SESSION_PATH)) {
     throw new Error(`No session file at ${SESSION_PATH} - set EZOIC_SESSION_PATH or check the decode step.`);
@@ -220,6 +255,12 @@ async function main() {
 
     // Let the dashboard finish its own initial data load/render.
     await page.waitForTimeout(5000);
+
+    try {
+      await selectThirtyMinuteInterval(page);
+    } catch (err) {
+      console.warn('Could not switch to the 30-minute interval, continuing with the default:', err.message || err);
+    }
 
     const result = await page.evaluate(sweepPageForRevenue);
     if (!result.ok) {
