@@ -49,27 +49,32 @@ jobs:
           EZOIC_SESSION_PATH: /tmp/ezoic-session.json
         run: node .github/scripts/scrape_ezoic_revenue.mjs
 
+      - name: Scrape Ezoic daily revenue history
+        env:
+          EZOIC_SESSION_PATH: /tmp/ezoic-session.json
+        run: node .github/scripts/scrape_ezoic_daily_revenue.mjs
+
       - name: Commit and push if changed
         run: |
           git config user.name "pearOS build bot"
           git config user.email "327192259+pear-software@users.noreply.github.com"
 
-          if git diff --quiet -- stats/ezoic-revenue.json; then
+          if git diff --quiet -- stats/ezoic-revenue.json stats/ezoic-daily-revenue.json; then
             echo "Stats unchanged, nothing to commit."
             exit 0
           fi
 
-          git add stats/ezoic-revenue.json
+          git add stats/ezoic-revenue.json stats/ezoic-daily-revenue.json
           git commit -m "Sync Ezoic revenue stats"
 
-          # Same overlapping-run race as update-stats.yml: this file is a
+          # Same overlapping-run race as update-stats.yml: these files are a
           # full regenerated snapshot each run, so a conflict is resolved by
           # discarding origin's copy and recommitting ours, not merging.
           for i in 1 2 3 4 5; do
             git push origin HEAD:main && exit 0
             git fetch origin main
             git reset --soft origin/main
-            git add stats/ezoic-revenue.json
+            git add stats/ezoic-revenue.json stats/ezoic-daily-revenue.json
             git commit -m "Sync Ezoic revenue stats"
             sleep $((RANDOM % 5 + 1))
           done
