@@ -42,7 +42,12 @@ jobs:
           # A real run once "succeeded" here while Whatser's API actually
           # rejected the message (over its 1000-char limit) with a 200-ish
           # response the old plain curl call never inspected -- check the
-          # response body's own success field instead of trusting the exit code.
+          # response body itself instead of trusting the exit code. Confirmed
+          # live: a real success looks like
+          # {"message_status":"Success","data":{...}}, while a validation
+          # error looks like {"success":false,"message":"...","data":{...}} --
+          # two different shapes, so check for either explicit failure marker
+          # rather than requiring one specific success field.
           response=$(curl -sS --location --request POST "https://whatser.xyz/api/create-message" \
             --form "appkey=$WHATSER_APPKEY" \
             --form "authkey=$WHATSER_AUTHKEY" \
@@ -51,7 +56,11 @@ jobs:
             --form "file=https://pearos.xyz/assets/data/download-chart.png")
           echo "Whatser response: $response"
 
-          if ! echo "$response" | jq -e '.success == true' >/dev/null 2>&1; then
-            echo "::error::Whatser API did not report success -- see response above."
+          if ! echo "$response" | jq -e . >/dev/null 2>&1; then
+            echo "::error::Whatser API returned a non-JSON or empty response -- see above."
+            exit 1
+          fi
+          if echo "$response" | jq -e '.success == false' >/dev/null 2>&1; then
+            echo "::error::Whatser API reported failure -- see response above."
             exit 1
           fi
