@@ -77,7 +77,16 @@ function saveHistory(history) {
 // Rather than trust whatever's there, explicitly switch to "All Time": the
 // range picker's period dropdown is a plain <select class="custom-select">
 // with that exact option, one click on the date display to reveal it.
+function getFooterText(page) {
+  return page.evaluate(() => {
+    const m = (document.body.textContent || '').match(/Showing\s+\d+\s+to\s+\d+\s+of\s+\d+\s+entries/i);
+    return m ? m[0] : null;
+  });
+}
+
 async function selectAllTimeRange(page) {
+  const footerBefore = await getFooterText(page);
+
   await page.click('.datepicker-activator');
   const select = page.locator('select.custom-select');
   await select.waitFor({ state: 'visible', timeout: 5000 });
@@ -90,6 +99,24 @@ async function selectAllTimeRange(page) {
 
   const rangeText = await page.locator('.range-display').first().textContent().catch(() => null);
   console.log('Date range display now reads:', rangeText);
+
+  // RUN REPORT re-populates the SAME table element in place rather than
+  // replacing it, so a generic "is there a table with a footer" wait can
+  // resolve instantly against the stale pre-refresh footer text. Wait for
+  // that exact string to change instead, so we know the new range's data has
+  // actually landed before reading any rows.
+  try {
+    await page.waitForFunction(
+      (before) => {
+        const m = (document.body.textContent || '').match(/Showing\s+\d+\s+to\s+\d+\s+of\s+\d+\s+entries/i);
+        return m && m[0] !== before;
+      },
+      footerBefore,
+      { timeout: 20000 }
+    );
+  } catch {
+    console.warn('Table footer text did not change after RUN REPORT - it may already have matched, or the report is slow.');
+  }
 }
 
 async function main() {
