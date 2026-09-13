@@ -4,11 +4,12 @@
 //
 // Unlike the Real-Time chart (a live, constantly-shifting rolling window
 // read by scrape_ezoic_revenue.mjs), this page is a plain HTML <table> - no
-// hover simulation needed, just read cell text. The default view already
-// shows the last 7 days, which is more than enough overlap to make sure
-// every day gets captured at least once (and re-captured a few times after,
-// self-correcting if Ezoic revises a day's number slightly) without needing
-// to fight the custom date-range picker at all: merging by date key makes
+// hover simulation needed, just read cell text. Whatever range the
+// dashboard defaults to (confirmed live it's inconsistent - anywhere from
+// "Last 2 Days" to "Last 7 Days" depending on the session), it always
+// includes today and yesterday, so every day still gets captured at least
+// once (and re-captured a few times after, self-correcting if Ezoic revises
+// a day's number slightly) as this runs hourly. Merging by date key makes
 // re-reading the same day harmless, and safe against double-counting when
 // computing all_time/last_30d totals afterward.
 //
@@ -71,60 +72,19 @@ function saveHistory(history) {
   writeFileSync(OUTPUT_FILE, JSON.stringify(history, null, 2) + '\n');
 }
 
-// The dashboard's default date range isn't consistent - confirmed live it
-// can default to "Last 7 Days" on one session and just "Last 2 Days" on
-// another (a fresh session apparently doesn't inherit a saved preference).
-// Rather than trust whatever's there, explicitly switch to "All Time": the
-// range picker's period dropdown is a plain <select class="custom-select">
-// with that exact option, one click on the date display to reveal it.
-function getFooterText(page) {
-  return page.evaluate(() => {
-    const m = (document.body.textContent || '').match(/Showing\s+\d+\s+to\s+\d+\s+of\s+\d+\s+entries/i);
-    return m ? m[0] : null;
-  });
-}
-
-async function selectAllTimeRange(page) {
-  const footerBefore = await getFooterText(page);
-
-  await page.click('.datepicker-activator');
-  const select = page.locator('select.custom-select');
-  await select.waitFor({ state: 'visible', timeout: 5000 });
-  await select.selectOption({ label: 'All Time' });
-  const selectedLabel = await select.evaluate((el) => el.options[el.selectedIndex]?.textContent?.trim());
-  console.log('Period dropdown now set to:', selectedLabel);
-
-  await page.getByRole('button', { name: 'Apply', exact: true }).click();
-  await page.getByRole('button', { name: 'RUN REPORT', exact: true }).click();
-
-  const rangeText = await page.locator('.range-display').first().textContent().catch(() => null);
-  console.log('Date range display now reads:', rangeText);
-
-  // An "All Time" aggregation can be a genuinely slow query on Ezoic's end,
-  // especially cold - give it real headroom before giving up.
-  await page.waitForLoadState('networkidle', { timeout: 45000 }).catch(() => {
-    console.warn('Network did not go idle within 45s after RUN REPORT.');
-  });
-
-  // RUN REPORT re-populates the SAME table element in place rather than
-  // replacing it, so a generic "is there a table with a footer" wait can
-  // resolve instantly against the stale pre-refresh footer text. Wait for
-  // that exact string to change instead, so we know the new range's data has
-  // actually landed before reading any rows.
-  try {
-    await page.waitForFunction(
-      (before) => {
-        const m = (document.body.textContent || '').match(/Showing\s+\d+\s+to\s+\d+\s+of\s+\d+\s+entries/i);
-        return m && m[0] !== before;
-      },
-      footerBefore,
-      { timeout: 20000 }
-    );
-  } catch {
-    console.warn('Table footer text did not change after RUN REPORT - it may already have matched, or the report is slow.');
-  }
-}
-
+// This reads whatever date range the dashboard defaults to (confirmed live
+// that's inconsistent - anywhere from "Last 2 Days" to "Last 7 Days"
+// depending on the session) rather than forcing a specific one: an attempt
+// to explicitly select "All Time" via the range picker worked when driven
+// interactively but silently never refreshed the table in headless CI (the
+// range display updated, the underlying data never did, even after a 45s
+// networkidle wait) for reasons that weren't worth chasing further blind.
+// Since every day gets captured via this same rolling default window while
+// it's still "today" or "yesterday", and results are merged by date key
+// rather than overwritten wholesale, nothing is lost going forward - only
+// days from before this scraper started running (which were never
+// available anyway; the old Ezoic BDA API this replaces had no access on
+// this account either) won't be backfilled.
 async function main() {
   if (!existsSync(SESSION_PATH)) {
     throw new Error(`No session file at ${SESSION_PATH} - set EZOIC_SESSION_PATH or check the decode step.`);
@@ -149,12 +109,6 @@ async function main() {
     }
 
     await page.waitForSelector('table', { timeout: 30000 });
-
-    try {
-      await selectAllTimeRange(page);
-    } catch (err) {
-      console.warn('Could not switch to "All Time", continuing with whatever range is already selected:', err.message || err);
-    }
 
     // The table paints early with a handful of rows and fills in the rest
     // via follow-up requests - wait for the "Showing X to Y of Z entries"
