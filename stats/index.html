@@ -682,7 +682,7 @@
   // Matches pearos-dl's own CURRENCY_CONFIG (cloudflare/pearos-dl/src/index.js)
   // -- just the display symbol, since /revenue already reports amounts in
   // each charge's own currency rather than converting anything.
-  var CURRENCY_SYMBOLS={usd:'$',eur:'€',gbp:'£',inr:'₹',brl:'R$'};
+  var CURRENCY_SYMBOLS={usd:'$',eur:'€',gbp:'£',inr:'₹',brl:'R$',ad:'$'};
 
   function formatMoney(amountCents,currency){
     var symbol=CURRENCY_SYMBOLS[currency]||(currency?currency.toUpperCase()+' ':'');
@@ -781,6 +781,13 @@
   var REV_CHART_EXPORT_DATA=null;
   var REV_COLOR_PALETTE=['var(--primary)','#3b82f6','#f59e0b','#ef4444','#a855f7','#14b8a6'];
   var REV_CURRENCY_COLORS={};
+  // Ad revenue, from the same per-day history the Projected Revenue card
+  // reads (stats/ezoic-daily-revenue.json), folded into this chart as a
+  // pseudo-currency ("ad") alongside real donation currencies -- only at
+  // day granularity, since there's no hourly ad revenue data to back the 1D
+  // view. Loaded independently and can arrive after the chart's first
+  // render, hence the re-render on fetch.
+  var EZOIC_DAILY_REVENUE=null;
 
   function getRevColor(cur){
     if(!REV_CURRENCY_COLORS[cur]){
@@ -788,6 +795,13 @@
       REV_CURRENCY_COLORS[cur]=REV_COLOR_PALETTE[idx];
     }
     return REV_CURRENCY_COLORS[cur];
+  }
+
+  function getAdRevenueDayRows(){
+    if(!EZOIC_DAILY_REVENUE) return [];
+    return Object.keys(EZOIC_DAILY_REVENUE).map(function(date){
+      return {bucket:date+'T00:00:00Z', date:date, currency:'ad', amount_cents:Math.round((EZOIC_DAILY_REVENUE[date]||0)*100)};
+    });
   }
 
   function getRevRangeRows(){
@@ -799,6 +813,7 @@
         d.setUTCMinutes(0,0,0);
         return {bucket:d.toISOString(), currency:c.currency, amount_cents:c.amount_cents};
       });
+      // No hourly ad revenue data to back this view -- day granularity only.
       return {granularity:'hour', rows:hourRows};
     }
 
@@ -806,18 +821,19 @@
       var date=c.created.slice(0,10);
       return {bucket:date+'T00:00:00Z', date:date, currency:c.currency, amount_cents:c.amount_cents};
     });
+    var adRows=getAdRevenueDayRows();
 
     if(REV_CHART_RANGE==='90d'){
       var cutoff90=Date.now()-90*86400000;
-      return {granularity:'day', rows:dayRows.filter(function(r){ return new Date(r.bucket).getTime()>=cutoff90; })};
+      return {granularity:'day', rows:dayRows.concat(adRows).filter(function(r){ return new Date(r.bucket).getTime()>=cutoff90; })};
     }
     if(REV_CHART_RANGE==='custom'){
-      if(!REV_CHART_CUSTOM_FROM||!REV_CHART_CUSTOM_TO) return {granularity:'day', rows:dayRows};
-      return {granularity:'day', rows:dayRows.filter(function(r){ return r.date>=REV_CHART_CUSTOM_FROM && r.date<=REV_CHART_CUSTOM_TO; })};
+      if(!REV_CHART_CUSTOM_FROM||!REV_CHART_CUSTOM_TO) return {granularity:'day', rows:dayRows.concat(adRows)};
+      return {granularity:'day', rows:dayRows.concat(adRows).filter(function(r){ return r.date>=REV_CHART_CUSTOM_FROM && r.date<=REV_CHART_CUSTOM_TO; })};
     }
     // default '30d'
     var cutoff30=Date.now()-30*86400000;
-    return {granularity:'day', rows:dayRows.filter(function(r){ return new Date(r.bucket).getTime()>=cutoff30; })};
+    return {granularity:'day', rows:dayRows.concat(adRows).filter(function(r){ return new Date(r.bucket).getTime()>=cutoff30; })};
   }
 
   function updateRevChart(){
@@ -1156,6 +1172,15 @@
   }).catch(function(){
     document.getElementById('stat-ezoic-revenue-sub').textContent='Not available yet.';
   });
+
+  // Per-day ad revenue history, folded into the Donations revenue chart as
+  // an extra "AD" series (see getAdRevenueDayRows()). Independent fetch,
+  // and re-renders the chart on arrival since it can resolve after the
+  // first render (donations load from a separate fetch below).
+  fetch('ezoic-daily-revenue.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(history){
+    EZOIC_DAILY_REVENUE=(history&&typeof history==='object')?history:{};
+    if(STATS_DATA) updateRevChart();
+  }).catch(function(){});
 
   fetch('../assets/data/download-stats.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(stats){
     document.getElementById('stat-all-time').textContent=fmt(stats.total_all_time);
