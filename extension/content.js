@@ -76,12 +76,16 @@
       if (!timeMatch) continue;
       const time = timeMatch[1].trim();
 
-      const revenueRegex = /([A-Za-z][A-Za-z ]*?): Projected Revenue:\s*\$([\d.]+)/g;
+      // The platform prefix ("Ezoic Platform: Projected Revenue: $X") only
+      // shows up when comparing multiple platforms; viewing a single
+      // platform can render it as plain "Projected Revenue: $X" instead, so
+      // that prefix has to be optional here.
+      const revenueRegex = /(?:([A-Za-z][A-Za-z ]*?): )?Projected Revenue:\s*\$([\d.]+)/g;
       let m;
       let total = 0;
       const byPlatform = {};
       while ((m = revenueRegex.exec(tooltip)) !== null) {
-        const platform = m[1].trim();
+        const platform = (m[1] || 'Total').trim();
         const value = parseFloat(m[2]);
         byPlatform[platform] = value;
         total += value;
