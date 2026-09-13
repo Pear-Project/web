@@ -71,6 +71,21 @@ function saveHistory(history) {
   writeFileSync(OUTPUT_FILE, JSON.stringify(history, null, 2) + '\n');
 }
 
+// The dashboard's default date range isn't consistent - confirmed live it
+// can default to "Last 7 Days" on one session and just "Last 2 Days" on
+// another (a fresh session apparently doesn't inherit a saved preference).
+// Rather than trust whatever's there, explicitly switch to "All Time": the
+// range picker's period dropdown is a plain <select class="custom-select">
+// with that exact option, one click on the date display to reveal it.
+async function selectAllTimeRange(page) {
+  await page.click('.datepicker-activator');
+  const select = page.locator('select.custom-select');
+  await select.waitFor({ state: 'visible', timeout: 5000 });
+  await select.selectOption({ label: 'All Time' });
+  await page.getByRole('button', { name: 'Apply', exact: true }).click();
+  await page.getByRole('button', { name: 'RUN REPORT', exact: true }).click();
+}
+
 async function main() {
   if (!existsSync(SESSION_PATH)) {
     throw new Error(`No session file at ${SESSION_PATH} - set EZOIC_SESSION_PATH or check the decode step.`);
@@ -91,6 +106,13 @@ async function main() {
     }
 
     await page.waitForSelector('table', { timeout: 30000 });
+
+    try {
+      await selectAllTimeRange(page);
+    } catch (err) {
+      console.warn('Could not switch to "All Time", continuing with whatever range is already selected:', err.message || err);
+    }
+
     // The table paints early with a handful of rows and fills in the rest
     // via follow-up requests - wait for the "Showing X to Y of Z entries"
     // footer text (DataTables-style) before trusting the row count, rather
