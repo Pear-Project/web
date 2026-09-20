@@ -522,6 +522,43 @@
     renderChart(res.rows, res.granularity);
   }
 
+  // Fixed list of recognized editions (populated once from the all-time
+  // data) so the table always shows every edition even when one has zero
+  // downloads in the currently selected range, instead of a row vanishing.
+  var ALL_EDITION_NAMES=[];
+
+  // The Downloads-by-edition table below the chart follows the same
+  // 1D/30D/90D/Custom selection instead of always showing all-time totals.
+  function renderEditionTable(){
+    var tbody=document.getElementById('stats-table-body');
+    var byEdition={};
+    ALL_EDITION_NAMES.forEach(function(name){ byEdition[name]={free:0,paid:0}; });
+    getRangeRows().rows.forEach(function(row){
+      var name=editionName(row.file);
+      if(!name) return;
+      if(!byEdition[name]) byEdition[name]={free:0,paid:0};
+      var n=Number(row.downloads)||0;
+      var tierKey=row.tier==='paid'?'paid':'free';
+      byEdition[name][tierKey]+=n;
+    });
+
+    var names=Object.keys(byEdition);
+    if(!names.length){
+      tbody.innerHTML='<tr><td colspan="4" class="text-muted-foreground text-center py-8">No downloads logged yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML=names.map(function(name){
+      var row=byEdition[name];
+      var total=row.free+row.paid;
+      return '<tr><td class="font-medium">'+name+'</td><td>'+fmt(row.free)+'</td><td>'+fmt(row.paid)+'</td><td class="font-medium">'+fmt(total)+'</td></tr>';
+    }).join('');
+  }
+
+  function updateChartAndTable(){
+    updateChart();
+    if(STATS_DATA) renderEditionTable();
+  }
+
   function exportChartCSV(){
     var data=CHART_EXPORT_DATA;
     if(!data||!data.buckets||!data.buckets.length) return;
@@ -1217,16 +1254,16 @@
           CHART_CUSTOM_TO=toInput.value;
         }
       }
-      if(STATS_DATA) updateChart();
+      if(STATS_DATA) updateChartAndTable();
     });
   });
   document.getElementById('stats-range-from').addEventListener('change',function(){
     CHART_CUSTOM_FROM=this.value;
-    if(STATS_DATA && CHART_RANGE==='custom') updateChart();
+    if(STATS_DATA && CHART_RANGE==='custom') updateChartAndTable();
   });
   document.getElementById('stats-range-to').addEventListener('change',function(){
     CHART_CUSTOM_TO=this.value;
-    if(STATS_DATA && CHART_RANGE==='custom') updateChart();
+    if(STATS_DATA && CHART_RANGE==='custom') updateChartAndTable();
   });
   document.getElementById('stats-export-csv').addEventListener('click', exportChartCSV);
 
@@ -1305,7 +1342,12 @@
     document.getElementById('stat-friend').textContent=fmt(stats.friend_all_time);
     document.getElementById('stat-friend-24h').textContent=(typeof stats.friend_last_24h==='number')?(fmt(stats.friend_last_24h)+' in the last 24h'):'';
     STATS_DATA=stats;
-    updateChart();
+    var editionNamesSeen={};
+    (stats.by_file||[]).forEach(function(row){
+      var name=editionName(row.file);
+      if(name && !editionNamesSeen[name]){ editionNamesSeen[name]=true; ALL_EDITION_NAMES.push(name); }
+    });
+    updateChartAndTable();
     renderBarList('stats-countries', stats.by_country, function(it){
       var flag=countryFlag(it.country);
       return (flag?flag+' ':'')+(it.country&&it.country!=='XX'?it.country:'Unknown');
@@ -1315,30 +1357,7 @@
     });
     renderHourChart(stats.by_hour);
 
-    var byEdition={};
-    (stats.by_file||[]).forEach(function(row){
-      var name=editionName(row.file);
-      if(!name) return;
-      if(!byEdition[name]) byEdition[name]={free:0,paid:0};
-      var n=Number(row.downloads)||0;
-      var tierKey=row.tier==='paid'?'paid':'free';
-      byEdition[name][tierKey]+=n;
-    });
-
     renderConversionStat();
-
-    var tbody=document.getElementById('stats-table-body');
-    var names=Object.keys(byEdition);
-    if(!names.length){
-      tbody.innerHTML='<tr><td colspan="4" class="text-muted-foreground text-center py-8">No downloads logged yet.</td></tr>';
-    }else{
-      tbody.innerHTML=names.map(function(name){
-        var row=byEdition[name];
-        var total=row.free+row.paid;
-        return '<tr><td class="font-medium">'+name+'</td><td>'+fmt(row.free)+'</td><td>'+fmt(row.paid)+'</td><td class="font-medium">'+fmt(total)+'</td></tr>';
-      }).join('');
-    }
-
     updateRevChartAndTable();
 
     if(stats.generated_at){
