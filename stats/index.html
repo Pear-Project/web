@@ -179,7 +179,7 @@
   <div class="stat-card"><div class="stat-label">Last 30 days</div><div class="stat-value" id="stat-30d">—</div></div>
   <div class="stat-card"><div class="stat-label">Last 24 hours</div><div class="stat-value" id="stat-24h">—</div></div>
   <div class="stat-card"><div class="stat-label">Friends &amp; family link</div><div class="stat-value" id="stat-friend">—</div><div class="text-muted-foreground mt-1 text-xs" id="stat-friend-24h"></div></div>
-  <div class="stat-card"><div class="stat-label">Paid conversion</div><div class="stat-value" id="stat-conversion">—</div><div class="text-muted-foreground mt-1 text-xs" id="stat-conversion-count"></div></div>
+  <div class="stat-card" id="stat-conversion-card" style="cursor:pointer" title="Click to cycle through All-time / 7d / 30d / 24h"><div class="stat-label" id="stat-conversion-label">Paid conversion</div><div class="stat-value" id="stat-conversion">—</div><div class="text-muted-foreground mt-1 text-xs" id="stat-conversion-count"></div></div>
   <div class="stat-card"><div class="stat-label">Projected Revenue</div><div class="stat-value" id="stat-ezoic-revenue">—</div><div class="text-muted-foreground mt-1 text-xs" id="stat-ezoic-revenue-sub"></div></div>
 </div>
 
@@ -245,8 +245,8 @@
 
   <div class="mt-6 overflow-x-auto rounded-2xl border border-border">
     <table class="stats-table">
-      <thead><tr><th>Currency</th><th>Last 24h</th><th>Last 30 days</th><th>All-time</th></tr></thead>
-      <tbody id="stats-revenue-body"><tr><td colspan="4" class="text-muted-foreground text-center py-8">Loading…</td></tr></tbody>
+      <thead><tr><th>Currency</th><th id="rev-table-range-th">Last 30 days</th><th>All-time</th></tr></thead>
+      <tbody id="stats-revenue-body"><tr><td colspan="3" class="text-muted-foreground text-center py-8">Loading…</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -399,6 +399,47 @@
     if(typeof n!=='number') return '—';
     return n.toLocaleString('en-US');
   }
+
+  // Paid conversion card cycles All-time -> 7d -> 30d -> 24h -> All-time on
+  // click. All-time reuses the pre-aggregated by_file totals (no date info
+  // needed); the shorter ranges filter the daily per-file/tier breakdown
+  // (which only covers the last 90 days -- plenty for any of these).
+  var CONVERSION_MODES=['all','7d','30d','1d'];
+  var CONVERSION_MODE_INDEX=0;
+  var CONVERSION_MODE_LABELS={all:'', '7d':' · Last 7d', '30d':' · Last 30d', '1d':' · Last 24h'};
+
+  function renderConversionStat(){
+    if(!STATS_DATA) return;
+    var mode=CONVERSION_MODES[CONVERSION_MODE_INDEX];
+    var totalPaid=0, totalFree=0;
+
+    if(mode==='all'){
+      (STATS_DATA.by_file||[]).forEach(function(row){
+        if(!editionName(row.file)) return;
+        var n=Number(row.downloads)||0;
+        if(row.tier==='paid') totalPaid+=n; else totalFree+=n;
+      });
+    } else {
+      var days=mode==='7d'?7:(mode==='30d'?30:1);
+      var cutoff=Date.now()-days*86400000;
+      (STATS_DATA.daily||[]).forEach(function(row){
+        if(!editionName(row.file)) return;
+        if(new Date(row.date+'T00:00:00Z').getTime()<cutoff) return;
+        var n=Number(row.downloads)||0;
+        if(row.tier==='paid') totalPaid+=n; else totalFree+=n;
+      });
+    }
+
+    var conversionTotal=totalPaid+totalFree;
+    document.getElementById('stat-conversion').textContent=conversionTotal?((totalPaid/conversionTotal*100).toFixed(2)+'%'):'—';
+    document.getElementById('stat-conversion-count').textContent=conversionTotal?(fmt(totalPaid)+' paid of '+fmt(conversionTotal)):'';
+    document.getElementById('stat-conversion-label').textContent='Paid conversion'+CONVERSION_MODE_LABELS[mode];
+  }
+
+  document.getElementById('stat-conversion-card').addEventListener('click',function(){
+    CONVERSION_MODE_INDEX=(CONVERSION_MODE_INDEX+1)%CONVERSION_MODES.length;
+    renderConversionStat();
+  });
 
   // country code -> flag emoji via Unicode regional indicator symbols,
   // no lookup table needed (works for any valid ISO 3166-1 alpha-2 code).
@@ -706,66 +747,87 @@
     return total;
   }
 
+  // Label for the table's dynamic column, matching whatever range is
+  // currently selected in the chart's own 1D/30D/90D/Custom buttons above it
+  // -- the table follows the same selection instead of always showing fixed
+  // 24h/30d columns regardless of what range you're looking at in the chart.
+  function getRevRangeLabel(){
+    if(REV_CHART_RANGE==='1d') return 'Last 24h';
+    if(REV_CHART_RANGE==='90d') return 'Last 90 days';
+    if(REV_CHART_RANGE==='custom') return 'Selected range';
+    return 'Last 30 days';
+  }
+
   function renderRevenueTable(donations,adRevenue){
     var tbody=document.getElementById('stats-revenue-body');
+    var rangeTh=document.getElementById('rev-table-range-th');
+    if(rangeTh) rangeTh.textContent=getRevRangeLabel();
+
     donations=donations||{};
     adRevenue=adRevenue||{};
     var allTime=donations.all_time||{};
-    var last30d=donations.last_30d||{};
-    var last24h=donations.last_24h||{};
 
     var currencies=Object.keys(allTime);
     if(!currencies.length){
-      tbody.innerHTML='<tr><td colspan="4" class="text-muted-foreground text-center py-8">'+
+      tbody.innerHTML='<tr><td colspan="3" class="text-muted-foreground text-center py-8">'+
         (donations.generated_at?'No donations logged yet.':'Revenue data not available yet -- check back after the next sync.')+
         '</td></tr>';
       return;
     }
     currencies.sort(function(a,b){ return (allTime[b].amount_cents||0)-(allTime[a].amount_cents||0); });
 
+    // Selected-range totals per currency (including the "ad" pseudo-currency
+    // for the AD REVENUE row below), from the exact same rows the chart
+    // above is plotting -- so the table always matches what's on screen.
+    var rangeRows=getRevRangeRows().rows;
+    var rangeBucket={};
+    rangeRows.forEach(function(r){
+      rangeBucket[r.currency]=rangeBucket[r.currency]||{amount_cents:0};
+      rangeBucket[r.currency].amount_cents+=(r.amount_cents||0);
+    });
+
     var rowsHtml=currencies.map(function(cur){
       var at=allTime[cur]||{amount_cents:0,count:0};
-      var d30=last30d[cur]||{amount_cents:0,count:0};
-      var d24=last24h[cur]||{amount_cents:0,count:0};
+      var range=rangeBucket[cur]||{amount_cents:0};
       return '<tr>'+
         '<td class="font-medium">'+cur.toUpperCase()+'</td>'+
-        '<td>'+formatMoney(d24.amount_cents,cur)+'</td>'+
-        '<td>'+formatMoney(d30.amount_cents,cur)+'</td>'+
+        '<td>'+formatMoney(range.amount_cents,cur)+'</td>'+
         '<td class="font-medium">'+formatMoney(at.amount_cents,cur)+' <span class="text-muted-foreground font-normal">('+fmt(at.count)+')</span></td>'+
       '</tr>';
     });
 
     var adAllTimeEur=sumInEurCents(adRevenue.all_time||{});
-    var ad30dEur=sumInEurCents(adRevenue.last_30d||{});
-    var ad24hEur=sumInEurCents(adRevenue.last_24h||{});
+    // getAdRevenueDayRows() reports raw USD cents (ad revenue is always
+    // USD) -- route it through sumInEurCents like every other figure here.
+    var adRangeEur=sumInEurCents(rangeBucket.ad?{usd:{amount_cents:rangeBucket.ad.amount_cents}}:{});
     var hasAdRevenue=!!(adRevenue.all_time||adRevenue.last_30d||adRevenue.last_24h);
 
     var donationsAllTimeEur=sumInEurCents(allTime);
-    var donations30dEur=sumInEurCents(last30d);
-    var donations24hEur=sumInEurCents(last24h);
+    var donationsRangeBucket={};
+    currencies.forEach(function(cur){
+      if(rangeBucket[cur]) donationsRangeBucket[cur]=rangeBucket[cur];
+    });
+    var donationsRangeEur=sumInEurCents(donationsRangeBucket);
 
     var adRow=hasAdRevenue
       ? '<tr style="border-top:2px solid var(--border)">'+
           '<td class="font-medium">AD REVENUE (EUR)</td>'+
-          '<td class="font-medium">'+formatMoney(ad24hEur,'eur')+'</td>'+
-          '<td class="font-medium">'+formatMoney(ad30dEur,'eur')+'</td>'+
+          '<td class="font-medium">'+formatMoney(adRangeEur,'eur')+'</td>'+
           '<td class="font-medium">'+formatMoney(adAllTimeEur,'eur')+'</td>'+
         '</tr>'
       : '';
 
     var donationsTotalRow='<tr'+(hasAdRevenue?'':' style="border-top:2px solid var(--border)"')+'>'+
       '<td class="font-medium">Donations Total (EUR)</td>'+
-      '<td class="font-medium">'+formatMoney(donations24hEur,'eur')+'</td>'+
-      '<td class="font-medium">'+formatMoney(donations30dEur,'eur')+'</td>'+
+      '<td class="font-medium">'+formatMoney(donationsRangeEur,'eur')+'</td>'+
       '<td class="font-medium">'+formatMoney(donationsAllTimeEur,'eur')+'</td>'+
     '</tr>';
 
-    var total24hEur=donations24hEur+ad24hEur;
+    var totalRangeEur=donationsRangeEur+adRangeEur;
     var grandTotalRow=hasAdRevenue
       ? '<tr style="border-top:2px solid var(--border)">'+
           '<td class="font-medium">Total (EUR)</td>'+
-          '<td class="font-medium">'+formatMoney(total24hEur,'eur')+'</td>'+
-          '<td class="font-medium">'+formatMoney(donations30dEur+ad30dEur,'eur')+'</td>'+
+          '<td class="font-medium">'+formatMoney(totalRangeEur,'eur')+'</td>'+
           '<td class="font-medium">'+formatMoney(donationsAllTimeEur+adAllTimeEur,'eur')+'</td>'+
         '</tr>'
       : '';
@@ -801,7 +863,7 @@
     var projectedMonthlyRow=hasAdRevenue
       ? '<tr>'+
           '<td class="font-medium">Projected Monthly Revenue</td>'+
-          '<td class="font-medium" colspan="3">'+formatMoney(total7Eur/7*30,'eur')+' <span class="text-muted-foreground font-normal">(at the last 7 days’ pace)</span></td>'+
+          '<td class="font-medium" colspan="2">'+formatMoney(total7Eur/7*30,'eur')+' <span class="text-muted-foreground font-normal">(at the last 7 days’ pace)</span></td>'+
         '</tr>'
       : '';
 
@@ -875,6 +937,13 @@
   function updateRevChart(){
     var res=getRevRangeRows();
     renderRevChart(res.rows, res.granularity);
+  }
+
+  // The revenue table below the chart follows the same 1D/30D/90D/Custom
+  // selection instead of always showing fixed 24h/30d columns.
+  function updateRevChartAndTable(){
+    updateRevChart();
+    if(STATS_DATA) renderRevenueTable(STATS_DATA.donations, STATS_DATA.ad_revenue);
   }
 
   function renderRevChart(rows, granularity){
@@ -1185,16 +1254,16 @@
           REV_CHART_CUSTOM_TO=toInput.value;
         }
       }
-      if(STATS_DATA) updateRevChart();
+      if(STATS_DATA) updateRevChartAndTable();
     });
   });
   document.getElementById('rev-range-from').addEventListener('change',function(){
     REV_CHART_CUSTOM_FROM=this.value;
-    if(STATS_DATA && REV_CHART_RANGE==='custom') updateRevChart();
+    if(STATS_DATA && REV_CHART_RANGE==='custom') updateRevChartAndTable();
   });
   document.getElementById('rev-range-to').addEventListener('change',function(){
     REV_CHART_CUSTOM_TO=this.value;
-    if(STATS_DATA && REV_CHART_RANGE==='custom') updateRevChart();
+    if(STATS_DATA && REV_CHART_RANGE==='custom') updateRevChartAndTable();
   });
   document.getElementById('rev-export-csv').addEventListener('click', exportRevCSV);
 
@@ -1226,10 +1295,7 @@
   // first render (donations load from a separate fetch below).
   fetch('ezoic-daily-revenue.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(history){
     EZOIC_DAILY_REVENUE=(history&&typeof history==='object')?history:{};
-    if(STATS_DATA){
-      updateRevChart();
-      renderRevenueTable(STATS_DATA.donations, STATS_DATA.ad_revenue);
-    }
+    updateRevChartAndTable();
   }).catch(function(){});
 
   fetch('../assets/data/download-stats.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(stats){
@@ -1250,7 +1316,6 @@
     renderHourChart(stats.by_hour);
 
     var byEdition={};
-    var totalPaid=0, totalFree=0;
     (stats.by_file||[]).forEach(function(row){
       var name=editionName(row.file);
       if(!name) return;
@@ -1258,12 +1323,9 @@
       var n=Number(row.downloads)||0;
       var tierKey=row.tier==='paid'?'paid':'free';
       byEdition[name][tierKey]+=n;
-      if(tierKey==='paid') totalPaid+=n; else totalFree+=n;
     });
 
-    var conversionTotal=totalPaid+totalFree;
-    document.getElementById('stat-conversion').textContent=conversionTotal?((totalPaid/conversionTotal*100).toFixed(2)+'%'):'—';
-    document.getElementById('stat-conversion-count').textContent=conversionTotal?(fmt(totalPaid)+' paid of '+fmt(conversionTotal)):'';
+    renderConversionStat();
 
     var tbody=document.getElementById('stats-table-body');
     var names=Object.keys(byEdition);
@@ -1277,8 +1339,7 @@
       }).join('');
     }
 
-    renderRevenueTable(stats.donations, stats.ad_revenue);
-    updateRevChart();
+    updateRevChartAndTable();
 
     if(stats.generated_at){
       var d=new Date(stats.generated_at);
