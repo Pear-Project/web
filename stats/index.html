@@ -760,16 +760,27 @@
       '<td class="font-medium">'+formatMoney(donationsAllTimeEur,'eur')+'</td>'+
     '</tr>';
 
+    var total24hEur=donations24hEur+ad24hEur;
     var grandTotalRow=hasAdRevenue
       ? '<tr style="border-top:2px solid var(--border)">'+
           '<td class="font-medium">Total (EUR)</td>'+
-          '<td class="font-medium">'+formatMoney(donations24hEur+ad24hEur,'eur')+'</td>'+
+          '<td class="font-medium">'+formatMoney(total24hEur,'eur')+'</td>'+
           '<td class="font-medium">'+formatMoney(donations30dEur+ad30dEur,'eur')+'</td>'+
           '<td class="font-medium">'+formatMoney(donationsAllTimeEur+adAllTimeEur,'eur')+'</td>'+
         '</tr>'
       : '';
 
-    tbody.innerHTML=rowsHtml.join('')+adRow+donationsTotalRow+grandTotalRow;
+    // Simple run-rate projection (last 24h x 30), not a smoothed average --
+    // a single day can swing a lot on a small/young site, so this is a
+    // rough "at this pace" number rather than a firm forecast.
+    var projectedMonthlyRow=hasAdRevenue
+      ? '<tr>'+
+          '<td class="font-medium">Projected Monthly Revenue</td>'+
+          '<td class="font-medium" colspan="3">'+formatMoney(total24hEur*30,'eur')+' <span class="text-muted-foreground font-normal">(at the last 24h’s pace)</span></td>'+
+        '</tr>'
+      : '';
+
+    tbody.innerHTML=rowsHtml.join('')+adRow+donationsTotalRow+grandTotalRow+projectedMonthlyRow;
   }
 
   // ---- Donations chart: one line per currency, built from /revenue's
