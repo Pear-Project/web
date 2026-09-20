@@ -770,13 +770,38 @@
         '</tr>'
       : '';
 
-    // Simple run-rate projection (last 24h x 30), not a smoothed average --
-    // a single day can swing a lot on a small/young site, so this is a
-    // rough "at this pace" number rather than a firm forecast.
+    // Run-rate projection off the last 7 days rather than the last 24h --
+    // a single day swings too much on a small/young site to extrapolate
+    // from alone. Donations come from STATS_DATA's raw per-charge list
+    // (only all_time/last_30d/last_24h are pre-aggregated); ad revenue from
+    // the per-day history behind the Donations chart's "AD" series
+    // (EZOIC_DAILY_REVENUE, a separate fetch that can resolve after this
+    // first render -- see its handler re-invoking this function on arrival).
+    var cutoff7=Date.now()-7*86400000;
+    var charges7=((STATS_DATA&&STATS_DATA.donations&&STATS_DATA.donations.charges)||[]).filter(function(c){
+      return new Date(c.created).getTime()>=cutoff7;
+    });
+    var donations7Bucket={};
+    charges7.forEach(function(c){
+      donations7Bucket[c.currency]=donations7Bucket[c.currency]||{amount_cents:0};
+      donations7Bucket[c.currency].amount_cents+=(c.amount_cents||0);
+    });
+    var donations7Eur=sumInEurCents(donations7Bucket);
+
+    var ad7Eur=0;
+    if(EZOIC_DAILY_REVENUE){
+      for(var i=0;i<7;i++){
+        var d=new Date(Date.now()-i*86400000);
+        var key=d.toISOString().slice(0,10);
+        if(typeof EZOIC_DAILY_REVENUE[key]==='number') ad7Eur+=EZOIC_DAILY_REVENUE[key]*(EUR_RATES.usd||0);
+      }
+    }
+    var total7Eur=donations7Eur+ad7Eur;
+
     var projectedMonthlyRow=hasAdRevenue
       ? '<tr>'+
           '<td class="font-medium">Projected Monthly Revenue</td>'+
-          '<td class="font-medium" colspan="3">'+formatMoney(total24hEur*30,'eur')+' <span class="text-muted-foreground font-normal">(at the last 24h’s pace)</span></td>'+
+          '<td class="font-medium" colspan="3">'+formatMoney(total7Eur/7*30,'eur')+' <span class="text-muted-foreground font-normal">(at the last 7 days’ pace)</span></td>'+
         '</tr>'
       : '';
 
@@ -1201,7 +1226,10 @@
   // first render (donations load from a separate fetch below).
   fetch('ezoic-daily-revenue.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(history){
     EZOIC_DAILY_REVENUE=(history&&typeof history==='object')?history:{};
-    if(STATS_DATA) updateRevChart();
+    if(STATS_DATA){
+      updateRevChart();
+      renderRevenueTable(STATS_DATA.donations, STATS_DATA.ad_revenue);
+    }
   }).catch(function(){});
 
   fetch('../assets/data/download-stats.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(stats){
