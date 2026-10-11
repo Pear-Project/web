@@ -28,7 +28,9 @@ permissions:
 
 jobs:
   sync-ezoic-revenue:
-    runs-on: ubuntu-latest
+    # Pinned: Playwright's --with-deps apt step is OS-version specific, and
+    # ubuntu-latest moves to Ubuntu 26 on 2026-10-19.
+    runs-on: ubuntu-24.04
     steps:
       - name: Checking out source code
         uses: actions/checkout@v4
