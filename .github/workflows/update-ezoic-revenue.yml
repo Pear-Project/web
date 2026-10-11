@@ -11,6 +11,13 @@ name: Sync Ezoic revenue stats
 # EZOIC_SESSION_STATE secret (see .github/scripts/ezoic_login_capture.mjs) -
 # that session will expire every so often, at which point this job starts
 # failing with "Ezoic session looks expired" until the secret is refreshed.
+#
+# The per-day revenue history (what /stats/ actually reports) no longer uses
+# that session: it comes from the public RevDash share link, which needs no
+# login, so it keeps updating even while the session is expired. The commit
+# step runs regardless of earlier failures so that data is never lost; the job
+# still ends red when the real-time scrape fails, so an expired session stays
+# visible.
 on:
   schedule:
     - cron: "23 * * * *" # hourly, offset from update-stats.yml's :07 slot
@@ -27,6 +34,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.WEB_REPO_PAT }}
+
+      - name: Fetch daily revenue history (public RevDash link)
+        run: node .github/scripts/fetch_ezoic_daily_revenue.mjs
 
       - name: Install scraper dependencies
         working-directory: .github/scripts
@@ -49,12 +59,8 @@ jobs:
           EZOIC_SESSION_PATH: /tmp/ezoic-session.json
         run: node .github/scripts/scrape_ezoic_revenue.mjs
 
-      - name: Scrape Ezoic daily revenue history
-        env:
-          EZOIC_SESSION_PATH: /tmp/ezoic-session.json
-        run: node .github/scripts/scrape_ezoic_daily_revenue.mjs
-
       - name: Commit and push if changed
+        if: ${{ !cancelled() }}
         run: |
           git config user.name "pearOS build bot"
           git config user.email "327192259+pear-software@users.noreply.github.com"
