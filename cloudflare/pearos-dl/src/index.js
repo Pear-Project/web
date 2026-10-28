@@ -73,6 +73,17 @@ async function handleVerify(request, env) {
     return json({ error: "not_paid" }, 402, request, env);
   }
 
+  // A cheaper donation session must not unlock a BSD build -- /checkout
+  // already enforces the BSD floor when the client says which file it is
+  // for, but the client controls that field, so re-check the amount that
+  // was actually paid here too.
+  if (isBsdFile(file)) {
+    const cfg = CURRENCY_CONFIG[String(session.currency || "").toLowerCase()];
+    if (!cfg || !Number.isFinite(session.amount_total) || session.amount_total < cfg.bsd.minCents) {
+      return json({ error: "below_bsd_minimum" }, 402, request, env);
+    }
+  }
+
   const ttl = parseInt(env.SIGNED_URL_TTL_SECONDS, 10);
   const exp = Math.floor(Date.now() / 1000) + ttl;
   const path = `/iso/${file}`;
@@ -98,6 +109,9 @@ async function handleFreepoint(request, env) {
   const file = body && body.file;
   if (typeof file !== "string" || file.includes("..") || !/^[\w.\-]+\.iso$/.test(file)) {
     return json({ error: "invalid_file" }, 400, request, env);
+  }
+  if (isBsdFile(file)) {
+    return json({ error: "paid_only" }, 403, request, env);
   }
 
   const ttl = parseInt(env.SIGNED_URL_TTL_SECONDS, 10);
@@ -127,15 +141,25 @@ const EUROZONE = new Set([
   "IT", "LT", "LU", "LV", "MT", "NL", "PT", "SI", "SK",
 ]);
 
+//
+// `bsd` is the same shape for the paid-only BSD (UltraC0re) builds: the
+// first preset IS the floor (30.99 in USD/EUR/GBP), nobody can pay less.
+// INR/BRL use the same rough rates as above (~84 and ~5.0 per USD).
 const CURRENCY_CONFIG = {
-  usd: { symbol: "$", presets: [299, 499, 999], minCents: 100 },
-  eur: { symbol: "€", presets: [299, 499, 999], minCents: 100 },
-  gbp: { symbol: "£", presets: [299, 499, 999], minCents: 100 },
+  usd: { symbol: "$", presets: [299, 499, 999], minCents: 100, bsd: { presets: [3099, 4999, 7999], minCents: 3099 } },
+  eur: { symbol: "€", presets: [299, 499, 999], minCents: 100, bsd: { presets: [3099, 4999, 7999], minCents: 3099 } },
+  gbp: { symbol: "£", presets: [299, 499, 999], minCents: 100, bsd: { presets: [3099, 4999, 7999], minCents: 3099 } },
   // ~85 INR/USD -- 249/449/899 rupees, minimum ~1 USD equivalent
-  inr: { symbol: "₹", presets: [24900, 44900, 89900], minCents: 8500 },
+  inr: { symbol: "₹", presets: [24900, 44900, 89900], minCents: 8500, bsd: { presets: [259900, 419900, 669900], minCents: 259900 } },
   // ~5.3 BRL/USD -- 14.99/24.99/49.99 reais, minimum ~1 USD equivalent
-  brl: { symbol: "R$", presets: [1499, 2499, 4999], minCents: 530 },
+  brl: { symbol: "R$", presets: [1499, 2499, 4999], minCents: 530, bsd: { presets: [15499, 24999, 39999], minCents: 15499 } },
 };
+
+// BSD builds are paid-only (no free tier, no throttle bypass question) --
+// identified by name, same convention the stats page uses.
+function isBsdFile(file) {
+  return typeof file === "string" && /UltraC0re/i.test(file);
+}
 
 function currencyForCountry(country) {
   if (country === "GB") return { code: "gbp", ...CURRENCY_CONFIG.gbp };
@@ -162,7 +186,9 @@ async function handleCheckout(request, env) {
   }
 
   const country = (request.cf && request.cf.country) || "XX";
-  const { code: currency, minCents } = currencyForCountry(country);
+  const { code: currency, minCents: baseMinCents, bsd } = currencyForCountry(country);
+  const bsdBuild = isBsdFile(body && body.file);
+  const minCents = bsdBuild ? bsd.minCents : baseMinCents;
 
   const amountCents = Math.round(Number(body && body.amount_cents));
   // Upper bound is a flat anti-abuse ceiling (not currency-scaled) --
@@ -184,7 +210,7 @@ async function handleCheckout(request, env) {
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": currency,
     "line_items[0][price_data][unit_amount]": String(amountCents),
-    "line_items[0][price_data][product_data][name]": "pearOS Donation",
+    "line_items[0][price_data][product_data][name]": bsdBuild ? "pearOS UltraC0re (Developer Preview)" : "pearOS Donation",
   });
 
   const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
@@ -243,6 +269,18 @@ async function handleDownload(request, env, url) {
       validSigned = true;
       accessTier = "friend";
     }
+  }
+
+  // BSD builds are paid-only: a free-tier signature (or none) never serves
+  // bytes, only paid/friend access does. Checked before the generic
+  // "unsigned" handling so HEAD (size lookups) still works but GET never
+  // falls through to the throttled path.
+  const bsdOnly = isBsdFile(key) && request.method !== "HEAD" && accessTier === "free";
+  if (bsdOnly) {
+    return new Response("This build is paid-only. Get it from https://pearos.xyz/bsd/\n", {
+      status: 403,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
   }
 
   // Small health-check probe used by external uptime monitors (Statuspage /

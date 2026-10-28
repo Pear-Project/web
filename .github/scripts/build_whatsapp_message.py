@@ -35,6 +35,8 @@ def edition_name(file):
         return "NiceC0re (Arch)"
     if "goldwing" in f:
         return "Debian (Goldwing)"
+    if "ultrac0re" in f:
+        return "BSD UltraC0re (ARM64)" if "arm64" in f else "BSD UltraC0re (AMD64)"
     if "bsd" in f:
         return "BSD"
     if "aarch64" in f or "raspberry" in f:
@@ -125,7 +127,11 @@ if by_edition:
     for name in sorted(by_edition.keys()):
         d = by_edition[name]
         total = d["free"] + d["paid"]
-        lines.append(f"_{name}_: *{total}* (free: {d['free']}, paid: {d['paid']})")
+        if "UltraC0re" in name:
+            # Paid-only build: no free tier to report.
+            lines.append(f"_{name}_: *{total}* (paid-only)")
+        else:
+            lines.append(f"_{name}_: *{total}* (free: {d['free']}, paid: {d['paid']})")
 
 countries = [c for c in stats.get("by_country", []) if c.get("country")]
 if countries:

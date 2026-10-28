@@ -388,6 +388,8 @@
   function editionName(file){
     if(/NiceC0re/i.test(file)) return 'NiceC0re (Arch)';
     if(/Goldwing/i.test(file)) return 'Debian (Goldwing)';
+    if(/UltraC0re.*arm64/i.test(file)) return 'BSD UltraC0re (ARM64)';
+    if(/UltraC0re/i.test(file)) return 'BSD UltraC0re (AMD64)';
     if(/bsd/i.test(file)) return 'BSD';
     if(/aarch64|raspberry/i.test(file)) return 'aarch64';
     // Anything that isn't a recognized edition's .iso (health-check probes,
@@ -415,7 +417,7 @@
 
     if(mode==='all'){
       (STATS_DATA.by_file||[]).forEach(function(row){
-        if(!editionName(row.file)) return;
+        if(!editionName(row.file)||/UltraC0re/i.test(row.file)) return;
         var n=Number(row.downloads)||0;
         if(row.tier==='paid') totalPaid+=n; else totalFree+=n;
       });
@@ -423,7 +425,7 @@
       var days=mode==='7d'?7:(mode==='30d'?30:1);
       var cutoff=Date.now()-days*86400000;
       (STATS_DATA.daily||[]).forEach(function(row){
-        if(!editionName(row.file)) return;
+        if(!editionName(row.file)||/UltraC0re/i.test(row.file)) return;
         if(new Date(row.date+'T00:00:00Z').getTime()<cutoff) return;
         var n=Number(row.downloads)||0;
         if(row.tier==='paid') totalPaid+=n; else totalFree+=n;
@@ -458,7 +460,11 @@
     {id:'nicecore_free', match:/NiceC0re/i, tier:'free', label:'NiceC0re — Free', color:'var(--muted-foreground)'},
     {id:'nicecore_paid', match:/NiceC0re/i, tier:'paid', label:'NiceC0re — Paid', color:'var(--primary)'},
     {id:'debian_free', match:/Goldwing/i, tier:'free', label:'Debian — Free', color:'#3b82f6'},
-    {id:'debian_paid', match:/Goldwing/i, tier:'paid', label:'Debian — Paid', color:'#f59e0b'}
+    {id:'debian_paid', match:/Goldwing/i, tier:'paid', label:'Debian — Paid', color:'#f59e0b'},
+    // BSD (UltraC0re) is paid-only, so one line per architecture instead of
+    // a free/paid pair.
+    {id:'bsd_amd64_paid', match:/UltraC0re.*amd64/i, tier:'paid', label:'BSD AMD64 — Paid', color:'#ef4444'},
+    {id:'bsd_arm64_paid', match:/UltraC0re.*arm64/i, tier:'paid', label:'BSD ARM64 — Paid', color:'#a855f7'}
   ];
   var chartHidden={}; // series id -> true when toggled off via the legend
   var CHART_RANGE='30d'; // '1d' | '30d' | '90d' | 'custom'

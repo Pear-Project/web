@@ -30,7 +30,7 @@ def format_money(amount_cents, currency):
 with open("assets/data/download-stats.json") as f:
     stats = json.load(f)
 
-# Four fixed series, matching /stats/'s own CHART_SERIES exactly (same
+# Six fixed series, matching /stats/'s own CHART_SERIES exactly (same
 # colors too) -- each edition/tier plotted as its own line, not stacked, so
 # a tiny paid count is never buried under a much bigger free count sharing
 # one band. Previously this stacked all editions' Free+Paid into one area,
@@ -40,6 +40,9 @@ SERIES = [
     {"id": "nicecore_paid", "match": "nicec0re", "tier": "paid", "label": "NiceC0re — Paid", "color": "#cbef63"},
     {"id": "debian_free", "match": "goldwing", "tier": "free", "label": "Debian — Free", "color": "#3b82f6"},
     {"id": "debian_paid", "match": "goldwing", "tier": "paid", "label": "Debian — Paid", "color": "#f59e0b"},
+    # BSD (UltraC0re) is paid-only -- one line per architecture.
+    {"id": "bsd_amd64_paid", "match": "ultrac0re-amd64", "tier": "paid", "label": "BSD AMD64 — Paid", "color": "#ef4444"},
+    {"id": "bsd_arm64_paid", "match": "ultrac0re-arm64", "tier": "paid", "label": "BSD ARM64 — Paid", "color": "#a855f7"},
 ]
 
 by_date_series = defaultdict(lambda: defaultdict(int))

@@ -18,11 +18,21 @@
   var currencySymbol='$';
   var presets=[299,499,999];
   var minCents=100;
+  // Paid-only BSD (UltraC0re) builds have their own, much higher floor and
+  // presets, in the same currency -- also served by /currency.
+  var bsdPresets=[3099,4999,7999];
+  var bsdMinCents=3099;
   fetch(CURRENCY_ENDPOINT).then(function(r){ return r.json(); }).then(function(d){
     if(d&&d.symbol) currencySymbol=d.symbol;
     if(d&&Array.isArray(d.presets)&&d.presets.length===3) presets=d.presets;
     if(d&&Number.isFinite(d.minCents)) minCents=d.minCents;
+    if(d&&d.bsd){
+      if(Array.isArray(d.bsd.presets)&&d.bsd.presets.length===3) bsdPresets=d.bsd.presets;
+      if(Number.isFinite(d.bsd.minCents)) bsdMinCents=d.bsd.minCents;
+    }
   }).catch(function(){});
+
+  function isBsdHref(href){ return /UltraC0re/i.test(href||''); }
 
   var CSS='\
 .pos-modal-overlay{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:20px}\
@@ -43,6 +53,7 @@
 .pos-go-btn{font-family:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--primary);background:var(--primary);color:var(--primary-foreground);padding:8px 16px;font-size:13px;font-weight:600}\
 .pos-go-btn:hover{opacity:.9}\
 .pos-skip{display:block;text-align:center;font-size:.8rem;color:var(--muted-foreground);text-decoration:underline;cursor:pointer;background:none;border:0;font-family:inherit;width:100%;padding:4px}\
+.pos-badge-inline{display:inline-block;vertical-align:middle;margin-left:6px;background:var(--primary);color:var(--primary-foreground);font-size:9px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 7px;border-radius:999px}\
 .pos-error{color:#e11d48;font-size:.8rem;margin:-6px 0 12px}\
 .pos-loading{padding:60px 20px;text-align:center;color:var(--muted-foreground);font-size:14px}\
 ';
@@ -72,7 +83,27 @@
     return currencySymbol+(Number.isInteger(v)?String(v):v.toFixed(2));
   }
 
-  function pickerHtml(){
+  function bsdPickerHtml(href){
+    var s=currencySymbol;
+    var arch=/arm64/i.test(href)?'ARM64':(/amd64/i.test(href)?'AMD64':'');
+    return '<div class="pos-picker">'
+      + '<h3>pearOS UltraC0re'+(arch?' ('+arch+')':'')+' <span class="pos-badge-inline">Developer Preview</span></h3>'
+      + '<p>This build is paid-only and unthrottled at full CDN speed. It is a Developer Preview and not ready for daily use. Minimum '+fmtAmt(bsdMinCents)+'.</p>'
+      + '<div class="pos-amt-row">'
+      + '<button type="button" class="pos-amt-btn selected" data-amount="'+bsdPresets[0]+'">'+fmtAmt(bsdPresets[0])+'</button>'
+      + '<button type="button" class="pos-amt-btn" data-amount="'+bsdPresets[1]+'">'+fmtAmt(bsdPresets[1])+'</button>'
+      + '<button type="button" class="pos-amt-btn" data-amount="'+bsdPresets[2]+'">'+fmtAmt(bsdPresets[2])+'</button>'
+      + '</div>'
+      + '<div class="pos-custom-row">'
+      + '<input type="number" min="'+(bsdMinCents/100)+'" step="0.01" inputmode="decimal" class="pos-custom-input" id="pos-custom-amount" placeholder="Custom '+s+' (min '+fmtAmt(bsdMinCents)+')"/>'
+      + '<button type="button" class="pos-go-btn" id="pos-custom-go">Go</button>'
+      + '</div>'
+      + '<p class="pos-error" id="pos-error" hidden></p>'
+      + '</div>';
+  }
+
+  function pickerHtml(href){
+    if(isBsdHref(href)) return bsdPickerHtml(href);
     var s=currencySymbol;
     return '<div class="pos-picker">'
       + '<h3>Support independent development</h3>'
@@ -111,7 +142,8 @@
 
     function showPicker(href){
       pendingHref=href;
-      body.innerHTML=pickerHtml();
+      var bsd=isBsdHref(href);
+      body.innerHTML=pickerHtml(href);
       overlay.hidden=false;
 
       var errorEl=body.querySelector('#pos-error');
@@ -119,7 +151,7 @@
       function clearError(){ errorEl.hidden=true; }
 
       var amtBtns=body.querySelectorAll('.pos-amt-btn');
-      var selectedAmount=presets[1]; // matches the preset marked "selected" in pickerHtml()
+      var selectedAmount=bsd?bsdPresets[0]:presets[1]; // matches the preset marked "selected" in pickerHtml()
       amtBtns.forEach(function(btn){
         btn.addEventListener('click',function(){
           clearError();
@@ -139,7 +171,8 @@
         if(!Number.isFinite(dollars)||dollars<0){ input.focus(); return; }
         startCheckout(Math.round(dollars*100),showError);
       });
-      body.querySelector('#pos-skip-btn').addEventListener('click',function(){
+      var skipBtn=body.querySelector('#pos-skip-btn');
+      if(skipBtn) skipBtn.addEventListener('click',function(){
         openFreeDownload(pendingHref);
       });
     }
@@ -181,12 +214,19 @@
     }
 
     function startCheckout(amountCents,onError){
-      if(amountCents<=0){
+      var floor=isBsdHref(pendingHref)?bsdMinCents:minCents;
+      if(isBsdHref(pendingHref)){
+        // Paid-only: no free path, and nothing below the BSD floor.
+        if(amountCents<floor){
+          if(onError) onError('Minimum for this build is '+fmtAmt(floor)+'.');
+          return;
+        }
+      } else if(amountCents<=0){
         var href=pendingHref;
         openFreeDownload(href);
         return;
       }
-      if(amountCents<minCents){
+      if(amountCents<floor){
         if(onError) onError('Minimum card amount is '+currencySymbol+(minCents/100).toFixed(2)+'. Choose "download free" instead for no charge.');
         return;
       }
