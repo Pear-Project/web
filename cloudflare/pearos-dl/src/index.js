@@ -429,10 +429,13 @@ async function handleDownload(request, env, url) {
 // env.GITHUB_FALLBACK is a Worker secret holding a JSON object that maps an
 // R2 key to a direct release-asset URL, e.g.
 //   {"iso/pearOS-UltraC0re-amd64-26.11.iso":"https://github.com/<org>/<repo>/releases/download/<tag>/<file>.iso"}
-// It lives in a secret (not the repo, not bsd-versions.json) so the raw
+// Only honored for BSD builds (see fallbackUrlFor). It lives in a secret (not the repo, not bsd-versions.json) so the raw
 // GitHub URL -- which would bypass the paywall -- is never public.
 
 function fallbackUrlFor(env, key) {
+  // BSD (UltraC0re) builds only -- NiceC0re/Goldwing/etc. never fall back,
+  // even if a mapping for one were ever added to the secret by mistake.
+  if (!isBsdFile(key)) return null;
   if (!env.GITHUB_FALLBACK) return null;
   try {
     const map = JSON.parse(env.GITHUB_FALLBACK);
