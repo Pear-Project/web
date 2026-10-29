@@ -323,6 +323,14 @@ async function handleDownload(request, env, url) {
 
   const head = await env.ISO_BUCKET.head(key);
   if (!head) {
+    // Not in R2 (e.g. out of space there) -- fall back to a GitHub Release
+    // asset if one is mapped for this key. Same signature/tier gating as
+    // above has already run, so the upstream URL is never exposed and
+    // anything paywalled stays paywalled.
+    const upstream = fallbackUrlFor(env, key);
+    if (upstream) {
+      return serveFromUpstream(request, env, key, upstream, accessTier, unlocked);
+    }
     return new Response("Not found", { status: 404 });
   }
   const totalSize = head.size;
@@ -414,6 +422,86 @@ async function handleDownload(request, env, url) {
   const bytesPerSec = parseInt(env.FREE_SPEED_BYTES_PER_SEC, 10);
   const throttled = throttleStream(object.body, bytesPerSec);
   return new Response(throttled, { headers, status });
+}
+
+// ---------- GitHub Releases fallback ----------
+//
+// env.GITHUB_FALLBACK is a Worker secret holding a JSON object that maps an
+// R2 key to a direct release-asset URL, e.g.
+//   {"iso/pearOS-UltraC0re-amd64-26.11.iso":"https://github.com/<org>/<repo>/releases/download/<tag>/<file>.iso"}
+// It lives in a secret (not the repo, not bsd-versions.json) so the raw
+// GitHub URL -- which would bypass the paywall -- is never public.
+
+function fallbackUrlFor(env, key) {
+  if (!env.GITHUB_FALLBACK) return null;
+  try {
+    const map = JSON.parse(env.GITHUB_FALLBACK);
+    const url = map && map[key];
+    return typeof url === "string" && url.startsWith("https://github.com/") ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+async function serveFromUpstream(request, env, key, upstreamUrl, accessTier, unlocked) {
+  const headers = new Headers();
+  const range = request.headers.get("Range");
+  if (range) headers.set("Range", range);
+
+  const upstream = await fetch(upstreamUrl, {
+    method: request.method === "HEAD" ? "HEAD" : "GET",
+    headers,
+    redirect: "follow",
+  });
+  if (upstream.status === 416) {
+    return new Response("Range Not Satisfiable", {
+      status: 416,
+      headers: { "Content-Range": upstream.headers.get("content-range") || "bytes */*" },
+    });
+  }
+  if (!upstream.ok) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  const out = new Headers();
+  out.set("content-type", "application/octet-stream");
+  out.set("accept-ranges", "bytes");
+  for (const h of ["content-length", "content-range", "etag", "last-modified"]) {
+    const v = upstream.headers.get(h);
+    if (v) out.set(h, v);
+  }
+
+  if (request.method === "HEAD") {
+    return new Response(null, { status: upstream.status, headers: out });
+  }
+
+  // Same counting rule as the R2 path: once, at the start of the file.
+  const cr = upstream.headers.get("content-range"); // "bytes 0-9/1000"
+  const startsAtZero = upstream.status === 200 || (cr && /^bytes 0-/.test(cr));
+  const totalSize = cr ? parseInt(cr.split("/")[1], 10) : parseInt(upstream.headers.get("content-length"), 10);
+  if (env.DOWNLOADS && /\.iso$/i.test(key) && startsAtZero && Number.isFinite(totalSize)) {
+    const country = (request.cf && request.cf.country) || "XX";
+    let referrerHost = "direct";
+    const referer = request.headers.get("referer");
+    if (referer) {
+      try {
+        referrerHost = new URL(referer).hostname;
+      } catch {
+        // malformed Referer header, leave as "direct"
+      }
+    }
+    env.DOWNLOADS.writeDataPoint({
+      blobs: [key, accessTier, country, referrerHost],
+      doubles: [totalSize],
+      indexes: [key],
+    });
+  }
+
+  if (unlocked) {
+    return new Response(upstream.body, { status: upstream.status, headers: out });
+  }
+  const bytesPerSec = parseInt(env.FREE_SPEED_BYTES_PER_SEC, 10);
+  return new Response(throttleStream(upstream.body, bytesPerSec), { status: upstream.status, headers: out });
 }
 
 // ---------- /badge/distrowatch: shields.io endpoint badge, backed by a ----
