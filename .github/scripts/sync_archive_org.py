@@ -8,6 +8,7 @@ keys are needed for this part.
 """
 import datetime
 import json
+import re
 import sys
 import time
 import urllib.error
@@ -16,9 +17,10 @@ import urllib.request
 
 UPLOADER = "alxb421@gmail.com"
 OUT_PATH = "assets/data/old-versions.json"
-# Items that must not show up in the table (the bulk mirror holds ~20 files in
-# one item, and this list only links the largest file of each item).
-EXCLUDE = {"pearos-archive-mirror"}
+# Bulk mirror items: one row per file instead of one per item, dated from the
+# files' original upload date in the source item (the mirror's own mtimes are
+# just the day we copied them).
+MIRRORS = {"pearos-archive-mirror": "pearos"}
 USER_AGENT = "pearos-web-sync/1.0 (+https://pearos.xyz)"
 SKIP_SUFFIXES = (".xml", ".sqlite", ".gz_meta", "_meta.xml", "_files.xml", "_meta.sqlite")
 
@@ -58,6 +60,40 @@ def main_file(files):
     return max(cands, key=lambda f: int(f["size"]), default=None)
 
 
+def file_rows_candidates(files):
+    return [
+        f for f in files
+        if f.get("source") == "original"
+        and not f["name"].endswith(SKIP_SUFFIXES)
+        and not f["name"].startswith("__ia_")
+        and f.get("size")
+        and not f["name"].lower().endswith((".png", ".jpg", ".torrent"))
+    ]
+
+
+def mirror_rows(ident, source_ident, files, fallback_date):
+    try:
+        src = get_json(f"https://archive.org/metadata/{urllib.parse.quote(source_ident)}").get("files", [])
+    except Exception as e:
+        print(f"[ WARN ]: source metadata failed for {source_ident}: {e}")
+        src = []
+    src_mtime = {f["name"]: f.get("mtime") for f in src}
+    out = []
+    for f in file_rows_candidates(files):
+        mt = src_mtime.get(f["name"])
+        date = (datetime.datetime.fromtimestamp(int(mt), datetime.timezone.utc).strftime("%Y-%m-%d")
+                if mt else fallback_date)
+        out.append({
+            "identifier": ident,
+            "name": re.sub(r"\.(7z|iso|zip|tar\.\w+)$", "", f["name"]),
+            "date": date,
+            "page": f"https://archive.org/details/{ident}",
+            "size": human_size(int(f["size"])),
+            "download": f"https://archive.org/download/{ident}/{urllib.parse.quote(f['name'])}",
+        })
+    return out
+
+
 def main():
     q = urllib.parse.urlencode({
         "q": f'uploader:"{UPLOADER}"',
@@ -76,13 +112,16 @@ def main():
     rows = []
     for d in docs:
         ident = d["identifier"]
-        if ident in EXCLUDE or ident.startswith("zz-archive-test-"):
+        if ident.startswith("zz-archive-test-"):
             continue
         try:
             files = get_json(f"https://archive.org/metadata/{urllib.parse.quote(ident)}").get("files", [])
         except Exception as e:
             print(f"[ WARN ]: metadata failed for {ident}: {e}")
             files = []
+        if ident in MIRRORS:
+            rows.extend(mirror_rows(ident, MIRRORS[ident], files, d["publicdate"][:10]))
+            continue
         f = main_file(files)
         row = {
             "identifier": ident,
@@ -98,6 +137,7 @@ def main():
             continue
         rows.append(row)
 
+    rows.sort(key=lambda r: r["date"], reverse=True)
     new = json.dumps(rows, indent=2) + "\n"
     try:
         old = open(OUT_PATH).read()
