@@ -13,7 +13,10 @@ The row's name always includes the version straight from the filename
 previous entry is kept around as its own row (e.g. "NiceC0re 26.08") with
 a `retire_at` timestamp 15 days out, so the old ISO stays downloadable
 during the transition. Any row whose `retire_at` has passed gets its R2
-object deleted and is dropped from the table.
+object deleted and is dropped from the table -- but only once the ISO is
+confirmed to exist on archive.org (the iso repo's build workflow uploads it
+there as item "<filename without .iso>"). If it is not archived, the R2
+object is kept and the check is retried on the next run.
 """
 import datetime
 import json
@@ -78,6 +81,18 @@ def delete_r2_object(key, account_id, api_token):
             return True  # already gone
         print(f"[ ERR ]: R2 delete failed for {key}: {e.code} {e.read().decode()}")
         return False
+
+
+def archived_on_ia(identifier):
+    """True if archive.org has a published item with this identifier and at
+    least one file in it."""
+    url = f"https://archive.org/metadata/{identifier}"
+    try:
+        meta = json.loads(fetch_text(url))
+    except Exception as e:
+        print(f"[ WARN ]: archive.org lookup failed for {identifier}: {e}")
+        return False
+    return bool(meta.get("files")) and not meta.get("is_dark")
 
 
 def r2_key_from_download_url(download_url):
@@ -163,6 +178,12 @@ def main():
             kept.append(v)
             continue
         key = r2_key_from_download_url(v["download"])
+        ia_id = re.sub(r"\.iso$", "", os.path.basename(key))
+        if not archived_on_ia(ia_id):
+            print(f"[ WARN ]: {v['name']} is past retire_at but is not on archive.org "
+                  f"(item {ia_id}) -- keeping it in R2.")
+            kept.append(v)
+            continue
         if delete_r2_object(key, account_id, api_token):
             print(f"[ INFO ]: Deleted retired ISO from R2 and table: {v['name']} ({key})")
             changed = True

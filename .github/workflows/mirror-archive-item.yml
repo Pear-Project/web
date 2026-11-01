@@ -1,0 +1,67 @@
+name: Mirror archive.org item
+
+# One-off: copy every file of someone else's archive.org item into an item on
+# our own account. GitHub-hosted runners are throwaway VMs, so there is no
+# runner to create or delete -- the VM is destroyed when the job ends.
+# Each file is downloaded, uploaded, then removed, so disk usage stays at one
+# file (the biggest here is ~2.4 GB). Safe to re-run: files already present
+# with the same checksum are skipped.
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Source item identifier (archive.org/download/<this>)"
+        required: true
+        default: "pearos"
+      dest:
+        description: "Destination item identifier on our account"
+        required: true
+        default: "pearos-archive-mirror"
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Install ia
+        run: pip install --quiet internetarchive
+
+      - name: Configure ia
+        env:
+          IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
+          IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
+        run: |
+          test -n "$IA_ACCESS_KEY" -a -n "$IA_SECRET_KEY" || { echo "IA_ACCESS_KEY / IA_SECRET_KEY secrets missing"; exit 1; }
+          ia configure --access-key="$IA_ACCESS_KEY" --secret-key="$IA_SECRET_KEY"
+
+      - name: Mirror files one by one
+        env:
+          SRC: ${{ inputs.source }}
+          DEST: ${{ inputs.dest }}
+        run: |
+          # Original files only: skips archive.org's generated metadata,
+          # torrent and thumbnails (it regenerates those for the new item).
+          ia list --format=original "$SRC" > files.txt 2>/dev/null || ia list "$SRC" > files.txt
+          grep -vE '(_meta\.(xml|sqlite)|_files\.xml|_reviews\.xml|_archive\.torrent|^__ia_)' files.txt > todo.txt
+          echo "$(wc -l < todo.txt) files to mirror"
+
+          first=1
+          while IFS= read -r f; do
+            echo "::group::$f"
+            mkdir -p dl
+            ia download "$SRC" "$f" --destdir=dl --no-directories --retries=5
+            if [ "$first" = 1 ]; then
+              ia upload "$DEST" "dl/$f" --retries=10 --checksum \
+                --metadata="mediatype:software" \
+                --metadata="collection:opensource" \
+                --metadata="title:pearOS archive (mirror of $SRC)" \
+                --metadata="creator:Alexandru Balan" \
+                --metadata="description:Mirror of https://archive.org/details/$SRC"
+              first=0
+            else
+              ia upload "$DEST" "dl/$f" --retries=10 --checksum
+            fi
+            rm -rf dl
+            echo "::endgroup::"
+          done < todo.txt
