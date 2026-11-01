@@ -76,7 +76,7 @@ def main():
     rows = []
     for d in docs:
         ident = d["identifier"]
-        if ident in EXCLUDE:
+        if ident in EXCLUDE or ident.startswith("zz-archive-test-"):
             continue
         try:
             files = get_json(f"https://archive.org/metadata/{urllib.parse.quote(ident)}").get("files", [])

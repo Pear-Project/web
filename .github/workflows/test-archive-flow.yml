@@ -1,0 +1,71 @@
+name: Test archive-then-delete flow
+
+# Manual. Puts a small throwaway file in R2, runs the same archive_to_ia()
+# + delete_r2_object() the retirement job uses, then cleans up. The archive.org
+# item goes into "test_collection" (archive.org purges those automatically) and
+# its files are removed at the end.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      CF_R2_TOKEN: ${{ secrets.CF_R2_TOKEN }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+      IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
+      IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
+      IA_COLLECTION: test_collection
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get install -y -qq rclone >/dev/null
+          pip install --quiet internetarchive
+          mkdir -p ~/.config/internetarchive
+          printf '[s3]\naccess = %s\nsecret = %s\n' "$IA_ACCESS_KEY" "$IA_SECRET_KEY" > ~/.config/internetarchive/ia.ini
+
+      - name: Put a 5 MB test file in R2
+        run: |
+          NAME="zz-archive-test-$(date +%s).iso"
+          echo "NAME=$NAME" >> "$GITHUB_ENV"
+          head -c 5242880 /dev/urandom > "$NAME"
+          echo "SHA=$(sha256sum "$NAME" | cut -d' ' -f1)" >> "$GITHUB_ENV"
+          export RCLONE_CONFIG_R2_TYPE=s3 RCLONE_CONFIG_R2_PROVIDER=Cloudflare \
+            RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" \
+            RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
+            RCLONE_CONFIG_R2_ENDPOINT="$R2_ENDPOINT_URL"
+          rclone copyto "$NAME" "R2:pearos-cdn/iso/$NAME"
+          rclone lsf "R2:pearos-cdn/iso/$NAME"
+          rm -f "$NAME"
+
+      - name: Archive, verify, delete (same code as production)
+        run: |
+          python3 - <<'PY'
+          import importlib.util, os, sys
+          spec = importlib.util.spec_from_file_location("s", ".github/scripts/sync_nicecore_iso.py")
+          s = importlib.util.module_from_spec(spec); spec.loader.exec_module(s)
+          key = "iso/" + os.environ["NAME"]
+          assert s.archive_to_ia(key, os.environ["SHA"]), "archive/verify FAILED"
+          assert s.delete_r2_object(key, os.environ["CF_ACCOUNT_ID"], os.environ["CF_R2_TOKEN"]), "R2 delete FAILED"
+          print("[ TEST ]: archived, verified and deleted OK")
+          PY
+
+      - name: Confirm gone from R2
+        run: |
+          export RCLONE_CONFIG_R2_TYPE=s3 RCLONE_CONFIG_R2_PROVIDER=Cloudflare \
+            RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" \
+            RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
+            RCLONE_CONFIG_R2_ENDPOINT="$R2_ENDPOINT_URL"
+          if [ -n "$(rclone lsf "R2:pearos-cdn/iso/$NAME")" ]; then echo "still in R2!"; exit 1; fi
+          echo "R2 object is gone"
+
+      - name: Clean up archive.org test item
+        if: always()
+        run: |
+          ia delete "${NAME%.iso}" --all --no-backup 2>&1 | tail -3 || true

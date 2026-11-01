@@ -162,7 +162,8 @@ def archive_to_ia(key, expected_sha256):
             print(f"[ INFO ]: Uploading {ident} ({size} bytes) to archive.org...")
             r = subprocess.run([
                 "ia", "upload", ident, path, "--retries=10", "--checksum",
-                "--metadata=mediatype:software", "--metadata=collection:opensource",
+                "--metadata=mediatype:software",
+                f"--metadata=collection:{os.environ.get('IA_COLLECTION', 'opensource')}",
                 f"--metadata=title:{ident}", "--metadata=creator:Alexandru Balan",
                 "--metadata=description:pearOS NiceC0re live ISO (Arch base), https://pearos.xyz",
             ])
