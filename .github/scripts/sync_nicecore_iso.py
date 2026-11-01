@@ -13,16 +13,24 @@ The row's name always includes the version straight from the filename
 previous entry is kept around as its own row (e.g. "NiceC0re 26.08") with
 a `retire_at` timestamp 15 days out, so the old ISO stays downloadable
 during the transition. Any row whose `retire_at` has passed gets its R2
-object deleted and is dropped from the table -- but only once the ISO is
-confirmed to exist on archive.org (the iso repo's build workflow uploads it
-there as item "<filename without .iso>"). If it is not archived, the R2
-object is kept and the check is retried on the next run.
+object deleted and is dropped from the table -- but only after this script
+has archived it: it downloads the ISO from R2, uploads it to archive.org as
+item "<filename without .iso>", and verifies the upload is complete (same
+size and md5 as the local copy, and the public download URL serves the full
+length). Any failure at any step keeps the R2 object and retries next run.
 """
 import datetime
 import json
 import os
+import hashlib
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
+import time
+import urllib.error
+import urllib.parse
 import urllib.request
 
 SHA_TXT_URL = "https://raw.githubusercontent.com/pearos-archlinux/iso/main/sha.txt"
@@ -83,16 +91,92 @@ def delete_r2_object(key, account_id, api_token):
         return False
 
 
-def archived_on_ia(identifier):
-    """True if archive.org has a published item with this identifier and at
-    least one file in it."""
-    url = f"https://archive.org/metadata/{identifier}"
+def file_hashes(path):
+    md5, sha = hashlib.md5(), hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            md5.update(chunk)
+            sha.update(chunk)
+    return md5.hexdigest(), sha.hexdigest()
+
+
+def ia_file_entry(identifier, filename):
     try:
-        meta = json.loads(fetch_text(url))
-    except Exception as e:
-        print(f"[ WARN ]: archive.org lookup failed for {identifier}: {e}")
-        return False
-    return bool(meta.get("files")) and not meta.get("is_dark")
+        meta = json.loads(fetch_text(f"https://archive.org/metadata/{identifier}"))
+    except Exception:
+        return None
+    if meta.get("is_dark"):
+        return None
+    return next((f for f in meta.get("files", []) if f.get("name") == filename), None)
+
+
+def ia_upload_verified(identifier, path, size, md5, wait_minutes=45):
+    """True only when archive.org lists the file with the same size and md5
+    AND its public download URL serves the full length."""
+    filename = os.path.basename(path)
+    deadline = time.time() + wait_minutes * 60
+    while time.time() < deadline:
+        entry = ia_file_entry(identifier, filename)
+        if entry and entry.get("md5") == md5 and int(entry.get("size", -1)) == size:
+            url = f"https://archive.org/download/{identifier}/{urllib.parse.quote(filename)}"
+            req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": USER_AGENT})
+            try:
+                with urllib.request.urlopen(req, timeout=60) as resp:
+                    if int(resp.headers.get("Content-Length", -1)) == size:
+                        return True
+            except Exception as e:
+                print(f"[ WARN ]: download check failed for {identifier}: {e}")
+        time.sleep(30)
+    return False
+
+
+def archive_to_ia(key, expected_sha256):
+    """Download <key> from R2, upload it to archive.org, verify it. Returns
+    True only if the archived copy is confirmed identical and complete."""
+    ident = re.sub(r"\.iso$", "", os.path.basename(key))
+    tmp = tempfile.mkdtemp()
+    try:
+        path = os.path.join(tmp, os.path.basename(key))
+        env = dict(os.environ,
+                   RCLONE_CONFIG_R2_TYPE="s3", RCLONE_CONFIG_R2_PROVIDER="Cloudflare",
+                   RCLONE_CONFIG_R2_ACCESS_KEY_ID=os.environ["R2_ACCESS_KEY_ID"],
+                   RCLONE_CONFIG_R2_SECRET_ACCESS_KEY=os.environ["R2_SECRET_ACCESS_KEY"],
+                   RCLONE_CONFIG_R2_ENDPOINT=os.environ["R2_ENDPOINT_URL"])
+        print(f"[ INFO ]: Downloading {key} from R2...")
+        if subprocess.run(["rclone", "copyto", f"R2:{R2_BUCKET}/{key}", path],
+                          env=env).returncode != 0:
+            print(f"[ ERR ]: R2 download failed for {key}")
+            return False
+
+        size = os.path.getsize(path)
+        md5, sha = file_hashes(path)
+        if expected_sha256 and sha != expected_sha256:
+            print(f"[ ERR ]: sha256 of downloaded {key} ({sha}) does not match the "
+                  f"table ({expected_sha256}) -- refusing to archive/delete.")
+            return False
+
+        entry = ia_file_entry(ident, os.path.basename(path))
+        if entry and entry.get("md5") == md5 and int(entry.get("size", -1)) == size:
+            print(f"[ INFO ]: {ident} already on archive.org with identical content.")
+        else:
+            print(f"[ INFO ]: Uploading {ident} ({size} bytes) to archive.org...")
+            r = subprocess.run([
+                "ia", "upload", ident, path, "--retries=10", "--checksum",
+                "--metadata=mediatype:software", "--metadata=collection:opensource",
+                f"--metadata=title:{ident}", "--metadata=creator:Alexandru Balan",
+                "--metadata=description:pearOS NiceC0re live ISO (Arch base), https://pearos.xyz",
+            ])
+            if r.returncode != 0:
+                print(f"[ ERR ]: ia upload failed for {ident}")
+                return False
+
+        if not ia_upload_verified(ident, path, size, md5):
+            print(f"[ ERR ]: could not confirm {ident} on archive.org (size/md5/download).")
+            return False
+        print(f"[ INFO ]: Verified {ident} on archive.org ({size} bytes, md5 {md5}).")
+        return True
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def r2_key_from_download_url(download_url):
@@ -178,10 +262,13 @@ def main():
             kept.append(v)
             continue
         key = r2_key_from_download_url(v["download"])
-        ia_id = re.sub(r"\.iso$", "", os.path.basename(key))
-        if not archived_on_ia(ia_id):
-            print(f"[ WARN ]: {v['name']} is past retire_at but is not on archive.org "
-                  f"(item {ia_id}) -- keeping it in R2.")
+        if not all(os.environ.get(k) for k in ("R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_ENDPOINT_URL")):
+            print(f"[ WARN ]: {v['name']} is past retire_at but R2_ACCESS_KEY_ID/"
+                  f"R2_SECRET_ACCESS_KEY/R2_ENDPOINT_URL are not set -- cannot archive, keeping it.")
+            kept.append(v)
+            continue
+        if not archive_to_ia(key, v.get("sha256")):
+            print(f"[ WARN ]: {v['name']} was NOT confirmed on archive.org -- keeping it in R2.")
             kept.append(v)
             continue
         if delete_r2_object(key, account_id, api_token):

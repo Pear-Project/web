@@ -60,7 +60,18 @@ jobs:
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_R2_TOKEN: ${{ secrets.CF_R2_TOKEN }}
-        run: python3 .github/scripts/sync_nicecore_iso.py
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT_URL }}
+          IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
+          IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
+        run: |
+          # Only needed when an ISO is actually being retired; cheap otherwise.
+          sudo apt-get install -y -qq rclone >/dev/null
+          pip install --quiet internetarchive
+          mkdir -p ~/.config/internetarchive
+          printf '[s3]\naccess = %s\nsecret = %s\n' "$IA_ACCESS_KEY" "$IA_SECRET_KEY" > ~/.config/internetarchive/ia.ini
+          python3 .github/scripts/sync_nicecore_iso.py
 
       - name: Sync "Old versions" list from archive.org
         run: python3 .github/scripts/sync_archive_org.py
