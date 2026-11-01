@@ -16,6 +16,9 @@ import urllib.request
 
 UPLOADER = "alxb421@gmail.com"
 OUT_PATH = "assets/data/old-versions.json"
+# Items that must not show up in the table (the bulk mirror holds ~20 files in
+# one item, and this list only links the largest file of each item).
+EXCLUDE = {"pearos-archive-mirror"}
 USER_AGENT = "pearos-web-sync/1.0 (+https://pearos.xyz)"
 SKIP_SUFFIXES = (".xml", ".sqlite", ".gz_meta", "_meta.xml", "_files.xml", "_meta.sqlite")
 
@@ -73,6 +76,8 @@ def main():
     rows = []
     for d in docs:
         ident = d["identifier"]
+        if ident in EXCLUDE:
+            continue
         try:
             files = get_json(f"https://archive.org/metadata/{urllib.parse.quote(ident)}").get("files", [])
         except Exception as e:
