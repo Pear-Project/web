@@ -132,3 +132,73 @@ export async function sendMail(env, { to, subject, text }) {
     }
   }
 }
+
+// Text of the BSD purchase confirmation (English; Romanian added for RO buyers).
+export function bsdConfirmationText(session, meta, file, country) {
+  const cur = String(session.currency || "").toUpperCase();
+  const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
+  const when = (iso) => (iso ? String(iso).replace("T", " ").replace(/\.\d+Z$/, " UTC") : "-");
+  const ref = String(session.payment_intent || "").slice(-8);
+  const en = `Thank you for your purchase.
+
+This email confirms your order and, on a durable medium, what you agreed to before paying.
+
+ORDER
+- Seller: Pear Software and Services S.R.L. (CUI 50888207), 133 Dacia Blvd, Floor D, Sector 2, Bucharest 020056, Romania
+- Product: pearOS UltraC0re (${file}) - digital software, Developer Preview
+- Amount paid: ${amount} ${cur}. This is the final price; the seller is not registered for VAT.
+- Payment reference: ...${ref}
+- Download link issued: ${when(meta.link_first_issued_at)}
+
+WHAT YOU ACCEPTED BEFORE PAYING (${when(meta.terms_accepted_at)})
+- Our Terms of Use (version ${meta.terms_version || "-"}): https://pearos.xyz/terms/
+- Our Refund Policy: https://pearos.xyz/refund/
+- You confirmed that (version ${meta.ack_version || "-"}):
+  1. This is software, not a physical product, and payments for software are final and non-refundable. You expressly requested immediate delivery of this digital content and understand that you lose your 14-day right of withdrawal once the download link is issued.
+  2. pearOS UltraC0re is experimental: a Developer Preview and a work in progress that can break, lose data or stop working.
+  3. Its current limits: no installer, no web browser, CPU-only rendering (no GPU acceleration in virtual machines), and limited Wi-Fi, Bluetooth and GPU support.
+
+USING THE BUILD
+- The download is an .iso.xz archive: extract it first (xz -d, or 7-Zip on Windows).
+- Login: account "alex", password "pear".
+- Your download link is valid for 4 hours.
+
+If something is wrong with your order, reply to this email or write to alex@pear-software.com. Your rights if the file cannot be delivered or does not work are described in the Refund Policy.
+
+Pear Software and Services
+https://pearos.xyz
+`;
+  if (country !== "RO") return en;
+  const ro = `
+
+----------------------------------------
+Română
+
+Îți mulțumim pentru achiziție.
+
+Acest email confirmă comanda ta și, pe suport durabil, ce ai acceptat înainte de plată.
+
+COMANDĂ
+- Vânzător: Pear Software and Services S.R.L. (CUI 50888207), Bld. Dacia nr. 133, Et. D, Sector 2, București 020056, România
+- Produs: pearOS UltraC0re (${file}) - software digital, versiune preliminară pentru dezvoltatori
+- Suma plătită: ${amount} ${cur}. Este prețul final; vânzătorul nu este înregistrat în scopuri de TVA.
+- Referință plată: ...${ref}
+- Link de descărcare emis: ${when(meta.link_first_issued_at)}
+
+CE AI ACCEPTAT ÎNAINTE DE PLATĂ (${when(meta.terms_accepted_at)})
+- Termenii de utilizare (versiunea ${meta.terms_version || "-"}): https://pearos.xyz/terms/ro/
+- Politica de rambursare: https://pearos.xyz/refund/ro/
+- Ai confirmat că (versiunea ${meta.ack_version || "-"}):
+  1. Este software, nu un produs fizic, iar plățile pentru software sunt definitive și nerambursabile. Ai cerut expres livrarea imediată a acestui conținut digital și înțelegi că pierzi dreptul de retragere de 14 zile odată ce linkul de descărcare este emis.
+  2. pearOS UltraC0re este experimental: o versiune preliminară și o lucrare în curs, care se poate bloca, poate pierde date sau poate înceta să funcționeze.
+  3. Limitele lui actuale: fără installer, fără browser web, redare doar pe CPU (fără accelerare GPU în mașini virtuale) și suport limitat pentru Wi-Fi, Bluetooth și GPU.
+
+FOLOSIREA BUILD-ULUI
+- Descărcarea este o arhivă .iso.xz: extrage-o mai întâi (xz -d sau 7-Zip pe Windows).
+- Autentificare: cont "alex", parola "pear".
+- Linkul de descărcare este valabil 4 ore.
+
+Dacă ceva nu este în regulă cu comanda, răspunde la acest email sau scrie la alex@pear-software.com.
+`;
+  return en + ro;
+}
