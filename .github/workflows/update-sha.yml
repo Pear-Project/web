@@ -89,12 +89,12 @@ jobs:
           git config user.name "pearOS build bot"
           git config user.email "327192259+pear-software@users.noreply.github.com"
 
-          if [ -z "$(git status --porcelain -- assets/data/nicecore-versions.json assets/data/debian-versions.json assets/data/changelog.json assets/data/old-versions.json)" ]; then
+          if [ -z "$(git status --porcelain -- assets/data/nicecore-versions.json assets/data/debian-versions.json assets/data/changelog.json assets/data/old-versions.json assets/data/old-versions-stats.json)" ]; then
             echo "Checksums, sizes, and changelog unchanged, nothing to commit."
             exit 0
           fi
 
-          git add assets/data/nicecore-versions.json assets/data/debian-versions.json assets/data/changelog.json assets/data/old-versions.json
+          git add assets/data/nicecore-versions.json assets/data/debian-versions.json assets/data/changelog.json assets/data/old-versions.json assets/data/old-versions-stats.json
           git commit -m "Sync ISO checksums, sizes, and changelog"
           # Other workflows commit to main independently -- retry with a
           # rebase instead of failing outright on a push collision.

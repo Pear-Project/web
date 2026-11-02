@@ -17,6 +17,7 @@ import urllib.request
 
 UPLOADER = "alxb421@gmail.com"
 OUT_PATH = "assets/data/old-versions.json"
+STATS_PATH = "assets/data/old-versions-stats.json"
 # Bulk mirror items: one row per file instead of one per item, dated from the
 # files' original upload date in the source item (the mirror's own mtimes are
 # just the day we copied them).
@@ -94,10 +95,31 @@ def mirror_rows(ident, source_ident, files, fallback_date):
     return out
 
 
+def source_downloads(ident):
+    q = urllib.parse.urlencode({"q": f"identifier:{ident}", "fl[]": ["downloads"], "output": "json"}, doseq=True)
+    try:
+        docs = get_json(f"https://archive.org/advancedsearch.php?{q}")["response"]["docs"]
+        return int(docs[0].get("downloads") or 0) if docs else 0
+    except Exception as e:
+        print(f"[ WARN ]: could not read downloads of {ident}: {e}")
+        return 0
+
+
+def write_if_changed(path, text):
+    try:
+        if open(path).read() == text:
+            return
+    except FileNotFoundError:
+        pass
+    with open(path, "w") as fh:
+        fh.write(text)
+    print(f"[ INFO ]: {path} updated.")
+
+
 def main():
     q = urllib.parse.urlencode({
         "q": f'uploader:"{UPLOADER}"',
-        "fl[]": ["identifier", "title", "publicdate"],
+        "fl[]": ["identifier", "title", "publicdate", "downloads"],
         "sort[]": "publicdate desc",
         "rows": 500,
         "output": "json",
@@ -110,6 +132,7 @@ def main():
         return 0
 
     rows = []
+    stats = []
     for d in docs:
         ident = d["identifier"]
         if ident.startswith("zz-archive-test-"):
@@ -120,7 +143,14 @@ def main():
             print(f"[ WARN ]: metadata failed for {ident}: {e}")
             files = []
         if ident in MIRRORS:
-            rows.extend(mirror_rows(ident, MIRRORS[ident], files, d["publicdate"][:10]))
+            # archive.org only counts downloads per item, not per file: show
+            # the mirror as one line, adding the original item's count (that
+            # is where these files were actually downloaded from).
+            n = int(d.get("downloads") or 0) + source_downloads(MIRRORS[ident])
+            mrows = mirror_rows(ident, MIRRORS[ident], files, d["publicdate"][:10])
+            stats.append({"name": f"pearOS archive ({len(mrows)} files)", "date": d["publicdate"][:10],
+                          "downloads": n, "page": f"https://archive.org/details/{MIRRORS[ident]}"})
+            rows.extend(mrows)
             continue
         f = main_file(files)
         row = {
@@ -134,10 +164,18 @@ def main():
             row["download"] = f"https://archive.org/download/{ident}/{urllib.parse.quote(f['name'])}"
         if "download" not in row:
             print(f"[ INFO ]: {ident} has no downloadable file, skipping.")
+            # still counts towards the download totals
+            stats.append({"name": row["name"], "date": row["date"],
+                          "downloads": int(d.get("downloads") or 0), "page": row["page"]})
             continue
         rows.append(row)
+        stats.append({"name": row["name"], "date": row["date"],
+                      "downloads": int(d.get("downloads") or 0), "page": row["page"]})
 
     rows.sort(key=lambda r: r["date"], reverse=True)
+    stats.sort(key=lambda r: r["downloads"], reverse=True)
+    write_if_changed(STATS_PATH, json.dumps(
+        {"total": sum(r["downloads"] for r in stats), "items": stats}, indent=2) + "\n")
     new = json.dumps(rows, indent=2) + "\n"
     try:
         old = open(OUT_PATH).read()
