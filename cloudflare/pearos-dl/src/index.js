@@ -55,7 +55,7 @@ async function handleVerify(request, env) {
   if (!session_id || !file) {
     return json({ error: "missing_session_id_or_file" }, 400, request, env);
   }
-  if (file.includes("..") || !/^[\w.\-]+\.iso$/.test(file)) {
+  if (file.includes("..") || !/^[\w.\-]+\.iso(?:\.xz)?$/.test(file)) {
     return json({ error: "invalid_file" }, 400, request, env);
   }
 
@@ -107,7 +107,7 @@ async function handleFreepoint(request, env) {
   }
 
   const file = body && body.file;
-  if (typeof file !== "string" || file.includes("..") || !/^[\w.\-]+\.iso$/.test(file)) {
+  if (typeof file !== "string" || file.includes("..") || !/^[\w.\-]+\.iso(?:\.xz)?$/.test(file)) {
     return json({ error: "invalid_file" }, 400, request, env);
   }
   if (isBsdFile(file)) {
@@ -198,7 +198,7 @@ async function handleCheckout(request, env) {
   }
 
   const file = body && body.file;
-  const validFile = typeof file === "string" && /^[\w.\-]+\.iso$/.test(file);
+  const validFile = typeof file === "string" && /^[\w.\-]+\.iso(?:\.xz)?$/.test(file);
   const returnUrl = validFile
     ? `https://pearos.xyz/thank-you/?session_id={CHECKOUT_SESSION_ID}&file=${encodeURIComponent(file)}`
     : "https://pearos.xyz/thank-you/?session_id={CHECKOUT_SESSION_ID}";
@@ -211,7 +211,12 @@ async function handleCheckout(request, env) {
     "line_items[0][price_data][currency]": currency,
     "line_items[0][price_data][unit_amount]": String(amountCents),
     "line_items[0][price_data][product_data][name]": bsdBuild ? "pearOS UltraC0re (Developer Preview)" : "pearOS Donation",
+    // Tag the charge so /revenue can tell BSD sales from donations (a BSD
+    // sale can't be told apart by amount alone: donations are pay-what-you-want).
+    "payment_intent_data[metadata][product]": bsdBuild ? "bsd" : "donation",
+    "payment_intent_data[description]": bsdBuild ? "pearOS UltraC0re (Developer Preview)" : "pearOS Donation",
   });
+  if (validFile) params.set("payment_intent_data[metadata][file]", file);
 
   const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
@@ -396,7 +401,7 @@ async function handleDownload(request, env, url) {
   // Count a download once, at the start of the file -- not on HEAD (no
   // bytes served) and not on a mid-file range resume (would double-count
   // a single browser download that retries/resumes partway through).
-  if (env.DOWNLOADS && /\.iso$/i.test(key) && (!isRangeRequest || rangeStart === 0)) {
+  if (env.DOWNLOADS && /\.iso(?:\.xz)?$/i.test(key) && (!isRangeRequest || rangeStart === 0)) {
     const country = (request.cf && request.cf.country) || "XX";
     let referrerHost = "direct";
     const referer = request.headers.get("referer");
@@ -432,23 +437,47 @@ async function handleDownload(request, env, url) {
 // Only honored for BSD builds (see fallbackUrlFor). It lives in a secret (not the repo, not bsd-versions.json) so the raw
 // GitHub URL -- which would bypass the paywall -- is never public.
 
+// Built-in mappings (public release assets, so nothing secret in them). The
+// GITHUB_FALLBACK secret, if set, is merged on top and wins on a clash.
+// Update the version in both the key and the URL when a new build ships.
+const DEFAULT_FALLBACK = {
+  "iso/pearOS-UltraC0re-amd64-26.10.iso.xz":
+    "https://github.com/pearOS-bsd/misc/releases/download/iso-latest/pearOS-UltraC0re-amd64-26.10.iso.xz",
+};
+
 function fallbackUrlFor(env, key) {
   // BSD (UltraC0re) builds only -- NiceC0re/Goldwing/etc. never fall back,
   // even if a mapping for one were ever added to the secret by mistake.
   if (!isBsdFile(key)) return null;
-  if (!env.GITHUB_FALLBACK) return null;
-  try {
-    const map = JSON.parse(env.GITHUB_FALLBACK);
-    const url = map && map[key];
-    return typeof url === "string" && url.startsWith("https://github.com/") ? url : null;
-  } catch {
-    return null;
+  let map = DEFAULT_FALLBACK;
+  if (env.GITHUB_FALLBACK) {
+    try {
+      const fromSecret = JSON.parse(env.GITHUB_FALLBACK);
+      if (fromSecret && typeof fromSecret === "object") map = { ...DEFAULT_FALLBACK, ...fromSecret };
+    } catch {
+      // malformed secret: keep the built-in defaults
+    }
   }
+  const url = map[key];
+  return typeof url === "string" && url.startsWith("https://github.com/") ? url : null;
 }
 
 async function serveFromUpstream(request, env, key, upstreamUrl, accessTier, unlocked) {
   const headers = new Headers();
-  const range = request.headers.get("Range");
+  let range = request.headers.get("Range");
+
+  // GitHub's CDN answers a suffix range ("bytes=-N", the last N bytes) with
+  // 501, though some download managers / tools use it. Turn it into an
+  // explicit range using the asset's size from a HEAD request.
+  const suffix = range && range.match(/^bytes=-(\d+)$/);
+  if (suffix) {
+    const head = await fetch(upstreamUrl, { method: "HEAD", redirect: "follow" });
+    const size = parseInt(head.headers.get("content-length"), 10);
+    if (head.ok && Number.isFinite(size) && size > 0) {
+      const n = Math.min(parseInt(suffix[1], 10), size);
+      if (n > 0) range = `bytes=${size - n}-${size - 1}`;
+    }
+  }
   if (range) headers.set("Range", range);
 
   const upstream = await fetch(upstreamUrl, {
@@ -482,7 +511,7 @@ async function serveFromUpstream(request, env, key, upstreamUrl, accessTier, unl
   const cr = upstream.headers.get("content-range"); // "bytes 0-9/1000"
   const startsAtZero = upstream.status === 200 || (cr && /^bytes 0-/.test(cr));
   const totalSize = cr ? parseInt(cr.split("/")[1], 10) : parseInt(upstream.headers.get("content-length"), 10);
-  if (env.DOWNLOADS && /\.iso$/i.test(key) && startsAtZero && Number.isFinite(totalSize)) {
+  if (env.DOWNLOADS && /\.iso(?:\.xz)?$/i.test(key) && startsAtZero && Number.isFinite(totalSize)) {
     const country = (request.cf && request.cf.country) || "XX";
     let referrerHost = "direct";
     const referer = request.headers.get("referer");
@@ -631,20 +660,37 @@ async function handleRevenue(request, env, ctx) {
     return byCurrency;
   }
 
+  // BSD (UltraC0re) sales are tagged at checkout (metadata.product = "bsd",
+  // description "pearOS UltraC0re ..."). Charges from before the tagging have
+  // neither, so they count as donations -- there were no BSD sales then.
+  const isBsdCharge = (c) =>
+    (c.metadata && c.metadata.product === "bsd") || /UltraC0re/i.test(c.description || "");
+  const bsdCharges = succeeded.filter(isBsdCharge);
+
+  const chargeRow = (c) => ({
+    id_suffix: c.id.slice(-6),
+    amount_cents: c.amount - (c.amount_refunded || 0),
+    currency: c.currency,
+    created: new Date(c.created * 1000).toISOString(),
+    partially_refunded: (c.amount_refunded || 0) > 0,
+    product: isBsdCharge(c) ? "bsd" : "donation",
+  });
+
+  // all_time / last_30d / last_24h / charges still cover EVERYTHING (BSD
+  // included), exactly as before, so existing consumers (stats chart, the
+  // WhatsApp report) keep their totals. `bsd` is the BSD-only subset.
   const result = {
     generated_at: new Date().toISOString(),
     all_time: aggregate(succeeded),
     last_30d: aggregate(succeeded.filter((c) => c.created >= since30d)),
     last_24h: aggregate(succeeded.filter((c) => c.created >= since24h)),
-    charges: succeeded
-      .sort((a, b) => b.created - a.created)
-      .map((c) => ({
-        id_suffix: c.id.slice(-6),
-        amount_cents: c.amount - (c.amount_refunded || 0),
-        currency: c.currency,
-        created: new Date(c.created * 1000).toISOString(),
-        partially_refunded: (c.amount_refunded || 0) > 0,
-      })),
+    charges: succeeded.sort((a, b) => b.created - a.created).map(chargeRow),
+    bsd: {
+      all_time: aggregate(bsdCharges),
+      last_30d: aggregate(bsdCharges.filter((c) => c.created >= since30d)),
+      last_24h: aggregate(bsdCharges.filter((c) => c.created >= since24h)),
+      charges: bsdCharges.sort((a, b) => b.created - a.created).map(chargeRow),
+    },
   };
 
   const response = new Response(JSON.stringify(result), {
