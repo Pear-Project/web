@@ -420,7 +420,7 @@ async function handleDownload(request, env, url) {
   }
 
   const bytesPerSec = parseInt(env.FREE_SPEED_BYTES_PER_SEC, 10);
-  const throttled = throttleStream(object.body, bytesPerSec);
+  const throttled = throttleStream(object.body, bytesPerSec, isRangeRequest ? rangeLength : totalSize);
   return new Response(throttled, { headers, status });
 }
 
@@ -504,7 +504,8 @@ async function serveFromUpstream(request, env, key, upstreamUrl, accessTier, unl
     return new Response(upstream.body, { status: upstream.status, headers: out });
   }
   const bytesPerSec = parseInt(env.FREE_SPEED_BYTES_PER_SEC, 10);
-  return new Response(throttleStream(upstream.body, bytesPerSec), { status: upstream.status, headers: out });
+  const upstreamLen = parseInt(upstream.headers.get("content-length"), 10);
+  return new Response(throttleStream(upstream.body, bytesPerSec, upstreamLen), { status: upstream.status, headers: out });
 }
 
 // ---------- /badge/distrowatch: shields.io endpoint badge, backed by a ----
@@ -674,41 +675,61 @@ async function handleRevenue(request, env, ctx) {
 // raw chunk as-is (zero-copy) and only *counts* bytes toward a 4MB threshold
 // to decide when to run the (cheap) Date.now()/sleep pacing check -- so the
 // data itself is never touched by JS, only forwarded.
-const THROTTLE_BATCH_BYTES = 4 * 1024 * 1024; // 4MB
+// Chunk size for pacing. Small enough that traffic looks like a steady stream
+// (a 4MB burst followed by ~2s of silence got cut by some VPNs/proxies/ISPs,
+// leaving browsers stuck mid-download), large enough to keep pull() count --
+// and so CPU time -- low: ~13k pulls for a 3.3GB file. Chunks are sliced with
+// subarray(), so no bytes are copied.
+const THROTTLE_CHUNK_BYTES = 256 * 1024; // 256KB
 
-function throttleStream(sourceStream, bytesPerSec) {
+// `length` (bytes of the body) is optional but should be passed whenever known:
+// a hand-built ReadableStream makes Workers drop Content-Length and fall back
+// to chunked encoding, so browsers showed "Unknown time left" and couldn't
+// sanity-check the download. Piping through FixedLengthStream restores it.
+function throttleStream(sourceStream, bytesPerSec, length) {
   const reader = sourceStream.getReader();
   const start = Date.now();
   let bytesSent = 0;
-  let sinceLastPace = 0;
+  let pending = null; // remainder of an oversized source chunk
 
-  return new ReadableStream({
-    async pull(controller) {
-      const { done, value } = await reader.read();
-      if (done) {
-        controller.close();
-        return;
-      }
+  const paced = new ReadableStream(
+    {
+      async pull(controller) {
+        let chunk = pending;
+        pending = null;
+        if (!chunk) {
+          const { done, value } = await reader.read();
+          if (done) {
+            controller.close();
+            return;
+          }
+          chunk = value;
+        }
+        if (chunk.byteLength > THROTTLE_CHUNK_BYTES) {
+          pending = chunk.subarray(THROTTLE_CHUNK_BYTES);
+          chunk = chunk.subarray(0, THROTTLE_CHUNK_BYTES);
+        }
 
-      controller.enqueue(value); // zero-copy: forward the raw chunk as-is
-      bytesSent += value.byteLength;
-      sinceLastPace += value.byteLength;
+        controller.enqueue(chunk);
+        bytesSent += chunk.byteLength;
 
-      if (sinceLastPace < THROTTLE_BATCH_BYTES) {
-        return; // skip the pacing check -- most pull() calls exit right here
-      }
-      sinceLastPace = 0;
-
-      const expectedMs = (bytesSent / bytesPerSec) * 1000;
-      const actualMs = Date.now() - start;
-      if (expectedMs > actualMs) {
-        await sleep(expectedMs - actualMs);
-      }
+        const expectedMs = (bytesSent / bytesPerSec) * 1000;
+        const actualMs = Date.now() - start;
+        if (expectedMs > actualMs) {
+          await sleep(expectedMs - actualMs);
+        }
+      },
+      cancel(reason) {
+        return reader.cancel(reason);
+      },
     },
-    cancel(reason) {
-      reader.cancel(reason);
-    },
-  });
+    { highWaterMark: 0 } // no read-ahead: pull only when the client drains
+  );
+
+  if (Number.isFinite(length) && length >= 0 && typeof FixedLengthStream !== "undefined") {
+    return paced.pipeThrough(new FixedLengthStream(length));
+  }
+  return paced;
 }
 
 function sleep(ms) {
