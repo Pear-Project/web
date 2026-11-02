@@ -107,6 +107,8 @@
   var BSD_TERMS_VERSION='tos-unknown';
   // Bump when the wording of the acknowledgement page (step 2) changes.
   var BSD_ACK_VERSION='ack-2026-11-02';
+  // Private testing of Managed Payments: open the BSD page with ?mp_test=<token>.
+  var MP_TEST=(function(){ try{ return new URLSearchParams(location.search).get('mp_test')||undefined; }catch(e){ return undefined; } })();
 
   function bsdTermsHtml(href){
     var arch=/arm64/i.test(href)?'ARM64':(/amd64/i.test(href)?'AMD64':'');
@@ -397,7 +399,7 @@
       fetch(CHECKOUT_ENDPOINT,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({amount_cents:amountCents, file:fileFromHref(pendingHref), terms:isBsdHref(pendingHref)?BSD_TERMS_VERSION:undefined, ack:isBsdHref(pendingHref)?BSD_ACK_VERSION:undefined})
+        body:JSON.stringify({amount_cents:amountCents, file:fileFromHref(pendingHref), terms:isBsdHref(pendingHref)?BSD_TERMS_VERSION:undefined, ack:isBsdHref(pendingHref)?BSD_ACK_VERSION:undefined, mp_test:isBsdHref(pendingHref)?MP_TEST:undefined})
       }).then(function(r){ return r.json(); }).then(function(data){
         if(!data||!data.client_secret){
           body.innerHTML='<div class="pos-loading">Something went wrong. Please try again.</div>';

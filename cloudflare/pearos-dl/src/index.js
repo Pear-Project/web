@@ -368,10 +368,13 @@ async function handleCheckout(request, env) {
   // Payments (Stripe is the merchant of record: tax, invoices, receipts, disputes).
   // It needs a tax code on the product, a tax behaviour on the price, and does not
   // allow invoice_creation. Donations are never sent through it. Off by default.
-  const managed = bsdBuild && env.MANAGED_PAYMENTS === "on";
+  // mp_test: someone holding the friends token can try Managed Payments while it is
+  // still "off" for everybody else (and gets Stripe's error text back if it fails).
+  const mpTest = typeof body.mp_test === "string" && !!env.FRIENDS_TOKEN && timingSafeEqual(body.mp_test, env.FRIENDS_TOKEN);
+  const managed = bsdBuild && (env.MANAGED_PAYMENTS === "on" || mpTest);
   if (managed) {
     params.set("managed_payments[enabled]", "true");
-    params.set("line_items[0][price_data][product_data][tax_code]", "txcd_10202000"); // Downloadable Software - personal use
+    params.set("line_items[0][price_data][product_data][tax_code]", "txcd_10202001"); // Downloadable Software - non-recreational - personal use (the Dashboard preset)
     params.set("line_items[0][price_data][tax_behavior]", "inclusive"); // the price shown is the price paid
   }
   // Otherwise BSD is our own sale: have Stripe create an invoice (sequential number, PDF)
@@ -406,19 +409,23 @@ async function handleCheckout(request, env) {
     headers: {
       Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
       "Content-Type": "application/x-www-form-urlencoded",
-      ...(managed ? { "Stripe-Version": "2026-04-22.dahlia" } : {}),
+      ...(managed ? { "Stripe-Version": "2025-03-31.basil" } : {}),
     },
     body: params.toString(),
   });
 
   if (!stripeRes.ok) {
     if (managed) {
-      // Say why in the Worker logs (e.g. Managed Payments not enabled on the account yet).
+      // Say why (e.g. Managed Payments not enabled on the account yet): in the logs,
+      // and to a tester only.
+      let detail = "";
       try {
-        console.error("managed payments checkout failed", stripeRes.status, (await stripeRes.text()).slice(0, 400));
+        detail = (await stripeRes.text()).slice(0, 600);
+        console.error("managed payments checkout failed", stripeRes.status, detail);
       } catch {
         // ignore
       }
+      if (mpTest) return json({ error: "stripe_session_failed", stripe_status: stripeRes.status, detail }, 502, request, env);
     }
     return json({ error: "stripe_session_failed" }, 502, request, env);
   }
