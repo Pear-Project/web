@@ -300,7 +300,7 @@ function partsToText(p) {
   out.push("", p.useTitle.toUpperCase());
   for (const it of p.useItems) out.push(`- ${it}`);
   if (p.link && p.link.url) out.push(`- ${p.downloadLabel}: ${p.link.url}`, `  (${p.linkNote})`);
-  out.push(`- ${p.loginLabel}: ${p.account.toLowerCase()} "alex", ${p.password.toLowerCase()} "pear".`);
+  if (!p.noLogin) out.push(`- ${p.loginLabel}: ${p.account.toLowerCase()} "alex", ${p.password.toLowerCase()} "pear".`);
   out.push("", p.help, "", "Pear Software and Services", SITE);
   return out.join("\n");
 }
@@ -338,7 +338,7 @@ function partsToHtmlSection(p, first) {
     (first
       ? ""
       : `<div style="height:1px;background:${C.line};margin:34px 0 30px"></div>`) +
-    `<div style="font-family:${FONT};margin:0 0 6px"><span style="display:inline-block;background:${C.redSoft};color:${C.red};border-radius:999px;padding:3px 11px;font-size:12px;font-weight:700">${esc(p.pill)}</span></div>` +
+    `<div style="font-family:${FONT};margin:0 0 6px"><span style="display:inline-block;background:${p.pillInfo ? C.accent : C.redSoft};color:${p.pillInfo ? C.ink : C.red};border-radius:999px;padding:3px 11px;font-size:12px;font-weight:700">${esc(p.pill)}</span></div>` +
     `<h1 style="font-family:${FONT};font-size:30px;line-height:1.15;font-weight:700;letter-spacing:-.02em;color:${C.ink};margin:10px 0 8px">${esc(p.title)}</h1>` +
     `<p style="font-family:${FONT};font-size:15px;line-height:1.6;color:${C.muted};margin:0 0 22px">${esc(p.intro)}</p>` +
     card(h2(p.orderTitle) + `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>`) +
@@ -348,7 +348,7 @@ function partsToHtmlSection(p, first) {
         `<ul style="font-family:${FONT};font-size:14px;line-height:1.55;color:${C.ink};margin:0 0 14px;padding-left:20px">${docs}</ul>` +
         `<div style="font-family:${FONT};font-size:14px;font-weight:600;color:${C.ink};margin:0 0 10px">${esc(p.ackIntro)}</div>` +
         `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${acks}</table>`,
-      `background:${C.redSoft};border-color:${C.redLine};`
+      p.pillInfo ? `background:${C.soft};` : `background:${C.redSoft};border-color:${C.redLine};`
     ) +
     card(
       h2(p.useTitle) +
@@ -357,10 +357,10 @@ function partsToHtmlSection(p, first) {
           ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px"><tr><td style="background:${C.ink};border-radius:10px"><a href="${esc(p.link.url)}" style="display:inline-block;font-family:${FONT};font-size:15px;font-weight:700;color:${C.bg};text-decoration:none;padding:12px 24px">${esc(p.downloadLabel)} &rarr;</a></td></tr></table>` +
             `<div style="font-family:${FONT};font-size:12px;line-height:1.5;color:${C.muted};margin:0 0 16px">${esc(p.linkNote)}<br><a href="${esc(p.link.url)}" style="font-family:${MONO};font-size:11px;color:${C.muted};word-break:break-all">${esc(p.link.url)}</a></div>`
           : "") +
-        `<table role="presentation" cellpadding="0" cellspacing="0"><tr>` +
-        `<td style="padding:0 10px 0 0"><div style="background:${C.soft};border:1px solid ${C.line};border-radius:10px;padding:10px 18px;text-align:center"><div style="font-family:${FONT};font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${C.muted}">${esc(p.account)}</div><div style="font-family:${MONO};font-size:22px;font-weight:700;color:${C.ink};letter-spacing:.06em">alex</div></div></td>` +
+        (p.noLogin ? "" : `<table role="presentation" cellpadding="0" cellspacing="0"><tr>`) +
+        (p.noLogin ? "" : `<td style="padding:0 10px 0 0"><div style="background:${C.soft};border:1px solid ${C.line};border-radius:10px;padding:10px 18px;text-align:center"><div style="font-family:${FONT};font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${C.muted}">${esc(p.account)}</div><div style="font-family:${MONO};font-size:22px;font-weight:700;color:${C.ink};letter-spacing:.06em">alex</div></div></td>` +
         `<td><div style="background:${C.soft};border:1px solid ${C.line};border-radius:10px;padding:10px 18px;text-align:center"><div style="font-family:${FONT};font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${C.muted}">${esc(p.password)}</div><div style="font-family:${MONO};font-size:22px;font-weight:700;color:${C.ink};letter-spacing:.06em">pear</div></div></td>` +
-        `</tr></table>`
+        `</tr></table>`)
     ) +
     `<p style="font-family:${FONT};font-size:14px;line-height:1.6;color:${C.muted};margin:6px 0 0">${esc(p.help)}</p>`
   );
@@ -443,4 +443,101 @@ export function accountingText({ session, meta, file, country, charge, invoice, 
     ""
   );
   return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Premium access (the paid full-speed download of a free build): a thank-you with
+// the link, its expiry, and what applies to the purchase.
+// ---------------------------------------------------------------------------
+function premiumParts(session, meta, file, lang, extra = {}) {
+  const ro = lang === "ro";
+  const cur = String(session.currency || "").toUpperCase();
+  const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
+  const tz = extra.tz;
+  const when = (v) => fmtTime(v, lang, tz);
+  const link = extra.link || null;
+  const validUntil = link && link.exp ? when(link.exp * 1000) : null;
+  const ref = "..." + String(session.payment_intent || "").slice(-8);
+  const u = (path) => SITE + (ro ? path.replace(/\/$/, "/ro/") : path);
+  const base = { pillInfo: true, noLogin: true, link, loginLabel: "", account: "", password: "" };
+  if (!ro) {
+    return {
+      ...base,
+      lang: "en",
+      pill: "Premium access",
+      title: "Thank you for supporting pearOS.",
+      intro: "Your full-speed download link is below. This email also confirms what you paid for and what applies to it.",
+      orderTitle: "Your purchase",
+      rows: [
+        ["Item", `pearOS premium access: full-speed download of ${file} (4 hours)`],
+        ["Amount paid", extra.managed ? `${amount} ${cur}, tax included as shown on your receipt from Link.` : `${amount} ${cur}. This is the final price; the seller is not registered for VAT.`],
+        ["Payment reference", ref],
+        ["Download link issued", when(meta.link_first_issued_at)],
+        ...(validUntil ? [["Link valid until", validUntil]] : []),
+      ],
+      acceptTitle: "What applies to this purchase",
+      acceptWhen: when(meta.link_first_issued_at),
+      docs: [["Terms of Use", u("/terms/")], ["Refund Policy", u("/refund/")]],
+      ackIntro: "Premium access is a digital service delivered immediately:",
+      acks: [
+        "By paying you asked for immediate access and acknowledged that you lose the 14-day right of withdrawal once the download link is issued.",
+        "Payments for premium access are final once the link is issued, except for mistaken, duplicate or unauthorised payments, or a file that cannot be delivered (see the Refund Policy).",
+        extra.managed ? "Your receipt and invoice come from Link, which sells this to you; keep them for your records." : "Your receipt comes from Stripe; keep it for your records. Need an invoice for your company? Reply to this email.",
+      ],
+      useTitle: "Using your link",
+      useItems: [
+        "Download with the button below. The link is personal; please do not share it.",
+        validUntil ? `It is valid for 4 hours, until ${validUntil}.` : "It is valid for 4 hours.",
+        "Verify the SHA256 checksum before installing: https://support.pearos.xyz/articles/how-to-verify-the-sha256-checksum-on-your-system",
+      ],
+      downloadLabel: "Download at full speed",
+      linkNote: "This link is personal; please do not share it.",
+      help: "If something is wrong with your order, reply to this email or write to alex@pear-software.com.",
+      links: [["Terms of Use", u("/terms/")], ["Refund Policy", u("/refund/")], ["Privacy Policy", u("/privacy/")]],
+    };
+  }
+  return {
+    ...base,
+    lang: "ro",
+    pill: "Acces premium",
+    title: "Îți mulțumim că susții pearOS.",
+    intro: "Linkul tău de descărcare la viteză maximă e mai jos. Acest email confirmă și ce ai plătit și ce se aplică.",
+    orderTitle: "Achiziția ta",
+    rows: [
+      ["Produs", `pearOS acces premium: descărcare la viteză maximă pentru ${file} (4 ore)`],
+      ["Suma plătită", extra.managed ? `${amount} ${cur}, taxele incluse, așa cum apar pe chitanța de la Link.` : `${amount} ${cur}. Este prețul final; vânzătorul nu este înregistrat în scopuri de TVA.`],
+      ["Referință plată", ref],
+      ["Link de descărcare emis", when(meta.link_first_issued_at)],
+      ...(validUntil ? [["Link valabil până la", validUntil]] : []),
+    ],
+    acceptTitle: "Ce se aplică acestei achiziții",
+    acceptWhen: when(meta.link_first_issued_at),
+    docs: [["Termeni de utilizare", u("/terms/")], ["Politica de rambursare", u("/refund/")]],
+    ackIntro: "Accesul premium este un serviciu digital livrat imediat:",
+    acks: [
+      "Prin plată ai cerut acces imediat și ai confirmat că pierzi dreptul de retragere de 14 zile odată ce linkul de descărcare este emis.",
+      "Plățile pentru acces premium sunt definitive după emiterea linkului, cu excepția plăților greșite, duplicate sau neautorizate, sau a unui fișier care nu poate fi livrat (vezi Politica de rambursare).",
+      extra.managed ? "Chitanța și factura vin de la Link, care ți-o vinde; păstrează-le în evidențele tale." : "Chitanța vine de la Stripe; păstreaz-o. Ai nevoie de o factură pe firma ta? Răspunde la acest email.",
+    ],
+    useTitle: "Folosirea linkului",
+    useItems: [
+      "Descarcă cu butonul de mai jos. Linkul este personal; te rugăm să nu îl partajezi.",
+      validUntil ? `Este valabil 4 ore, până la ${validUntil}.` : "Este valabil 4 ore.",
+      "Verifică suma de control SHA256 înainte de instalare: https://support.pearos.xyz/articles/how-to-verify-the-sha256-checksum-on-your-system",
+    ],
+    downloadLabel: "Descarcă la viteză maximă",
+    linkNote: "Acest link este personal; te rugăm să nu îl partajezi.",
+    help: "Dacă ceva nu este în regulă cu comanda, răspunde la acest email sau scrie la alex@pear-software.com.",
+    links: [["Termeni de utilizare", u("/terms/")], ["Politica de rambursare", u("/refund/")], ["Politica de confidențialitate", u("/privacy/")]],
+  };
+}
+
+export function premiumConfirmation(session, meta, file, country, { link = null, managed = false } = {}) {
+  const extra = { link, tz: link && link.tz, managed };
+  const parts = [premiumParts(session, meta, file, "en", extra)];
+  if (country === "RO") parts.push(premiumParts(session, meta, file, "ro", extra));
+  return {
+    text: parts.map(partsToText).join("\n\n----------------------------------------\n\n"),
+    html: renderHtml(parts, ""),
+  };
 }

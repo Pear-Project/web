@@ -1,4 +1,4 @@
-import { sendMail, bsdConfirmation, accountingText } from "./mail.js";
+import { sendMail, bsdConfirmation, premiumConfirmation, accountingText } from "./mail.js";
 
 // pearOS download gateway: throttles free downloads to N MB/s, and issues/
 // verifies signed URLs (via Stripe) that bypass the throttle for 4 hours.
@@ -96,14 +96,19 @@ async function handleVerify(request, env, ctx) {
   // Proof of delivery for a possible dispute: stamp the PaymentIntent with
   // when a BSD download link was first issued for this payment (and from which
   // country and IP), plus a running count. Best effort -- never blocks the download.
-  if (isBsdFile(file) && typeof session.payment_intent === "string") {
+  if (typeof session.payment_intent === "string") {
     try {
       const rec = await recordBsdDelivery(env, session.payment_intent, file, request);
       // Confirmation email, once per payment, in the background so the download
-      // is never delayed or blocked by the mail server.
+      // is never delayed or blocked by the mail server. BSD gets the full order
+      // confirmation (+ invoice + accounting copy); premium access gets a thank-you
+      // with the link and what applies.
       const to = session.customer_details && session.customer_details.email;
       if (rec && rec.first && env.SMTP_PASSWORD && typeof to === "string" && EMAIL_RE.test(to)) {
-        const run = sendBsdConfirmation(env, session, rec.meta, file, to, rec.country, { url: downloadUrl, exp, tz: request.cf && request.cf.timezone });
+        const link = { url: downloadUrl, exp, tz: request.cf && request.cf.timezone };
+        const run = isBsdFile(file)
+          ? sendBsdConfirmation(env, session, rec.meta, file, to, rec.country, link)
+          : sendPremiumConfirmation(env, session, rec.meta, file, to, rec.country, link);
         if (ctx && ctx.waitUntil) ctx.waitUntil(run);
       }
     } catch {
@@ -154,6 +159,26 @@ async function recordBsdDelivery(env, paymentIntentId, file, request) {
 
 // The purchase confirmation required for the withdrawal-right waiver: it
 // repeats, on a durable medium (email), what the buyer agreed to before paying.
+async function sendPremiumConfirmation(env, session, meta, file, to, country, link) {
+  let status;
+  try {
+    const { text, html } = premiumConfirmation(session, meta, file, country, { link, managed: env.MANAGED_PAYMENTS === "all" });
+    await sendMail(env, { to, subject: "Your pearOS full-speed download link", text, html });
+    status = "sent";
+  } catch (e) {
+    status = "failed: " + String((e && e.message) || e).slice(0, 80);
+  }
+  try {
+    await fetch(`https://api.stripe.com/v1/payment_intents/${encodeURIComponent(session.payment_intent)}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ "metadata[confirmation_email]": status, "metadata[confirmation_at]": new Date().toISOString() }).toString(),
+    });
+  } catch {
+    // nothing more to do
+  }
+}
+
 async function sendBsdConfirmation(env, session, meta, file, to, country, link) {
   const auth = { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` };
   const piUrl = `https://api.stripe.com/v1/payment_intents/${encodeURIComponent(session.payment_intent)}`;
