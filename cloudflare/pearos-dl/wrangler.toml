@@ -24,11 +24,19 @@ cpu_ms = 300000
 # Secrets (set via `wrangler secret put`, NOT stored here):
 #   HMAC_SECRET      - random string, used to sign/verify download links
 #   STRIPE_SECRET_KEY - Stripe secret key, used to verify checkout sessions
+#   SMTP_PASSWORD    - password of the mailbox below; without it no confirmation
+#                      email is sent (everything else works the same)
 
 [vars]
 ALLOWED_ORIGIN = "https://pearos.xyz"
 FREE_SPEED_BYTES_PER_SEC = "2097152"   # 2 MB/s
 SIGNED_URL_TTL_SECONDS = "14400"       # 4 hours
+# Outgoing mail (BSD purchase confirmation) through Namecheap Private Email
+SMTP_HOST = "mail.privateemail.com"
+SMTP_PORT = "465"
+SMTP_USER = "alex@pear-software.com"
+MAIL_FROM = "alex@pear-software.com"
+MAIL_FROM_NAME = "pearOS"
 
 [observability]
 enabled = true
