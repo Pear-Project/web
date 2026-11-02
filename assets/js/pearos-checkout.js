@@ -133,6 +133,24 @@
       var root=h1&&h1.parentElement;
       if(!root) throw new Error('terms layout');
       root=root.cloneNode(true);
+      // Cloudflare's email obfuscation rewrites mailto links in the HTML it
+      // serves and decodes them with a script that does not run on text
+      // fetched like this -- decode them here instead.
+      function cfDecode(hex){
+        var key=parseInt(hex.substr(0,2),16),out='';
+        for(var i=2;i<hex.length;i+=2) out+=String.fromCharCode(parseInt(hex.substr(i,2),16)^key);
+        try{ return decodeURIComponent(escape(out)); }catch(e){ return out; }
+      }
+      root.querySelectorAll('[data-cfemail]').forEach(function(n){
+        var mail=cfDecode(n.getAttribute('data-cfemail'));
+        n.parentNode.replaceChild(doc.createTextNode(mail),n);
+      });
+      root.querySelectorAll('a[href*="/cdn-cgi/l/email-protection#"]').forEach(function(a){
+        var mail=cfDecode(a.getAttribute('href').split('#')[1]||'');
+        if(!/^[^\s@<>"']+@[^\s@<>"']+$/.test(mail)){ a.removeAttribute('href'); return; }
+        a.setAttribute('href','mailto:'+mail);
+        if(/email\s*protected/i.test(a.textContent)) a.textContent=mail;
+      });
       root.querySelectorAll('script,style,iframe,object,embed,form,input,button').forEach(function(n){ n.remove(); });
       root.querySelectorAll('a[href="ro/"],a[href="./ro/"]').forEach(function(n){ var w=n.parentElement; (w&&w!==root?w:n).remove(); });
       root.querySelectorAll('*').forEach(function(n){
