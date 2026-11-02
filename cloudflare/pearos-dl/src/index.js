@@ -371,11 +371,22 @@ async function handleCheckout(request, env) {
   // mp_test: someone holding the friends token can try Managed Payments while it is
   // still "off" for everybody else (and gets Stripe's error text back if it fails).
   const mpTest = typeof body.mp_test === "string" && !!env.FRIENDS_TOKEN && timingSafeEqual(body.mp_test, env.FRIENDS_TOKEN);
-  const managed = bsdBuild && (env.MANAGED_PAYMENTS === "on" || mpTest);
+  // MANAGED_PAYMENTS: "off" | "on" or "bsd" (BSD sales only) | "all" (BSD sales and the
+  // paid full-speed download unlock, which is the "donation" popup of the free builds).
+  // A donation with no file (nothing unlocked) is never sold through Managed Payments.
+  const mode = env.MANAGED_PAYMENTS;
+  const managedBsd = bsdBuild && (mode === "on" || mode === "bsd" || mode === "all" || mpTest);
+  const managedUnlock = !bsdBuild && validFile && (mode === "all" || mpTest);
+  const managed = managedBsd || managedUnlock;
   if (managed) {
     params.set("managed_payments[enabled]", "true");
-    params.set("line_items[0][price_data][product_data][tax_code]", "txcd_10202001"); // Downloadable Software - non-recreational - personal use (the Dashboard preset)
+    // BSD: Downloadable Software - non-recreational - personal use (the Dashboard preset).
+    // Unlock: General - Electronically Supplied Services (a service delivered over the internet).
+    params.set("line_items[0][price_data][product_data][tax_code]", bsdBuild ? "txcd_10202001" : "txcd_10000000");
     params.set("line_items[0][price_data][tax_behavior]", "inclusive"); // the price shown is the price paid
+    if (managedUnlock) {
+      params.set("line_items[0][price_data][product_data][name]", "pearOS - full-speed download (premium access, 4 hours)");
+    }
   }
   // Otherwise BSD is our own sale: have Stripe create an invoice (sequential number, PDF)
   // that goes to the buyer and to our own mailbox.

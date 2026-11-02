@@ -399,7 +399,7 @@
       fetch(CHECKOUT_ENDPOINT,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({amount_cents:amountCents, file:fileFromHref(pendingHref), terms:isBsdHref(pendingHref)?BSD_TERMS_VERSION:undefined, ack:isBsdHref(pendingHref)?BSD_ACK_VERSION:undefined, mp_test:isBsdHref(pendingHref)?MP_TEST:undefined})
+        body:JSON.stringify({amount_cents:amountCents, file:fileFromHref(pendingHref), terms:isBsdHref(pendingHref)?BSD_TERMS_VERSION:undefined, ack:isBsdHref(pendingHref)?BSD_ACK_VERSION:undefined, mp_test:MP_TEST})
       }).then(function(r){ return r.json(); }).then(function(data){
         if(!data||!data.client_secret){
           body.innerHTML='<div class="pos-loading">Something went wrong. Please try again.</div>';

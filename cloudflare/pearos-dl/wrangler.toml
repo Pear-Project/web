@@ -37,8 +37,8 @@ SMTP_PORT = "465"
 SMTP_USER = "alex@pear-software.com"
 MAIL_FROM = "alex@pear-software.com"
 MAIL_FROM_NAME = "pearOS"
-# Stripe Managed Payments (merchant of record) for BSD sales: "on" once it is enabled
-# on the Stripe account (Dashboard > Settings > Managed Payments). Off = our own sale.
+# Stripe Managed Payments (merchant of record): "off" | "bsd" (BSD sales only; "on" is the
+# same) | "all" (BSD sales + the paid full-speed download unlock). Off = our own sale.
 MANAGED_PAYMENTS = "off"
 
 [observability]
