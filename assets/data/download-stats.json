@@ -1,68 +1,20 @@
 {
-  "generated_at": "2026-11-02T01:07:29Z",
-  "total_all_time": 60118,
-  "last_30d": 29497,
-  "last_24h": 2300,
+  "generated_at": "2026-11-02T01:44:45Z",
+  "total_all_time": 60156,
+  "last_30d": 29500,
+  "last_24h": 2286,
   "by_file": [
     {
-      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": "16428",
+      "bytes": 36519756234752
+    },
+    {
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "friend",
-      "downloads": "7",
-      "bytes": 23728934912
-    },
-    {
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "friend",
-      "downloads": "2",
-      "bytes": 4445306880
-    },
-    {
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": "16414",
-      "bytes": 36488639086592
-    },
-    {
-      "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
-      "tier": "paid",
-      "downloads": "3",
-      "bytes": 6473760768
-    },
-    {
-      "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
-      "tier": "paid",
-      "downloads": "28",
-      "bytes": 94050009088
-    },
-    {
-      "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
-      "tier": "free",
-      "downloads": "814",
-      "bytes": 1756547088384
-    },
-    {
-      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
-      "tier": "paid",
-      "downloads": "215",
-      "bytes": 729362845696
-    },
-    {
-      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": "26352",
-      "bytes": 89369749749760
-    },
-    {
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "paid",
-      "downloads": "101",
-      "bytes": 224505430016
-    },
-    {
-      "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
-      "tier": "free",
-      "downloads": "3433",
-      "bytes": 11531202899968
+      "downloads": "1",
+      "bytes": 3436457984
     },
     {
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
@@ -73,8 +25,32 @@
     {
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": "12642",
-      "bytes": 43443701833728
+      "downloads": "12665",
+      "bytes": 43522740367360
+    },
+    {
+      "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
+      "tier": "free",
+      "downloads": "814",
+      "bytes": 1756547088384
+    },
+    {
+      "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
+      "tier": "free",
+      "downloads": "3433",
+      "bytes": 11531202899968
+    },
+    {
+      "file": "iso/pearOS-UltraC0re-amd64-26.10.iso.xz",
+      "tier": "friend",
+      "downloads": "1",
+      "bytes": 418012404
+    },
+    {
+      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": "26352",
+      "bytes": 89369749749760
     },
     {
       "file": "iso/health.check",
@@ -83,10 +59,40 @@
       "bytes": 6
     },
     {
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
+      "tier": "paid",
+      "downloads": "3",
+      "bytes": 6473760768
+    },
+    {
+      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
       "tier": "friend",
-      "downloads": "1",
-      "bytes": 3436457984
+      "downloads": "7",
+      "bytes": 23728934912
+    },
+    {
+      "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
+      "tier": "paid",
+      "downloads": "28",
+      "bytes": 94050009088
+    },
+    {
+      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
+      "tier": "paid",
+      "downloads": "215",
+      "bytes": 729362845696
+    },
+    {
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "friend",
+      "downloads": "2",
+      "bytes": 4445306880
+    },
+    {
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "paid",
+      "downloads": "101",
+      "bytes": 224505430016
     }
   ],
   "daily": [
@@ -728,15 +734,15 @@
     },
     {
       "date": "2026-09-25",
-      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 745
-    },
-    {
-      "date": "2026-09-25",
       "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
       "tier": "free",
       "downloads": 6
+    },
+    {
+      "date": "2026-09-25",
+      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 745
     },
     {
       "date": "2026-09-25",
@@ -1732,27 +1738,39 @@
       "date": "2026-11-02",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 15
+      "downloads": 29
+    },
+    {
+      "date": "2026-11-02",
+      "file": "iso/pearOS-UltraC0re-amd64-26.10.iso.xz",
+      "tier": "friend",
+      "downloads": 1
     },
     {
       "date": "2026-11-02",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": 48
+      "downloads": 71
     }
   ],
   "hourly": [
     {
       "hour": "2026-10-31 01:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 3
     },
     {
       "hour": "2026-10-31 01:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 1
+    },
+    {
+      "hour": "2026-10-31 02:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 8
+      "downloads": 2
     },
     {
       "hour": "2026-10-31 02:00:00",
@@ -1761,10 +1779,10 @@
       "downloads": 11
     },
     {
-      "hour": "2026-10-31 02:00:00",
+      "hour": "2026-10-31 03:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 2
+      "downloads": 4
     },
     {
       "hour": "2026-10-31 03:00:00",
@@ -1773,10 +1791,10 @@
       "downloads": 20
     },
     {
-      "hour": "2026-10-31 03:00:00",
+      "hour": "2026-10-31 04:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 4
+      "downloads": 2
     },
     {
       "hour": "2026-10-31 04:00:00",
@@ -1785,22 +1803,16 @@
       "downloads": 13
     },
     {
-      "hour": "2026-10-31 04:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "hour": "2026-10-31 05:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": 2
+      "downloads": 21
     },
     {
       "hour": "2026-10-31 05:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 6
-    },
-    {
-      "hour": "2026-10-31 05:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 21
     },
     {
       "hour": "2026-10-31 06:00:00",
@@ -1876,9 +1888,9 @@
     },
     {
       "hour": "2026-10-31 12:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 5
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "paid",
+      "downloads": 1
     },
     {
       "hour": "2026-10-31 12:00:00",
@@ -1888,15 +1900,9 @@
     },
     {
       "hour": "2026-10-31 12:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "paid",
-      "downloads": 1
-    },
-    {
-      "hour": "2026-10-31 13:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 8
+      "downloads": 5
     },
     {
       "hour": "2026-10-31 13:00:00",
@@ -1905,10 +1911,10 @@
       "downloads": 39
     },
     {
-      "hour": "2026-10-31 14:00:00",
+      "hour": "2026-10-31 13:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 17
+      "downloads": 8
     },
     {
       "hour": "2026-10-31 14:00:00",
@@ -1921,6 +1927,12 @@
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "paid",
       "downloads": 1
+    },
+    {
+      "hour": "2026-10-31 14:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 17
     },
     {
       "hour": "2026-10-31 15:00:00",
@@ -1948,39 +1960,39 @@
     },
     {
       "hour": "2026-10-31 17:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 18
-    },
-    {
-      "hour": "2026-10-31 17:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 43
     },
     {
+      "hour": "2026-10-31 17:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 18
+    },
+    {
+      "hour": "2026-10-31 18:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 41
+    },
+    {
       "hour": "2026-10-31 18:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 41
-    },
-    {
-      "hour": "2026-10-31 18:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 41
-    },
-    {
-      "hour": "2026-10-31 19:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 19
     },
     {
       "hour": "2026-10-31 19:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 54
+    },
+    {
+      "hour": "2026-10-31 19:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 19
     },
     {
       "hour": "2026-10-31 20:00:00",
@@ -1996,15 +2008,15 @@
     },
     {
       "hour": "2026-10-31 21:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 32
-    },
-    {
-      "hour": "2026-10-31 21:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 80
+    },
+    {
+      "hour": "2026-10-31 21:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 32
     },
     {
       "hour": "2026-10-31 22:00:00",
@@ -2015,14 +2027,14 @@
     {
       "hour": "2026-10-31 22:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 53
+      "tier": "paid",
+      "downloads": 1
     },
     {
       "hour": "2026-10-31 22:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "paid",
-      "downloads": 1
+      "tier": "free",
+      "downloads": 53
     },
     {
       "hour": "2026-10-31 23:00:00",
@@ -2038,27 +2050,27 @@
     },
     {
       "hour": "2026-11-01 00:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 19
-    },
-    {
-      "hour": "2026-11-01 00:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 42
     },
     {
-      "hour": "2026-11-01 01:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "hour": "2026-11-01 00:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 54
+      "downloads": 19
     },
     {
       "hour": "2026-11-01 01:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 26
+    },
+    {
+      "hour": "2026-11-01 01:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 54
     },
     {
       "hour": "2026-11-01 02:00:00",
@@ -2086,6 +2098,12 @@
     },
     {
       "hour": "2026-11-01 04:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 28
+    },
+    {
+      "hour": "2026-11-01 04:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 64
@@ -2097,10 +2115,10 @@
       "downloads": 1
     },
     {
-      "hour": "2026-11-01 04:00:00",
+      "hour": "2026-11-01 05:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 28
+      "downloads": 19
     },
     {
       "hour": "2026-11-01 05:00:00",
@@ -2109,22 +2127,16 @@
       "downloads": 36
     },
     {
-      "hour": "2026-11-01 05:00:00",
+      "hour": "2026-11-01 06:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 19
+      "downloads": 34
     },
     {
       "hour": "2026-11-01 06:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "paid",
       "downloads": 2
-    },
-    {
-      "hour": "2026-11-01 06:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 34
     },
     {
       "hour": "2026-11-01 06:00:00",
@@ -2170,15 +2182,15 @@
     },
     {
       "hour": "2026-11-01 10:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 73
-    },
-    {
-      "hour": "2026-11-01 10:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 38
+    },
+    {
+      "hour": "2026-11-01 10:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 73
     },
     {
       "hour": "2026-11-01 11:00:00",
@@ -2191,12 +2203,6 @@
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 27
-    },
-    {
-      "hour": "2026-11-01 12:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "paid",
-      "downloads": 1
     },
     {
       "hour": "2026-11-01 12:00:00",
@@ -2217,10 +2223,10 @@
       "downloads": 35
     },
     {
-      "hour": "2026-11-01 13:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 92
+      "hour": "2026-11-01 12:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "paid",
+      "downloads": 1
     },
     {
       "hour": "2026-11-01 13:00:00",
@@ -2233,6 +2239,12 @@
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 43
+    },
+    {
+      "hour": "2026-11-01 13:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 92
     },
     {
       "hour": "2026-11-01 14:00:00",
@@ -2260,6 +2272,12 @@
     },
     {
       "hour": "2026-11-01 16:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 98
+    },
+    {
+      "hour": "2026-11-01 16:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 36
@@ -2271,10 +2289,10 @@
       "downloads": 2
     },
     {
-      "hour": "2026-11-01 16:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "hour": "2026-11-01 17:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 98
+      "downloads": 45
     },
     {
       "hour": "2026-11-01 17:00:00",
@@ -2283,10 +2301,10 @@
       "downloads": 107
     },
     {
-      "hour": "2026-11-01 17:00:00",
+      "hour": "2026-11-01 18:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 45
+      "downloads": 40
     },
     {
       "hour": "2026-11-01 18:00:00",
@@ -2295,10 +2313,10 @@
       "downloads": 59
     },
     {
-      "hour": "2026-11-01 18:00:00",
+      "hour": "2026-11-01 19:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 40
+      "downloads": 22
     },
     {
       "hour": "2026-11-01 19:00:00",
@@ -2313,22 +2331,16 @@
       "downloads": 76
     },
     {
-      "hour": "2026-11-01 19:00:00",
+      "hour": "2026-11-01 20:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 22
+      "downloads": 20
     },
     {
       "hour": "2026-11-01 20:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "friend",
       "downloads": 1
-    },
-    {
-      "hour": "2026-11-01 20:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 20
     },
     {
       "hour": "2026-11-01 20:00:00",
@@ -2392,25 +2404,31 @@
     },
     {
       "hour": "2026-11-02 01:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 9
+      "file": "iso/pearOS-UltraC0re-amd64-26.10.iso.xz",
+      "tier": "friend",
+      "downloads": 1
     },
     {
       "hour": "2026-11-02 01:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 1
+      "downloads": 15
+    },
+    {
+      "hour": "2026-11-02 01:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 32
     }
   ],
   "by_country": [
     {
       "country": "US",
-      "downloads": 8003
+      "downloads": 8012
     },
     {
       "country": "IN",
-      "downloads": 5795
+      "downloads": 5796
     },
     {
       "country": "FR",
@@ -2418,11 +2436,11 @@
     },
     {
       "country": "BR",
-      "downloads": 2677
+      "downloads": 2681
     },
     {
       "country": "DE",
-      "downloads": 2614
+      "downloads": 2616
     },
     {
       "country": "IT",
@@ -2430,7 +2448,7 @@
     },
     {
       "country": "CN",
-      "downloads": 2465
+      "downloads": 2466
     },
     {
       "country": "ID",
@@ -2448,11 +2466,11 @@
   "by_referrer": [
     {
       "referrer": "pearos.xyz",
-      "downloads": 53970
+      "downloads": 54007
     },
     {
       "referrer": "direct",
-      "downloads": 4907
+      "downloads": 4908
     },
     {
       "referrer": "iso.pearos.xyz",
@@ -2494,7 +2512,7 @@
     },
     {
       "hour": 1,
-      "downloads": 1699
+      "downloads": 1737
     },
     {
       "hour": 2,
@@ -2585,10 +2603,10 @@
       "downloads": 1747
     }
   ],
-  "friend_all_time": 10,
-  "friend_last_24h": 1,
+  "friend_all_time": 11,
+  "friend_last_24h": 2,
   "donations": {
-    "generated_at": "2026-11-02T01:07:29.640Z",
+    "generated_at": "2026-11-02T01:44:45.626Z",
     "all_time": {
       "eur": {
         "amount_cents": 28730,
@@ -2653,2007 +2671,2299 @@
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-11-02T00:11:33.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "NZoHhV",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-11-01T19:17:54.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "pXjDAw",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-11-01T16:57:36.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "didLWX",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-11-01T16:16:57.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "XGbpDG",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-11-01T13:41:26.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "4AQUB5",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-11-01T12:08:14.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "mE92q6",
         "amount_cents": 10000,
         "currency": "inr",
         "created": "2026-11-01T06:13:36.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "McxM9y",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-11-01T04:20:57.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "jNWtVr",
         "amount_cents": 299,
         "currency": "gbp",
         "created": "2026-10-31T22:24:14.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "BdQivR",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-31T14:32:44.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "GcfGPF",
         "amount_cents": 499,
         "currency": "gbp",
         "created": "2026-10-31T12:43:35.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "dcXbFd",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-30T23:08:27.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "kvwZQl",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-30T19:56:12.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "yOIcrs",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-30T16:25:06.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "QV2w7L",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-10-30T12:47:01.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Qgn9M8",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-30T12:44:28.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "6gLxCG",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-30T12:39:21.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "5UgC47",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-29T14:46:11.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "mHwwAn",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-29T12:50:47.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "fkbckh",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-28T18:56:57.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "4Zc87T",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-28T18:07:55.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Is9hhA",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-10-28T02:24:33.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "7AFER2",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-28T01:00:25.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "2OCd5C",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-27T23:08:27.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "ezq6SQ",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-27T16:02:24.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "KKWZMW",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-27T14:36:12.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "vkd3z4",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-27T14:00:23.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "EutEks",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-27T03:50:49.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "0zEnuI",
         "amount_cents": 530,
         "currency": "brl",
         "created": "2026-10-27T01:00:43.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "mKWndv",
         "amount_cents": 24900,
         "currency": "inr",
         "created": "2026-10-26T17:06:03.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "sH2mGu",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-26T16:51:29.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "1T4o2I",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-26T10:20:56.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "laveGT",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-26T09:56:43.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "uWYxsr",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-26T02:25:49.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Blc42A",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-25T23:01:09.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "8gKev6",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-25T13:52:41.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "KOfiQ1",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-24T13:41:18.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "RzbB4N",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-24T07:07:11.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Ti1hox",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-24T03:30:08.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "JNUS6P",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-23T21:36:19.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "SAMutO",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-23T19:11:19.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Vu0Um5",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-23T17:33:28.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "j87QaU",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-23T09:23:23.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "0BQRVD",
         "amount_cents": 530,
         "currency": "brl",
         "created": "2026-10-22T15:32:24.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "4vtt3m",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-22T12:44:45.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "zfwLCH",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-22T12:37:12.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "zxBWFt",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-21T23:26:06.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "W0DNs9",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-21T19:19:33.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "jLicho",
         "amount_cents": 499,
         "currency": "gbp",
         "created": "2026-10-21T17:02:27.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "D1aIo9",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-21T14:45:21.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "b04vKb",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-21T13:32:46.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "TglPz4",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-21T04:51:19.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Dp7oN6",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-20T20:26:53.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "lQncvQ",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-20T13:26:05.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "BRfffo",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-20T09:43:01.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "nDOlTu",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-20T00:41:38.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "mVO4Vh",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-19T23:19:58.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "vDCvdM",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-19T03:40:10.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "i4zW6K",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-18T19:41:30.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "HocwEm",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-18T18:52:40.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "5DhkeW",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-18T02:39:59.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "wUFlHj",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-17T18:56:04.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "2yEkq5",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-17T15:58:58.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "CYORiJ",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-17T12:32:18.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "AvAihX",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-16T19:24:08.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "q5iYSH",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-16T18:43:57.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "clV6pv",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-16T13:08:42.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "ucFYJg",
         "amount_cents": 123,
         "currency": "usd",
         "created": "2026-10-16T11:18:29.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "he462o",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-16T08:27:44.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "d8dvt6",
         "amount_cents": 2499,
         "currency": "brl",
         "created": "2026-10-16T00:07:53.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "kUYdCb",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-15T21:12:02.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "CFsw9g",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-15T17:58:17.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "mSse53",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-15T12:37:55.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "TSilf0",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-15T12:29:18.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "xMSXKx",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-14T22:37:06.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "lEEqB3",
         "amount_cents": 777,
         "currency": "usd",
         "created": "2026-10-14T22:35:30.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "v5dMrG",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-14T18:09:55.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "0hz7oW",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-14T02:22:00.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "ZyDUsB",
         "amount_cents": 999,
         "currency": "usd",
         "created": "2026-10-14T00:26:29.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "znhKBg",
         "amount_cents": 999,
         "currency": "usd",
         "created": "2026-10-13T14:43:34.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "lCx7gi",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-13T14:00:10.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "gZW7iM",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-13T13:44:58.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "DB75lt",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-13T03:42:31.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Nv5Wsl",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-12T16:38:53.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "gq60qj",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-12T07:17:54.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "XkdzDb",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-12T03:04:43.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "E4he0H",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-12T02:47:01.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "lxbmB8",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-11T21:47:10.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "oGvBaa",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-11T15:45:20.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "0wtr9l",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-11T14:29:05.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "zh6ZTf",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-11T10:38:34.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "HVivjR",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-10T18:25:31.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "kPANwF",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-10T13:23:06.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "iB7VdL",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-10T12:25:34.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "N6uQQj",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-10T09:20:19.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "BdHPBr",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-10T08:03:55.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "YNrfw2",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-10T01:13:12.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "aPwrzX",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-10T01:05:43.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "IPFlX0",
         "amount_cents": 200,
         "currency": "usd",
         "created": "2026-10-09T20:45:46.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "NLQumR",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-09T11:58:03.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Lpvhxu",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-09T10:12:38.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "hVJGRr",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-09T10:09:10.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "ChK5Mb",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-10-09T07:48:02.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "IbjSSN",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-09T06:08:33.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "dPPQHV",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-09T04:56:03.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "zTJBBB",
         "amount_cents": 200,
         "currency": "usd",
         "created": "2026-10-08T23:08:41.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "gQ8yEd",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-08T18:38:17.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "FNOssm",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-08T16:15:00.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "ErtqzC",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-08T15:11:34.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "eXE0Aw",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-08T02:41:26.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "YEAjOs",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-08T00:55:01.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "gctgqJ",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-07T16:34:42.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "meXsAH",
         "amount_cents": 1499,
         "currency": "brl",
         "created": "2026-10-07T14:35:47.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "uv0s3A",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-07T12:14:59.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "RGYkZI",
         "amount_cents": 299,
         "currency": "gbp",
         "created": "2026-10-07T11:35:25.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "j9FZaK",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-07T04:31:32.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "55nMhW",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-06T22:17:06.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "u1WIAd",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-06T21:37:58.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "GlzSmV",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-06T21:28:26.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "HyzARa",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-06T19:56:43.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "hTD7Hq",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-06T19:37:11.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Ya25Ih",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-06T17:52:59.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "PsDNw4",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-06T16:09:36.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "trFWtE",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-06T16:06:02.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Sjm6cV",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-06T15:47:52.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Ga13m9",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-10-06T12:23:16.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "6PVvgM",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-06T02:08:55.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "WsWt1h",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-10-05T09:53:41.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "VbRtMq",
         "amount_cents": 1499,
         "currency": "brl",
         "created": "2026-10-04T12:01:45.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "DcoYxB",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-03T20:20:02.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "5Tl0FM",
         "amount_cents": 299,
         "currency": "gbp",
         "created": "2026-10-03T20:07:56.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "bdtmh2",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-03T16:04:32.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "jmMyEY",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-10-03T06:53:16.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "7Vv4I5",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-03T00:09:50.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "npKSR4",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-10-02T20:23:41.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "2TA5FQ",
         "amount_cents": 299,
         "currency": "gbp",
         "created": "2026-10-02T15:15:59.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "4bNTES",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-02T13:56:39.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "U5FQcl",
         "amount_cents": 999,
         "currency": "eur",
         "created": "2026-10-01T20:18:57.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "HghYy8",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-10-01T13:31:28.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "LvQ5kd",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-01T11:14:04.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "kXOC7F",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-01T10:21:15.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "5PqNPN",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-10-01T05:26:20.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "mcWUrA",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-10-01T00:29:38.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "gybeOo",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-30T23:27:37.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "4ZMvlE",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-30T17:43:30.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "5dSiBL",
         "amount_cents": 999,
         "currency": "usd",
         "created": "2026-09-30T16:46:59.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "wmJGHu",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-30T16:05:23.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "VTSQLC",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-30T14:36:22.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "POZ1SN",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-30T12:42:47.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "l4KZxK",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-30T04:46:36.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "ghkqxh",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-30T04:15:05.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "EL3h9d",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-30T01:37:52.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "6hgE3n",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-09-29T22:56:32.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "FejGsx",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-29T21:47:26.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "NCsLeY",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-29T21:31:27.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "DZnYsk",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-29T18:30:06.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "wkVfcB",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-29T13:07:48.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "WRE6ra",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-29T09:56:51.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "s2ApxF",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-29T03:54:05.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "jUWY00",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-29T02:07:28.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "oWlxAF",
         "amount_cents": 299,
         "currency": "gbp",
         "created": "2026-09-28T19:34:15.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "IYGeNd",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-28T15:35:36.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "QRaJZD",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-28T07:59:23.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "zGW0zM",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-28T02:08:50.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "eOoHbX",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-27T14:36:17.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Wsc5Yj",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-09-27T09:21:41.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "3Ajix5",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-26T20:44:23.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "aapvuP",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-26T17:56:31.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "FSYfhq",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-26T16:12:14.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "p1deX4",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-26T13:42:46.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "WsBJqw",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-26T11:41:51.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "mElpMw",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-26T10:17:30.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "DVA2ZL",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-26T09:15:04.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "sbyd24",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-25T23:14:10.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "2iqsWS",
         "amount_cents": 999,
         "currency": "usd",
         "created": "2026-09-25T17:17:17.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "eGYy16",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-25T00:00:44.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "T4TZi0",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-24T16:41:37.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "xKNRNu",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-24T16:16:45.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "WcHqtT",
         "amount_cents": 500,
         "currency": "usd",
         "created": "2026-09-24T11:16:09.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "9Ha4Ke",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-24T07:42:22.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "7HrmIt",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-24T01:38:14.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "WjNBd3",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-23T20:27:30.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "L3dfnO",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-23T20:01:15.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "sVaoIi",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-23T18:37:04.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "4uenfQ",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-23T18:15:11.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Eokisc",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-23T10:01:51.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "p6CKez",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-23T08:18:30.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "BFcWxf",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-23T03:03:57.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "9BwvtO",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-23T00:47:51.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "7Z2dM3",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-22T16:45:52.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "f6BIZB",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-22T15:18:20.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "C1oQ79",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-22T14:43:33.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "E9p24w",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-21T18:59:47.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "gl1zuR",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-09-21T14:35:47.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "ok9rF8",
         "amount_cents": 500,
         "currency": "usd",
         "created": "2026-09-21T14:26:25.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "hM7rXf",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-21T12:49:56.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "cXqcc3",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-21T09:45:44.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "jUJyPI",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-21T08:34:21.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "SEWyDr",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-21T07:14:25.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "uZZEXh",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-21T05:30:12.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "ehYZU7",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-21T00:31:46.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Kuvt20",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-20T23:37:38.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "aARUx9",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-20T21:33:49.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "iw67eS",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-20T21:06:38.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "RMxEzx",
         "amount_cents": 999,
         "currency": "usd",
         "created": "2026-09-20T20:16:23.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "6XuRqS",
         "amount_cents": 999,
         "currency": "usd",
         "created": "2026-09-20T19:31:46.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "IMEjof",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-20T16:54:50.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "vCw2Lq",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-20T16:54:09.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "wfr0kI",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-20T15:54:10.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "0bktEc",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-20T12:21:24.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "FIvLi6",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-20T09:36:28.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "KedRqG",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-20T09:06:21.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "w6oCDW",
         "amount_cents": 106,
         "currency": "usd",
         "created": "2026-09-19T22:51:36.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "eEykVa",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-19T21:52:39.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "rmgIRq",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-19T21:14:32.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "GnFqU9",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-09-19T21:10:14.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "wsLoOp",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-19T20:50:04.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "kKEwKY",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-19T20:09:40.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "acVmii",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-09-19T19:16:08.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "1h6sQr",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-19T16:52:19.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "AtzN26",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-19T14:15:40.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "yIxCgy",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-19T13:54:29.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "ktsaDA",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-19T09:39:00.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "sDq1xO",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-19T09:18:08.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "vB2ew1",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-19T09:01:01.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "PZfa3f",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-19T04:37:48.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "EJM7Ms",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-19T03:27:53.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "grXU1P",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-19T02:54:44.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "fW9tdM",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-19T00:46:47.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "mHKxLz",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-18T21:20:13.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "zr5I7e",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-18T21:14:33.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "DZooHO",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-18T19:01:02.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "novzQ7",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-18T16:03:45.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "BrGaY6",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-18T15:55:03.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "grAGQy",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-18T15:51:50.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "MLmqEp",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-18T14:38:35.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "xJlbgX",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-18T13:37:23.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "NRsZQN",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-18T13:16:57.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "mwDsne",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-18T12:48:14.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "rhNdxC",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-18T11:23:18.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "wRcCrS",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-18T03:16:58.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "1ohDbi",
         "amount_cents": 24900,
         "currency": "inr",
         "created": "2026-09-18T02:17:59.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "40GA0D",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-17T20:17:33.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "iMnafy",
         "amount_cents": 499,
         "currency": "eur",
         "created": "2026-09-17T18:54:57.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "bUdXT8",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-17T15:29:47.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "oC6hFk",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-17T14:19:31.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "ddTBW5",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-17T13:19:56.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "RhNrT8",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-17T00:10:25.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "zUJNPn",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-16T16:47:15.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "PL3cXu",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-16T10:46:47.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "hpl0X6",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-15T21:05:12.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "XrxU39",
         "amount_cents": 499,
         "currency": "gbp",
         "created": "2026-09-14T23:43:56.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "BePfG2",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-14T22:19:44.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "vM1l1F",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-14T22:13:54.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "GDFodz",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-14T20:46:33.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Zra6cG",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-09-14T17:58:21.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Br4c7Q",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-13T21:29:40.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "rv8zUp",
         "amount_cents": 499,
         "currency": "usd",
         "created": "2026-09-13T20:43:00.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "pkGpwq",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-13T20:07:35.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "PIKRzE",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-13T17:00:46.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "M21EaO",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-13T00:16:17.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "6yKYmT",
         "amount_cents": 299,
         "currency": "gbp",
         "created": "2026-09-12T19:22:51.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "1zMBGR",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-12T16:19:58.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "lmIucx",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-12T04:52:48.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "nTnYlM",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-11T21:52:01.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "UQiplR",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-10T21:12:58.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "j8NunJ",
         "amount_cents": 530,
         "currency": "brl",
         "created": "2026-09-10T05:51:17.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "sKH9Cm",
         "amount_cents": 1499,
         "currency": "brl",
         "created": "2026-09-09T23:56:47.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "drYPVn",
         "amount_cents": 100,
         "currency": "gbp",
         "created": "2026-09-09T17:26:40.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "9thjs0",
         "amount_cents": 299,
         "currency": "eur",
         "created": "2026-09-09T07:48:19.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "7pMjdG",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-09T02:56:36.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "l4kxQc",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2026-09-08T19:56:44.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "zJjar9",
         "amount_cents": 999,
         "currency": "usd",
         "created": "2026-09-08T01:46:26.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "yPbQY8",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-08T01:30:23.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "KafQHE",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-07T23:40:15.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "DanNl1",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-07T19:37:33.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "GmhfQI",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-07T19:18:13.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "cGPpJs",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-07T19:05:52.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "9OgqKb",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-06T21:11:07.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "dw2lzG",
         "amount_cents": 299,
         "currency": "usd",
         "created": "2026-09-06T10:56:06.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "Jk3yPd",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-06T05:41:40.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "LDelsS",
         "amount_cents": 100,
         "currency": "usd",
         "created": "2026-09-03T23:42:19.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "vcRbjw",
         "amount_cents": 500,
         "currency": "eur",
         "created": "2026-08-23T19:38:53.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "1OH3ss",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2025-08-29T22:34:03.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "0ClZfj",
         "amount_cents": 100,
         "currency": "eur",
         "created": "2025-08-29T22:04:47.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       },
       {
         "id_suffix": "bWOYej",
         "amount_cents": 50,
         "currency": "gbp",
         "created": "2023-12-11T14:02:35.000Z",
-        "partially_refunded": false
+        "partially_refunded": false,
+        "product": "donation"
       }
-    ]
+    ],
+    "bsd": {
+      "all_time": {},
+      "last_30d": {},
+      "last_24h": {},
+      "charges": []
+    }
   },
   "ad_revenue": {
-    "generated_at": "2026-11-02T01:07:29Z",
+    "generated_at": "2026-11-02T01:44:45Z",
     "all_time": {
       "usd": {
         "amount_cents": 59316
