@@ -86,7 +86,7 @@ async function handleVerify(request, env) {
 
   // Proof of delivery for a possible dispute: stamp the PaymentIntent with
   // when a BSD download link was first issued for this payment (and from which
-  // country), plus a running count. Best effort -- never blocks the download.
+  // country and IP), plus a running count. Best effort -- never blocks the download.
   if (isBsdFile(file) && typeof session.payment_intent === "string") {
     try {
       await recordBsdDelivery(env, session.payment_intent, file, request);
@@ -113,15 +113,18 @@ async function recordBsdDelivery(env, paymentIntentId, file, request) {
 
   const now = new Date().toISOString();
   const country = (request.cf && request.cf.country) || "XX";
+  const ip = (request.headers.get("CF-Connecting-IP") || "").slice(0, 64);
   const count = (parseInt(meta.link_issue_count, 10) || 0) + 1;
   const params = new URLSearchParams({
     "metadata[link_last_issued_at]": now,
     "metadata[link_issue_count]": String(count),
   });
+  if (ip) params.set("metadata[link_last_ip]", ip);
   if (!meta.link_first_issued_at) {
     params.set("metadata[link_first_issued_at]", now);
     params.set("metadata[link_first_country]", country);
     params.set("metadata[link_file]", file);
+    if (ip) params.set("metadata[link_first_ip]", ip);
   }
   await fetch(piUrl, {
     method: "POST",
@@ -260,6 +263,10 @@ async function handleCheckout(request, env) {
   if (bsdBuild && typeof body.terms === "string" && /^[\w.\-]{1,40}$/.test(body.terms)) {
     params.set("payment_intent_data[metadata][terms_version]", body.terms);
     params.set("payment_intent_data[metadata][terms_accepted_at]", new Date().toISOString());
+    // Buyer's IP when the checkout is created: evidence against card-fraud
+    // disputes (disclosed in the privacy policy, legitimate interest).
+    const buyerIp = request.headers.get("CF-Connecting-IP");
+    if (buyerIp) params.set("payment_intent_data[metadata][checkout_ip]", buyerIp.slice(0, 64));
     // Version of the acknowledgement page (software / no refunds / experimental).
     if (typeof body.ack === "string" && /^[\w.\-]{1,40}$/.test(body.ack)) {
       params.set("payment_intent_data[metadata][ack_version]", body.ack);
