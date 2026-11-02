@@ -361,7 +361,7 @@ async function handleCheckout(request, env) {
     // Tag the charge so /revenue can tell BSD sales from donations (a BSD
     // sale can't be told apart by amount alone: donations are pay-what-you-want).
     "payment_intent_data[metadata][product]": bsdBuild ? "bsd" : "donation",
-    "payment_intent_data[description]": bsdBuild ? "pearOS UltraC0re (Developer Preview)" : "pearOS Donation",
+    "payment_intent_data[description]": bsdBuild ? "pearOS UltraC0re (Developer Preview)" : validFile ? "pearOS premium access (full-speed download)" : "pearOS Donation",
   });
   if (validFile) params.set("payment_intent_data[metadata][file]", file);
   // MANAGED_PAYMENTS = "on" (wrangler.toml var): BSD sales go through Stripe Managed
@@ -442,6 +442,29 @@ async function handleCheckout(request, env) {
   }
 
   const session = await stripeRes.json();
+  // For the tester only: what Stripe actually made of the session (is it managed?).
+  if (mpTest) {
+    return json(
+      {
+        client_secret: session.client_secret,
+        debug: {
+          id: session.id,
+          managed_payments: session.managed_payments,
+          ui_mode: session.ui_mode,
+          currency: session.currency,
+          amount_total: session.amount_total,
+          api_version_sent: managed ? "2025-03-31.basil" : "(account default)",
+          managed_requested: managed,
+          invoice_creation: session.invoice_creation,
+          customer_creation: session.customer_creation,
+          adaptive_pricing: session.adaptive_pricing,
+        },
+      },
+      200,
+      request,
+      env
+    );
+  }
   return json({ client_secret: session.client_secret }, 200, request, env);
 }
 
