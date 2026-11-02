@@ -44,7 +44,10 @@ USER_AGENT = "pearOS-sync-script"
 
 
 def fetch_text(url):
-    req = urllib.request.Request(url, method="GET", headers={"User-Agent": USER_AGENT})
+    # raw.githubusercontent.com caches for ~5 min; this can run right after the
+    # ISO workflow pushed sha.txt, so bypass the cache with a throwaway query.
+    url = f"{url}?nocache={int(time.time())}"
+    req = urllib.request.Request(url, method="GET", headers={"User-Agent": USER_AGENT, "Cache-Control": "no-cache"})
     with urllib.request.urlopen(req) as resp:
         return resp.read().decode().strip()
 
