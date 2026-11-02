@@ -1,4 +1,4 @@
-import { sendMail, bsdConfirmation } from "./mail.js";
+import { sendMail, bsdConfirmation, accountingText } from "./mail.js";
 
 // pearOS download gateway: throttles free downloads to N MB/s, and issues/
 // verifies signed URLs (via Stripe) that bypass the throttle for 4 hours.
@@ -144,33 +144,98 @@ async function recordBsdDelivery(env, paymentIntentId, file, request) {
     headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
     body: params.toString(),
   });
-  return { first, meta, country };
+  // `meta` as it is after this issuance (the first one stamps these fields), so the
+  // confirmation can show the issue time and IP.
+  const after = first
+    ? { ...meta, link_first_issued_at: now, link_first_country: country, link_file: file, ...(ip ? { link_first_ip: ip } : {}) }
+    : meta;
+  return { first, meta: after, country };
 }
 
 // The purchase confirmation required for the withdrawal-right waiver: it
 // repeats, on a durable medium (email), what the buyer agreed to before paying.
 async function sendBsdConfirmation(env, session, meta, file, to, country, link) {
-  const stamp = async (status) => {
+  const auth = { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` };
+  const piUrl = `https://api.stripe.com/v1/payment_intents/${encodeURIComponent(session.payment_intent)}`;
+  const stamp = async (fields) => {
     try {
-      await fetch(`https://api.stripe.com/v1/payment_intents/${encodeURIComponent(session.payment_intent)}`, {
+      await fetch(piUrl, {
         method: "POST",
-        headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          "metadata[confirmation_email]": status,
-          "metadata[confirmation_email_at]": new Date().toISOString(),
-        }).toString(),
+        headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(
+          Object.fromEntries(Object.entries({ ...fields, confirmation_at: new Date().toISOString() }).map(([k, v]) => [`metadata[${k}]`, v]))
+        ).toString(),
       });
     } catch {
       // nothing more to do
     }
   };
+
+  // Charge details (name, countries, receipt) for the accounting copy -- best effort.
+  let charge = null;
   try {
-    const { text, html } = bsdConfirmation(session, meta, file, country, { link });
-    await sendMail(env, { to, subject: "Your pearOS UltraC0re purchase - confirmation", text, html });
-    await stamp("sent");
-  } catch (e) {
-    await stamp("failed: " + String((e && e.message) || e).slice(0, 80));
+    const r = await fetch(`${piUrl}?expand[]=latest_charge`, { headers: auth });
+    if (r.ok) charge = (await r.json()).latest_charge || null;
+  } catch {
+    // ignore
   }
+
+  // The Stripe invoice (created right after payment): wait a little for its number and PDF.
+  let invoice = null;
+  let pdf = null;
+  if (typeof session.invoice === "string") {
+    for (let i = 0; i < 6 && !invoice; i++) {
+      try {
+        const r = await fetch(`https://api.stripe.com/v1/invoices/${encodeURIComponent(session.invoice)}`, { headers: auth });
+        if (r.ok) {
+          const inv = await r.json();
+          if (inv.number && inv.invoice_pdf) invoice = inv;
+        }
+      } catch {
+        // retry
+      }
+      if (!invoice) await new Promise((res) => setTimeout(res, 2500));
+    }
+    if (invoice) {
+      try {
+        const r = await fetch(invoice.invoice_pdf, { redirect: "follow" });
+        if (r.ok) pdf = new Uint8Array(await r.arrayBuffer());
+      } catch {
+        // the link is still included
+      }
+    }
+  }
+  const attachments = pdf ? [{ filename: `invoice-${invoice.number}.pdf`, type: "application/pdf", bytes: pdf }] : [];
+
+  // 1) the buyer
+  const result = {};
+  try {
+    const { text, html } = bsdConfirmation(session, meta, file, country, {
+      link,
+      invoice: invoice ? { number: invoice.number, url: invoice.hosted_invoice_url, attached: !!pdf } : null,
+    });
+    await sendMail(env, { to, subject: "Your pearOS UltraC0re purchase - confirmation", text, html, attachments });
+    result.confirmation_email = "sent";
+  } catch (e) {
+    result.confirmation_email = "failed: " + String((e && e.message) || e).slice(0, 80);
+  }
+
+  // 2) our own mailbox, for the books (always, even if the buyer's email failed)
+  try {
+    const acct = env.ACCOUNTING_EMAIL || env.MAIL_FROM || env.SMTP_USER;
+    const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
+    await sendMail(env, {
+      to: acct,
+      subject: `[pearOS] BSD sale ${amount} ${String(session.currency || "").toUpperCase()}${invoice ? ` - invoice ${invoice.number}` : " - NO INVOICE"}`,
+      text: accountingText({ session, meta, file, country, charge, invoice, buyerEmail: to, link }),
+      attachments,
+    });
+    result.accounting_copy = "sent";
+  } catch (e) {
+    result.accounting_copy = "failed: " + String((e && e.message) || e).slice(0, 80);
+  }
+  if (invoice) result.invoice_number = invoice.number;
+  await stamp(result);
 }
 
 
@@ -298,6 +363,17 @@ async function handleCheckout(request, env) {
     "payment_intent_data[description]": bsdBuild ? "pearOS UltraC0re (Developer Preview)" : "pearOS Donation",
   });
   if (validFile) params.set("payment_intent_data[metadata][file]", file);
+  // BSD is a sale, not a donation: have Stripe create an invoice (sequential number, PDF)
+  // that goes to the buyer and to our own mailbox.
+  if (bsdBuild) {
+    params.set("invoice_creation[enabled]", "true");
+    params.set("invoice_creation[invoice_data][description]", "pearOS UltraC0re (Developer Preview) - digital software");
+    params.set(
+      "invoice_creation[invoice_data][footer]",
+      "Pear Software and Services S.R.L. - CUI 50888207 - Nr. Reg. Com. J2024041454000 - 133 Dacia Blvd, Floor D, Sector 2, Bucharest 020056, Romania. Seller not registered for VAT."
+    );
+    params.set("invoice_creation[invoice_data][metadata][product]", "bsd");
+  }
   // BSD buyers accept the site's Terms of Use (and a no-refund/experimental
   // acknowledgement) before paying; keep which version of the terms and when,
   // on the charge itself, in case of a later dispute.

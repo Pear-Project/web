@@ -13,14 +13,21 @@ function b64(str) {
   return btoa(bin);
 }
 
+function b64bytes(bytes) {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
 function wrap76(s) {
   return s.replace(/(.{76})/g, "$1\r\n");
 }
 
-// Builds the RFC 5322 message. With `html` it is multipart/alternative (a plain
-// text part first, then the HTML part); otherwise plain text only. Bodies are
-// UTF-8 + base64 (no line-length or encoding surprises). `subject` must be ASCII.
-export function buildMessage({ from, fromName, to, replyTo, subject, text, html, domain }) {
+// Builds the RFC 5322 message. Text only, multipart/alternative (text + HTML) when
+// `html` is given, and multipart/mixed when there are `attachments`
+// ([{ filename, type, bytes }]). Bodies are UTF-8 + base64 (no line-length or
+// encoding surprises). `subject` must be ASCII.
+export function buildMessage({ from, fromName, to, replyTo, subject, text, html, attachments, domain }) {
   const id = `${crypto.randomUUID()}@${domain}`;
   const headers = [
     `From: ${fromName} <${from}>`,
@@ -31,17 +38,33 @@ export function buildMessage({ from, fromName, to, replyTo, subject, text, html,
     `Message-ID: <${id}>`,
     "MIME-Version: 1.0",
   ];
+  const rnd = () => crypto.randomUUID().replace(/-/g, "");
   const part = (type, body) =>
     `Content-Type: ${type}; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n` + wrap76(b64(body.replace(/\r?\n/g, "\r\n")));
-  if (!html) return headers.join("\r\n") + "\r\n" + part("text/plain", text);
-  const boundary = "=_pearos_" + crypto.randomUUID().replace(/-/g, "");
-  headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
-  return (
-    headers.join("\r\n") + "\r\n\r\n" +
-    `--${boundary}\r\n` + part("text/plain", text) + "\r\n" +
-    `--${boundary}\r\n` + part("text/html", html) + "\r\n" +
-    `--${boundary}--`
-  );
+
+  let block; // starts with its own Content-Type header
+  if (html) {
+    const ab = "=_alt_" + rnd();
+    block =
+      `Content-Type: multipart/alternative; boundary="${ab}"\r\n\r\n` +
+      `--${ab}\r\n` + part("text/plain", text) + "\r\n" +
+      `--${ab}\r\n` + part("text/html", html) + "\r\n" +
+      `--${ab}--`;
+  } else {
+    block = part("text/plain", text);
+  }
+  if (!attachments || !attachments.length) return headers.join("\r\n") + "\r\n" + block;
+
+  const mb = "=_mix_" + rnd();
+  let out = headers.join("\r\n") + "\r\n" + `Content-Type: multipart/mixed; boundary="${mb}"\r\n\r\n` + `--${mb}\r\n` + block + "\r\n";
+  for (const a of attachments) {
+    const name = String(a.filename).replace(/[^\w.\-]/g, "_");
+    out +=
+      `--${mb}\r\n` +
+      `Content-Type: ${a.type}; name="${name}"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename="${name}"\r\n\r\n` +
+      wrap76(b64bytes(a.bytes)) + "\r\n";
+  }
+  return out + `--${mb}--`;
 }
 
 // Speaks SMTP over an already-open duplex stream pair. Exported for testing.
@@ -112,11 +135,11 @@ function withTimeout(promise, ms) {
 }
 
 // Sends one message. Throws on any failure; callers decide what to do.
-export async function sendMail(env, { to, subject, text, html }) {
+export async function sendMail(env, { to, subject, text, html, attachments }) {
   const user = env.SMTP_USER;
   const from = env.MAIL_FROM || user;
   const domain = from.split("@")[1] || "pearos.xyz";
-  const message = buildMessage({ from, fromName: env.MAIL_FROM_NAME || "pearOS", to, subject, text, html, domain });
+  const message = buildMessage({ from, fromName: env.MAIL_FROM_NAME || "pearOS", to, subject, text, html, attachments, domain });
   const socket = connect(
     { hostname: env.SMTP_HOST, port: parseInt(env.SMTP_PORT, 10) || 465 },
     { secureTransport: "on", allowHalfOpen: false }
@@ -191,6 +214,7 @@ function confirmationParts(session, meta, file, lang, extra = {}) {
         ["Payment reference", ref],
         ["Download link issued", when(meta.link_first_issued_at)],
         ...(validUntil ? [["Link valid until", validUntil]] : []),
+        ...(extra.invoice ? [["Invoice", `${extra.invoice.number}${extra.invoice.attached ? " (PDF attached)" : ""}`, extra.invoice.url]] : []),
       ],
       acceptTitle: "What you accepted before paying",
       acceptWhen: when(meta.terms_accepted_at),
@@ -232,6 +256,7 @@ function confirmationParts(session, meta, file, lang, extra = {}) {
       ["Referință plată", ref],
       ["Link de descărcare emis", when(meta.link_first_issued_at)],
       ...(validUntil ? [["Link valabil până la", validUntil]] : []),
+      ...(extra.invoice ? [["Factură", `${extra.invoice.number}${extra.invoice.attached ? " (PDF atașat)" : ""}`, extra.invoice.url]] : []),
     ],
     acceptTitle: "Ce ai acceptat înainte de plată",
     acceptWhen: when(meta.terms_accepted_at),
@@ -263,7 +288,7 @@ function confirmationParts(session, meta, file, lang, extra = {}) {
 
 function partsToText(p) {
   const out = [p.title, "", p.intro, "", p.orderTitle.toUpperCase()];
-  for (const [k, v] of p.rows) out.push(`- ${k}: ${v}`);
+  for (const [k, v, href] of p.rows) out.push(`- ${k}: ${v}${href ? ` - ${href}` : ""}`);
   out.push("", `${p.acceptTitle.toUpperCase()} (${p.acceptWhen})`);
   for (const [k, url] of p.docs) out.push(`- ${k}: ${url}`);
   out.push(`- ${p.ackIntro}`);
@@ -293,8 +318,8 @@ function partsToHtmlSection(p, first) {
   const h2 = (t) => `<div style="font-family:${FONT};font-size:15px;font-weight:700;color:${C.ink};margin:0 0 12px;letter-spacing:-.01em">${esc(t)}</div>`;
   const rows = p.rows
     .map(
-      ([k, v], i) =>
-        `<tr><td style="font-family:${FONT};font-size:12px;color:${C.muted};text-transform:uppercase;letter-spacing:.04em;padding:9px 12px 9px 0;vertical-align:top;width:34%;${i ? `border-top:1px solid ${C.line};` : ""}">${esc(k)}</td><td style="font-family:${FONT};font-size:14px;color:${C.ink};padding:9px 0;line-height:1.5;vertical-align:top;${i ? `border-top:1px solid ${C.line};` : ""}">${esc(v)}</td></tr>`
+      ([k, v, href], i) =>
+        `<tr><td style="font-family:${FONT};font-size:12px;color:${C.muted};text-transform:uppercase;letter-spacing:.04em;padding:9px 12px 9px 0;vertical-align:top;width:34%;${i ? `border-top:1px solid ${C.line};` : ""}">${esc(k)}</td><td style="font-family:${FONT};font-size:14px;color:${C.ink};padding:9px 0;line-height:1.5;vertical-align:top;${i ? `border-top:1px solid ${C.line};` : ""}">${href ? `<a href="${esc(href)}" style="color:${C.ink};text-decoration:underline">${esc(v)}</a>` : esc(v)}</td></tr>`
     )
     .join("");
   const acks = p.acks
@@ -362,11 +387,56 @@ function renderHtml(sections, banner) {
 
 // The email: {text, html}. English always; a Romanian section is added for
 // buyers in Romania. `sample` adds a "this is not a real order" banner.
-export function bsdConfirmation(session, meta, file, country, { sample = false, link = null } = {}) {
-  const extra = { link, tz: link && link.tz };
+export function bsdConfirmation(session, meta, file, country, { sample = false, link = null, invoice = null } = {}) {
+  const extra = { link, tz: link && link.tz, invoice };
   const parts = [confirmationParts(session, meta, file, "en", extra)];
   if (country === "RO") parts.push(confirmationParts(session, meta, file, "ro", extra));
   const banner = sample ? "SAMPLE - this is not a real order" : "";
   const text = (banner ? `[${banner}]\n\n` : "") + parts.map(partsToText).join("\n\n----------------------------------------\n\n");
   return { text, html: renderHtml(parts, banner) };
+}
+
+// Plain-text "new sale" note sent to the shop's own mailbox, for the books.
+export function accountingText({ session, meta, file, country, charge, invoice, buyerEmail, link }) {
+  const cur = String(session.currency || "").toUpperCase();
+  const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
+  const bd = (charge && charge.billing_details) || {};
+  const cardCountry = charge && charge.payment_method_details && charge.payment_method_details.card && charge.payment_method_details.card.country;
+  const at = (iso) => (iso ? String(iso).replace("T", " ").replace(/\.\d+Z$/, " UTC") : "-");
+  const lines = [
+    "New paid BSD sale",
+    "",
+    `Amount: ${amount} ${cur} (VAT: seller not registered)`,
+    `Product: pearOS UltraC0re - ${file}`,
+    `Paid / link issued: ${at(meta.link_first_issued_at)}`,
+    "",
+    "Buyer",
+    `- Email: ${buyerEmail}`,
+    `- Name (card): ${bd.name || (session.customer_details && session.customer_details.name) || "-"}`,
+    `- Billing country: ${(bd.address && bd.address.country) || (session.customer_details && session.customer_details.address && session.customer_details.address.country) || "-"}`,
+    `- Card country: ${cardCountry || "-"}`,
+    `- Download country (geoIP): ${country || "-"}`,
+    `- IP at checkout: ${meta.checkout_ip || "-"}`,
+    `- IP at link issue: ${meta.link_first_ip || "-"}`,
+    "",
+    "Invoice",
+  ];
+  if (invoice) {
+    lines.push(`- Number: ${invoice.number}`, `- PDF: attached to this email (${invoice.invoice_pdf})`, `- Online: ${invoice.hosted_invoice_url}`);
+  } else {
+    lines.push("- NO INVOICE was available when this email was sent. Look for it in Stripe (Billing > Invoices) or issue one manually.");
+  }
+  lines.push(
+    "",
+    "Stripe",
+    `- Payment: https://dashboard.stripe.com/payments/${session.payment_intent}`,
+    ...(charge && charge.receipt_url ? [`- Receipt: ${charge.receipt_url}`] : []),
+    "",
+    "Consent on record",
+    `- Terms of Use version: ${meta.terms_version || "-"}`,
+    `- Acknowledgement version: ${meta.ack_version || "-"}`,
+    `- Accepted at: ${at(meta.terms_accepted_at)}`,
+    ""
+  );
+  return lines.join("\n");
 }
