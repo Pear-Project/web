@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-02T06:07:30Z",
-  "total_all_time": 60354,
-  "last_30d": 29582,
-  "last_24h": 2154,
+  "generated_at": "2026-11-02T07:07:33Z",
+  "total_all_time": 60387,
+  "last_30d": 29566,
+  "last_24h": 2093,
   "by_file": [
     {
       "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
@@ -19,8 +19,8 @@
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": "16505",
-      "bytes": 36690900549632
+      "downloads": "16517",
+      "bytes": 36717572390912
     },
     {
       "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
@@ -29,16 +29,16 @@
       "bytes": 6473760768
     },
     {
-      "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
-      "tier": "paid",
-      "downloads": "28",
-      "bytes": 94050009088
-    },
-    {
       "file": "iso/pearOS-Goldwing-Beta-2026.08-x86_64.iso",
       "tier": "free",
       "downloads": "814",
       "bytes": 1756547088384
+    },
+    {
+      "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
+      "tier": "paid",
+      "downloads": "28",
+      "bytes": 94050009088
     },
     {
       "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
@@ -73,8 +73,8 @@
     {
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": "12779",
-      "bytes": 43914496577536
+      "downloads": "12800",
+      "bytes": 43986662195200
     },
     {
       "file": "iso/pearOS-UltraC0re-amd64-26.10.iso.xz",
@@ -734,15 +734,15 @@
     },
     {
       "date": "2026-09-25",
-      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 745
-    },
-    {
-      "date": "2026-09-25",
       "file": "iso/pearOS-NiceC0re-2026.08-x86_64.iso",
       "tier": "free",
       "downloads": 6
+    },
+    {
+      "date": "2026-09-25",
+      "file": "iso/pearOS-NiceC0re-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 745
     },
     {
       "date": "2026-09-25",
@@ -1738,7 +1738,7 @@
       "date": "2026-11-02",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 106
+      "downloads": 118
     },
     {
       "date": "2026-11-02",
@@ -1750,7 +1750,7 @@
       "date": "2026-11-02",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": 185
+      "downloads": 206
     },
     {
       "date": "2026-11-02",
@@ -1761,28 +1761,16 @@
   ],
   "hourly": [
     {
-      "hour": "2026-10-31 06:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 9
-    },
-    {
-      "hour": "2026-10-31 06:00:00",
+      "hour": "2026-10-31 07:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": 13
+      "downloads": 21
     },
     {
       "hour": "2026-10-31 07:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 15
-    },
-    {
-      "hour": "2026-10-31 07:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 22
+      "downloads": 14
     },
     {
       "hour": "2026-10-31 08:00:00",
@@ -1810,15 +1798,21 @@
     },
     {
       "hour": "2026-10-31 10:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 5
+    },
+    {
+      "hour": "2026-10-31 10:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 36
     },
     {
-      "hour": "2026-10-31 10:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "hour": "2026-10-31 11:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": 5
+      "downloads": 28
     },
     {
       "hour": "2026-10-31 11:00:00",
@@ -1827,10 +1821,10 @@
       "downloads": 7
     },
     {
-      "hour": "2026-10-31 11:00:00",
+      "hour": "2026-10-31 12:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 28
+      "tier": "paid",
+      "downloads": 1
     },
     {
       "hour": "2026-10-31 12:00:00",
@@ -1843,12 +1837,6 @@
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 26
-    },
-    {
-      "hour": "2026-10-31 12:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "paid",
-      "downloads": 1
     },
     {
       "hour": "2026-10-31 13:00:00",
@@ -1864,6 +1852,12 @@
     },
     {
       "hour": "2026-10-31 14:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 17
+    },
+    {
+      "hour": "2026-10-31 14:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "paid",
       "downloads": 1
@@ -1875,12 +1869,6 @@
       "downloads": 27
     },
     {
-      "hour": "2026-10-31 14:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 17
-    },
-    {
       "hour": "2026-10-31 15:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
@@ -1891,18 +1879,18 @@
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 25
-    },
-    {
-      "hour": "2026-10-31 16:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 26
     },
     {
       "hour": "2026-10-31 16:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 14
+    },
+    {
+      "hour": "2026-10-31 16:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 26
     },
     {
       "hour": "2026-10-31 17:00:00",
@@ -1918,27 +1906,27 @@
     },
     {
       "hour": "2026-10-31 18:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 41
-    },
-    {
-      "hour": "2026-10-31 18:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 41
     },
     {
-      "hour": "2026-10-31 19:00:00",
+      "hour": "2026-10-31 18:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 19
+      "downloads": 41
     },
     {
       "hour": "2026-10-31 19:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 54
+    },
+    {
+      "hour": "2026-10-31 19:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 19
     },
     {
       "hour": "2026-10-31 20:00:00",
@@ -1954,15 +1942,15 @@
     },
     {
       "hour": "2026-10-31 21:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 32
-    },
-    {
-      "hour": "2026-10-31 21:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 80
+    },
+    {
+      "hour": "2026-10-31 21:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 32
     },
     {
       "hour": "2026-10-31 22:00:00",
@@ -1984,15 +1972,15 @@
     },
     {
       "hour": "2026-10-31 23:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 17
-    },
-    {
-      "hour": "2026-10-31 23:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 32
+    },
+    {
+      "hour": "2026-10-31 23:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 17
     },
     {
       "hour": "2026-11-01 00:00:00",
@@ -2008,27 +1996,27 @@
     },
     {
       "hour": "2026-11-01 01:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 54
-    },
-    {
-      "hour": "2026-11-01 01:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 26
     },
     {
-      "hour": "2026-11-01 02:00:00",
+      "hour": "2026-11-01 01:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": 41
+      "downloads": 54
     },
     {
       "hour": "2026-11-01 02:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 24
+    },
+    {
+      "hour": "2026-11-01 02:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 41
     },
     {
       "hour": "2026-11-01 03:00:00",
@@ -2062,15 +2050,21 @@
     },
     {
       "hour": "2026-11-01 05:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 36
+    },
+    {
+      "hour": "2026-11-01 05:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 19
     },
     {
-      "hour": "2026-11-01 05:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "hour": "2026-11-01 06:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 36
+      "downloads": 34
     },
     {
       "hour": "2026-11-01 06:00:00",
@@ -2085,10 +2079,10 @@
       "downloads": 2
     },
     {
-      "hour": "2026-11-01 06:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "hour": "2026-11-01 07:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": 34
+      "downloads": 96
     },
     {
       "hour": "2026-11-01 07:00:00",
@@ -2097,22 +2091,16 @@
       "downloads": 22
     },
     {
-      "hour": "2026-11-01 07:00:00",
+      "hour": "2026-11-01 08:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": 96
+      "downloads": 57
     },
     {
       "hour": "2026-11-01 08:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 23
-    },
-    {
-      "hour": "2026-11-01 08:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 57
     },
     {
       "hour": "2026-11-01 09:00:00",
@@ -2152,12 +2140,6 @@
     },
     {
       "hour": "2026-11-01 12:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 61
-    },
-    {
-      "hour": "2026-11-01 12:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 35
@@ -2171,11 +2153,11 @@
     {
       "hour": "2026-11-01 12:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "paid",
-      "downloads": 1
+      "tier": "free",
+      "downloads": 61
     },
     {
-      "hour": "2026-11-01 13:00:00",
+      "hour": "2026-11-01 12:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "paid",
       "downloads": 1
@@ -2188,15 +2170,15 @@
     },
     {
       "hour": "2026-11-01 13:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "paid",
+      "downloads": 1
+    },
+    {
+      "hour": "2026-11-01 13:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 43
-    },
-    {
-      "hour": "2026-11-01 14:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 21
     },
     {
       "hour": "2026-11-01 14:00:00",
@@ -2205,16 +2187,28 @@
       "downloads": 108
     },
     {
-      "hour": "2026-11-01 15:00:00",
+      "hour": "2026-11-01 14:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 48
+      "downloads": 21
     },
     {
       "hour": "2026-11-01 15:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 94
+    },
+    {
+      "hour": "2026-11-01 15:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 48
+    },
+    {
+      "hour": "2026-11-01 16:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 98
     },
     {
       "hour": "2026-11-01 16:00:00",
@@ -2229,22 +2223,16 @@
       "downloads": 36
     },
     {
-      "hour": "2026-11-01 16:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "hour": "2026-11-01 17:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 98
+      "downloads": 45
     },
     {
       "hour": "2026-11-01 17:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 107
-    },
-    {
-      "hour": "2026-11-01 17:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 45
     },
     {
       "hour": "2026-11-01 18:00:00",
@@ -2266,15 +2254,15 @@
     },
     {
       "hour": "2026-11-01 19:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "paid",
-      "downloads": 1
-    },
-    {
-      "hour": "2026-11-01 19:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 22
+    },
+    {
+      "hour": "2026-11-01 19:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "paid",
+      "downloads": 1
     },
     {
       "hour": "2026-11-01 20:00:00",
@@ -2284,27 +2272,27 @@
     },
     {
       "hour": "2026-11-01 20:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 58
-    },
-    {
-      "hour": "2026-11-01 20:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 20
     },
     {
-      "hour": "2026-11-01 21:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "hour": "2026-11-01 20:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": 21
+      "downloads": 58
     },
     {
       "hour": "2026-11-01 21:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 38
+    },
+    {
+      "hour": "2026-11-01 21:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 21
     },
     {
       "hour": "2026-11-01 22:00:00",
@@ -2332,6 +2320,12 @@
     },
     {
       "hour": "2026-11-02 00:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "paid",
+      "downloads": 1
+    },
+    {
+      "hour": "2026-11-02 00:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 14
@@ -2343,22 +2337,16 @@
       "downloads": 39
     },
     {
-      "hour": "2026-11-02 00:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "paid",
-      "downloads": 1
+      "hour": "2026-11-02 01:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 19
     },
     {
       "hour": "2026-11-02 01:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
       "downloads": 43
-    },
-    {
-      "hour": "2026-11-02 01:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
-      "tier": "free",
-      "downloads": 19
     },
     {
       "hour": "2026-11-02 01:00:00",
@@ -2381,6 +2369,12 @@
     {
       "hour": "2026-11-02 03:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 36
+    },
+    {
+      "hour": "2026-11-02 03:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "paid",
       "downloads": 2
     },
@@ -2391,10 +2385,10 @@
       "downloads": 30
     },
     {
-      "hour": "2026-11-02 03:00:00",
+      "hour": "2026-11-02 04:00:00",
       "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "free",
-      "downloads": 36
+      "tier": "paid",
+      "downloads": 4
     },
     {
       "hour": "2026-11-02 04:00:00",
@@ -2404,15 +2398,15 @@
     },
     {
       "hour": "2026-11-02 04:00:00",
-      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
-      "tier": "paid",
-      "downloads": 4
-    },
-    {
-      "hour": "2026-11-02 04:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
       "downloads": 9
+    },
+    {
+      "hour": "2026-11-02 05:00:00",
+      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "tier": "free",
+      "downloads": 14
     },
     {
       "hour": "2026-11-02 05:00:00",
@@ -2427,26 +2421,32 @@
       "downloads": 1
     },
     {
-      "hour": "2026-11-02 05:00:00",
-      "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
+      "hour": "2026-11-02 06:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
       "tier": "free",
-      "downloads": 14
+      "downloads": 20
     },
     {
       "hour": "2026-11-02 06:00:00",
       "file": "iso/pearOS-Goldwing-Beta-2026.09-x86_64.iso",
       "tier": "free",
-      "downloads": 3
+      "downloads": 15
+    },
+    {
+      "hour": "2026-11-02 07:00:00",
+      "file": "iso/pearOS-NiceC0re-2026.10-x86_64.iso",
+      "tier": "free",
+      "downloads": 1
     }
   ],
   "by_country": [
     {
       "country": "US",
-      "downloads": 8048
+      "downloads": 8054
     },
     {
       "country": "IN",
-      "downloads": 5833
+      "downloads": 5834
     },
     {
       "country": "FR",
@@ -2466,11 +2466,11 @@
     },
     {
       "country": "CN",
-      "downloads": 2472
+      "downloads": 2473
     },
     {
       "country": "ID",
-      "downloads": 2122
+      "downloads": 2123
     },
     {
       "country": "PL",
@@ -2484,7 +2484,7 @@
   "by_referrer": [
     {
       "referrer": "pearos.xyz",
-      "downloads": 54186
+      "downloads": 54219
     },
     {
       "referrer": "direct",
@@ -2550,11 +2550,11 @@
     },
     {
       "hour": 6,
-      "downloads": 2131
+      "downloads": 2163
     },
     {
       "hour": 7,
-      "downloads": 2323
+      "downloads": 2324
     },
     {
       "hour": 8,
@@ -2624,7 +2624,7 @@
   "friend_all_time": 11,
   "friend_last_24h": 2,
   "donations": {
-    "generated_at": "2026-11-02T06:07:30.133Z",
+    "generated_at": "2026-11-02T07:07:32.889Z",
     "all_time": {
       "inr": {
         "amount_cents": 84700,
@@ -2653,8 +2653,8 @@
         "count": 3
       },
       "eur": {
-        "amount_cents": 12668,
-        "count": 37
+        "amount_cents": 12568,
+        "count": 36
       },
       "usd": {
         "amount_cents": 27842,
@@ -2671,8 +2671,8 @@
     },
     "last_24h": {
       "inr": {
-        "amount_cents": 34900,
-        "count": 2
+        "amount_cents": 24900,
+        "count": 1
       },
       "eur": {
         "amount_cents": 598,
@@ -4989,7 +4989,7 @@
     }
   },
   "ad_revenue": {
-    "generated_at": "2026-11-02T06:07:30Z",
+    "generated_at": "2026-11-02T07:07:33Z",
     "all_time": {
       "usd": {
         "amount_cents": 59316
