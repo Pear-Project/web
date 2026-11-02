@@ -86,6 +86,13 @@ async function handleVerify(request, env, ctx) {
     }
   }
 
+  const ttl = parseInt(env.SIGNED_URL_TTL_SECONDS, 10);
+  const exp = Math.floor(Date.now() / 1000) + ttl;
+  const path = `/iso/${file}`;
+  const sig = await sign(path, exp, "paid", env.HMAC_SECRET);
+
+  const downloadUrl = `https://iso.pearos.xyz${path}?exp=${exp}&sig=${sig}&tier=paid`;
+
   // Proof of delivery for a possible dispute: stamp the PaymentIntent with
   // when a BSD download link was first issued for this payment (and from which
   // country and IP), plus a running count. Best effort -- never blocks the download.
@@ -96,7 +103,7 @@ async function handleVerify(request, env, ctx) {
       // is never delayed or blocked by the mail server.
       const to = session.customer_details && session.customer_details.email;
       if (rec && rec.first && env.SMTP_PASSWORD && typeof to === "string" && EMAIL_RE.test(to)) {
-        const run = sendBsdConfirmation(env, session, rec.meta, file, to, rec.country);
+        const run = sendBsdConfirmation(env, session, rec.meta, file, to, rec.country, { url: downloadUrl, exp, tz: request.cf && request.cf.timezone });
         if (ctx && ctx.waitUntil) ctx.waitUntil(run);
       }
     } catch {
@@ -104,12 +111,6 @@ async function handleVerify(request, env, ctx) {
     }
   }
 
-  const ttl = parseInt(env.SIGNED_URL_TTL_SECONDS, 10);
-  const exp = Math.floor(Date.now() / 1000) + ttl;
-  const path = `/iso/${file}`;
-  const sig = await sign(path, exp, "paid", env.HMAC_SECRET);
-
-  const downloadUrl = `https://iso.pearos.xyz${path}?exp=${exp}&sig=${sig}&tier=paid`;
   return json({ url: downloadUrl, expires_at: exp }, 200, request, env);
 }
 
@@ -148,7 +149,7 @@ async function recordBsdDelivery(env, paymentIntentId, file, request) {
 
 // The purchase confirmation required for the withdrawal-right waiver: it
 // repeats, on a durable medium (email), what the buyer agreed to before paying.
-async function sendBsdConfirmation(env, session, meta, file, to, country) {
+async function sendBsdConfirmation(env, session, meta, file, to, country, link) {
   const stamp = async (status) => {
     try {
       await fetch(`https://api.stripe.com/v1/payment_intents/${encodeURIComponent(session.payment_intent)}`, {
@@ -164,7 +165,7 @@ async function sendBsdConfirmation(env, session, meta, file, to, country) {
     }
   };
   try {
-    const { text, html } = bsdConfirmation(session, meta, file, country);
+    const { text, html } = bsdConfirmation(session, meta, file, country, { link });
     await sendMail(env, { to, subject: "Your pearOS UltraC0re purchase - confirmation", text, html });
     await stamp("sent");
   } catch (e) {

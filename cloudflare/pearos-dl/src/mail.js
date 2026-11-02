@@ -149,11 +149,31 @@ export async function sendMail(env, { to, subject, text, html }) {
 
 const SITE = "https://pearos.xyz";
 
-function confirmationParts(session, meta, file, lang) {
+// "2 November 2026 at 06:40 (Europe/Bucharest; 2026-11-02 04:40 UTC)". Falls back to
+// UTC when the timezone is missing or not a valid IANA name.
+function fmtTime(value, lang, tz) {
+  const d = new Date(value);
+  if (!value || isNaN(d.getTime())) return "-";
+  const locale = lang === "ro" ? "ro-RO" : "en-GB";
+  let zone = typeof tz === "string" && tz ? tz : "UTC";
+  try {
+    new Intl.DateTimeFormat(locale, { timeZone: zone });
+  } catch {
+    zone = "UTC";
+  }
+  const local = new Intl.DateTimeFormat(locale, { dateStyle: "long", timeStyle: "short", timeZone: zone }).format(d);
+  if (zone === "UTC") return `${local} UTC`;
+  return `${local} (${zone}; ${d.toISOString().slice(0, 16).replace("T", " ")} UTC)`;
+}
+
+function confirmationParts(session, meta, file, lang, extra = {}) {
   const ro = lang === "ro";
   const cur = String(session.currency || "").toUpperCase();
   const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
-  const when = (iso) => (iso ? String(iso).replace("T", " ").replace(/\.\d+Z$/, " UTC") : "-");
+  const tz = extra.tz;
+  const when = (iso) => fmtTime(iso, lang, tz);
+  const link = extra.link || null;
+  const validUntil = link && link.exp ? when(link.exp * 1000) : null;
   const ref = "..." + String(session.payment_intent || "").slice(-8);
   const file_ = String(file || "");
   const u = (path) => SITE + (ro ? path.replace(/\/$/, "/ro/") : path);
@@ -170,6 +190,7 @@ function confirmationParts(session, meta, file, lang) {
         ["Amount paid", `${amount} ${cur}. This is the final price; the seller is not registered for VAT.`],
         ["Payment reference", ref],
         ["Download link issued", when(meta.link_first_issued_at)],
+        ...(validUntil ? [["Link valid until", validUntil]] : []),
       ],
       acceptTitle: "What you accepted before paying",
       acceptWhen: when(meta.terms_accepted_at),
@@ -178,7 +199,8 @@ function confirmationParts(session, meta, file, lang) {
         ["Refund Policy", u("/refund/")],
       ],
       ackIntro: `You confirmed that (version ${meta.ack_version || "-"}):`,
-      acks: [
+      link,
+    acks: [
         "This is software, not a physical product, and payments for software are final and non-refundable. You expressly requested immediate delivery of this digital content and understand that you lose your 14-day right of withdrawal once the download link is issued.",
         "pearOS UltraC0re is experimental: a Developer Preview and a work in progress that can break, lose data or stop working.",
         "Its current limits: no installer, no web browser, CPU-only rendering (no GPU acceleration in virtual machines), and limited Wi-Fi, Bluetooth and GPU support.",
@@ -186,8 +208,10 @@ function confirmationParts(session, meta, file, lang) {
       useTitle: "Using the build",
       useItems: [
         "The download is an .iso.xz archive: extract it first (xz -d, or 7-Zip on Windows).",
-        "Your download link is valid for 4 hours.",
+        validUntil ? `Your download link is valid for 4 hours, until ${validUntil}.` : "Your download link is valid for 4 hours.",
       ],
+      downloadLabel: "Download pearOS UltraC0re",
+      linkNote: "This link is personal; please do not share it.",
       loginLabel: "Login",
       account: "Account",
       password: "Password",
@@ -207,6 +231,7 @@ function confirmationParts(session, meta, file, lang) {
       ["Suma plătită", `${amount} ${cur}. Este prețul final; vânzătorul nu este înregistrat în scopuri de TVA.`],
       ["Referință plată", ref],
       ["Link de descărcare emis", when(meta.link_first_issued_at)],
+      ...(validUntil ? [["Link valabil până la", validUntil]] : []),
     ],
     acceptTitle: "Ce ai acceptat înainte de plată",
     acceptWhen: when(meta.terms_accepted_at),
@@ -215,6 +240,7 @@ function confirmationParts(session, meta, file, lang) {
       ["Politica de rambursare", u("/refund/")],
     ],
     ackIntro: `Ai confirmat că (versiunea ${meta.ack_version || "-"}):`,
+    link,
     acks: [
       "Este software, nu un produs fizic, iar plățile pentru software sunt definitive și nerambursabile. Ai cerut expres livrarea imediată a acestui conținut digital și înțelegi că pierzi dreptul de retragere de 14 zile odată ce linkul de descărcare este emis.",
       "pearOS UltraC0re este experimental: o versiune preliminară și o lucrare în curs, care se poate bloca, poate pierde date sau poate înceta să funcționeze.",
@@ -223,8 +249,10 @@ function confirmationParts(session, meta, file, lang) {
     useTitle: "Folosirea build-ului",
     useItems: [
       "Descărcarea este o arhivă .iso.xz: extrage-o mai întâi (xz -d sau 7-Zip pe Windows).",
-      "Linkul de descărcare este valabil 4 ore.",
+      validUntil ? `Linkul de descărcare este valabil 4 ore, până la ${validUntil}.` : "Linkul de descărcare este valabil 4 ore.",
     ],
+    downloadLabel: "Descarcă pearOS UltraC0re",
+    linkNote: "Acest link este personal; te rugăm să nu îl partajezi.",
     loginLabel: "Autentificare",
     account: "Cont",
     password: "Parolă",
@@ -242,6 +270,7 @@ function partsToText(p) {
   p.acks.forEach((a, i) => out.push(`  ${i + 1}. ${a}`));
   out.push("", p.useTitle.toUpperCase());
   for (const it of p.useItems) out.push(`- ${it}`);
+  if (p.link && p.link.url) out.push(`- ${p.downloadLabel}: ${p.link.url}`, `  (${p.linkNote})`);
   out.push(`- ${p.loginLabel}: ${p.account.toLowerCase()} "alex", ${p.password.toLowerCase()} "pear".`);
   out.push("", p.help, "", "Pear Software and Services", SITE);
   return out.join("\n");
@@ -295,6 +324,10 @@ function partsToHtmlSection(p, first) {
     card(
       h2(p.useTitle) +
         `<ul style="font-family:${FONT};font-size:14px;line-height:1.55;color:${C.ink};margin:0 0 16px;padding-left:20px">${use}</ul>` +
+        (p.link && p.link.url
+          ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px"><tr><td style="background:${C.ink};border-radius:10px"><a href="${esc(p.link.url)}" style="display:inline-block;font-family:${FONT};font-size:15px;font-weight:700;color:${C.bg};text-decoration:none;padding:12px 24px">${esc(p.downloadLabel)} &rarr;</a></td></tr></table>` +
+            `<div style="font-family:${FONT};font-size:12px;line-height:1.5;color:${C.muted};margin:0 0 16px">${esc(p.linkNote)}<br><a href="${esc(p.link.url)}" style="font-family:${MONO};font-size:11px;color:${C.muted};word-break:break-all">${esc(p.link.url)}</a></div>`
+          : "") +
         `<table role="presentation" cellpadding="0" cellspacing="0"><tr>` +
         `<td style="padding:0 10px 0 0"><div style="background:${C.soft};border:1px solid ${C.line};border-radius:10px;padding:10px 18px;text-align:center"><div style="font-family:${FONT};font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${C.muted}">${esc(p.account)}</div><div style="font-family:${MONO};font-size:22px;font-weight:700;color:${C.ink};letter-spacing:.06em">alex</div></div></td>` +
         `<td><div style="background:${C.soft};border:1px solid ${C.line};border-radius:10px;padding:10px 18px;text-align:center"><div style="font-family:${FONT};font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${C.muted}">${esc(p.password)}</div><div style="font-family:${MONO};font-size:22px;font-weight:700;color:${C.ink};letter-spacing:.06em">pear</div></div></td>` +
@@ -329,9 +362,10 @@ function renderHtml(sections, banner) {
 
 // The email: {text, html}. English always; a Romanian section is added for
 // buyers in Romania. `sample` adds a "this is not a real order" banner.
-export function bsdConfirmation(session, meta, file, country, { sample = false } = {}) {
-  const parts = [confirmationParts(session, meta, file, "en")];
-  if (country === "RO") parts.push(confirmationParts(session, meta, file, "ro"));
+export function bsdConfirmation(session, meta, file, country, { sample = false, link = null } = {}) {
+  const extra = { link, tz: link && link.tz };
+  const parts = [confirmationParts(session, meta, file, "en", extra)];
+  if (country === "RO") parts.push(confirmationParts(session, meta, file, "ro", extra));
   const banner = sample ? "SAMPLE - this is not a real order" : "";
   const text = (banner ? `[${banner}]\n\n` : "") + parts.map(partsToText).join("\n\n----------------------------------------\n\n");
   return { text, html: renderHtml(parts, banner) };
