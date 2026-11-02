@@ -84,6 +84,17 @@ async function handleVerify(request, env) {
     }
   }
 
+  // Proof of delivery for a possible dispute: stamp the PaymentIntent with
+  // when a BSD download link was first issued for this payment (and from which
+  // country), plus a running count. Best effort -- never blocks the download.
+  if (isBsdFile(file) && typeof session.payment_intent === "string") {
+    try {
+      await recordBsdDelivery(env, session.payment_intent, file, request);
+    } catch {
+      // Stripe hiccup: the buyer still gets their link.
+    }
+  }
+
   const ttl = parseInt(env.SIGNED_URL_TTL_SECONDS, 10);
   const exp = Math.floor(Date.now() / 1000) + ttl;
   const path = `/iso/${file}`;
@@ -91,6 +102,32 @@ async function handleVerify(request, env) {
 
   const downloadUrl = `https://iso.pearos.xyz${path}?exp=${exp}&sig=${sig}&tier=paid`;
   return json({ url: downloadUrl, expires_at: exp }, 200, request, env);
+}
+
+async function recordBsdDelivery(env, paymentIntentId, file, request) {
+  const auth = { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` };
+  const piUrl = `https://api.stripe.com/v1/payment_intents/${encodeURIComponent(paymentIntentId)}`;
+  const cur = await fetch(piUrl, { headers: auth });
+  if (!cur.ok) return;
+  const meta = (await cur.json()).metadata || {};
+
+  const now = new Date().toISOString();
+  const country = (request.cf && request.cf.country) || "XX";
+  const count = (parseInt(meta.link_issue_count, 10) || 0) + 1;
+  const params = new URLSearchParams({
+    "metadata[link_last_issued_at]": now,
+    "metadata[link_issue_count]": String(count),
+  });
+  if (!meta.link_first_issued_at) {
+    params.set("metadata[link_first_issued_at]", now);
+    params.set("metadata[link_first_country]", country);
+    params.set("metadata[link_file]", file);
+  }
+  await fetch(piUrl, {
+    method: "POST",
+    headers: { ...auth, "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
+  });
 }
 
 // ---------- /freepoint: mint a signed, throttled (free-tier) download link.
@@ -217,6 +254,17 @@ async function handleCheckout(request, env) {
     "payment_intent_data[description]": bsdBuild ? "pearOS UltraC0re (Developer Preview)" : "pearOS Donation",
   });
   if (validFile) params.set("payment_intent_data[metadata][file]", file);
+  // BSD buyers accept the site's Terms of Use (and a no-refund/experimental
+  // acknowledgement) before paying; keep which version of the terms and when,
+  // on the charge itself, in case of a later dispute.
+  if (bsdBuild && typeof body.terms === "string" && /^[\w.\-]{1,40}$/.test(body.terms)) {
+    params.set("payment_intent_data[metadata][terms_version]", body.terms);
+    params.set("payment_intent_data[metadata][terms_accepted_at]", new Date().toISOString());
+    // Version of the acknowledgement page (software / no refunds / experimental).
+    if (typeof body.ack === "string" && /^[\w.\-]{1,40}$/.test(body.ack)) {
+      params.set("payment_intent_data[metadata][ack_version]", body.ack);
+    }
+  }
 
   const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",

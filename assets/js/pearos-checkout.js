@@ -56,6 +56,23 @@
 .pos-badge-inline{display:inline-block;vertical-align:middle;margin-left:6px;background:var(--primary);color:var(--primary-foreground);font-size:9px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 7px;border-radius:999px}\
 .pos-error{color:#e11d48;font-size:.8rem;margin:-6px 0 12px}\
 .pos-loading{padding:60px 20px;text-align:center;color:var(--muted-foreground);font-size:14px}\
+.pos-modal-card.pos-wide{max-width:560px}\
+.pos-step{font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:6px}\
+.pos-terms-box{height:min(46vh,340px);overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:0 0 10px;font-size:.8rem;line-height:1.55;background:color-mix(in oklab, var(--foreground) 3%, transparent)}\
+.pos-terms-box h1{margin:0 0 4px;font-size:1.05rem;font-weight:600;color:var(--foreground)}\
+.pos-terms-box h2,.pos-terms-box h3,.pos-terms-box h4{margin:16px 0 4px;font-size:.85rem;font-weight:600;color:var(--foreground)}\
+.pos-terms-box p,.pos-terms-box li{margin:0 0 8px;color:var(--muted-foreground);font-size:.8rem;line-height:1.55}\
+.pos-terms-box ul{margin:0 0 8px;padding-left:1.2rem;list-style:disc}\
+.pos-terms-box a{color:var(--primary);text-decoration:underline}\
+.pos-terms-hint{font-size:.75rem;color:var(--muted-foreground);margin:0 0 14px;min-height:1.1em}\
+.pos-terms-hint.done{color:var(--primary);font-weight:600}\
+.pos-actions{display:flex;gap:8px;justify-content:flex-end;align-items:center}\
+.pos-secondary-btn{font-family:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--border);background:var(--background);color:var(--foreground);padding:8px 16px;font-size:13px;font-weight:600}\
+.pos-secondary-btn:hover{background:var(--accent);color:var(--accent-foreground)}\
+.pos-go-btn:disabled{opacity:.4;cursor:not-allowed}\
+.pos-ack{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;margin-bottom:10px;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:.82rem;line-height:1.45;color:var(--foreground)}\
+.pos-ack input{margin-top:3px;flex:none;width:16px;height:16px;accent-color:var(--primary)}\
+.pos-ack.checked{border-color:var(--primary);background:color-mix(in oklab, var(--primary) 8%, transparent)}\
 ';
 
   function injectCss(){
@@ -83,10 +100,70 @@
     return currencySymbol+(Number.isInteger(v)?String(v):v.toFixed(2));
   }
 
+  // The terms shown in step 1 are the site's own Terms of Use (/terms/),
+  // fetched when the step opens -- one source of truth, no copy to keep in
+  // sync. Its "Last updated" date is stored on the Stripe charge with the
+  // checkout, as a record of which version a buyer accepted.
+  var BSD_TERMS_VERSION='tos-unknown';
+  // Bump when the wording of the acknowledgement page (step 2) changes.
+  var BSD_ACK_VERSION='ack-2026-11-02';
+
+  function bsdTermsHtml(href){
+    var arch=/arm64/i.test(href)?'ARM64':(/amd64/i.test(href)?'AMD64':'');
+    return '<div class="pos-picker">'
+      + '<div class="pos-step">Step 1 of 3 &middot; Terms of Use</div>'
+      + '<h3>pearOS UltraC0re'+(arch?' ('+arch+')':'')+' <span class="pos-badge-inline" style="background:var(--destructive);color:#fff">Developer Preview</span></h3>'
+      + '<p>Please read the terms to the end. The Agree button unlocks once you reach the bottom.</p>'
+      + '<div class="pos-terms-box" id="pos-terms-box" tabindex="0" role="region" aria-label="Terms of Use"><p>Loading the terms&hellip;</p></div>'
+      + '<p class="pos-terms-hint" id="pos-terms-hint">Scroll to the end to continue&hellip;</p>'
+      + '<div class="pos-actions"><button type="button" class="pos-secondary-btn" id="pos-terms-cancel">Cancel</button><button type="button" class="pos-go-btn" id="pos-terms-agree" disabled>I Agree</button></div>'
+      + '</div>';
+  }
+
+  // Pulls the article out of /terms/ and returns {html, version}. Classes and
+  // inline styles are dropped so it takes the modal's own typography; the
+  // "read in Romanian" switch is removed.
+  function loadSiteTerms(){
+    return fetch('/terms/',{cache:'no-cache'}).then(function(r){
+      if(!r.ok) throw new Error('terms '+r.status);
+      return r.text();
+    }).then(function(html){
+      var doc=new DOMParser().parseFromString(html,'text/html');
+      var h1=doc.querySelector('main h1');
+      var root=h1&&h1.parentElement;
+      if(!root) throw new Error('terms layout');
+      root=root.cloneNode(true);
+      root.querySelectorAll('script,style,iframe,object,embed,form,input,button').forEach(function(n){ n.remove(); });
+      root.querySelectorAll('a[href="ro/"],a[href="./ro/"]').forEach(function(n){ var w=n.parentElement; (w&&w!==root?w:n).remove(); });
+      root.querySelectorAll('*').forEach(function(n){
+        n.removeAttribute('class'); n.removeAttribute('style');
+        Array.prototype.slice.call(n.attributes).forEach(function(at){ if(/^on/i.test(at.name)) n.removeAttribute(at.name); });
+        if(n.tagName==='A'){ n.target='_blank'; n.rel='noopener'; var h=n.getAttribute('href')||''; if(h.indexOf('javascript:')===0) n.removeAttribute('href'); }
+      });
+      var m=(root.textContent||'').match(/Last updated:\s*([A-Za-z]+ \d{1,2}, \d{4})/);
+      var version='tos-unknown';
+      if(m){ var d=new Date(m[1]+' UTC'); if(!isNaN(d.getTime())) version='tos-'+d.toISOString().slice(0,10); }
+      return {html:root.innerHTML+'<p><strong>You have reached the end of the terms.</strong></p>', version:version};
+    });
+  }
+
+  function bsdAckHtml(){
+    return '<div class="pos-picker">'
+      + '<div class="pos-step">Step 2 of 3 &middot; Before you pay</div>'
+      + '<h3>Please confirm you understand</h3>'
+      + '<p>All three are required. This is the last step before choosing your amount.</p>'
+      + '<label class="pos-ack"><input type="checkbox" class="pos-ack-box"/><span><strong>This is software, and software is not refundable.</strong> It is digital software, not a physical product. I expressly request immediate delivery and understand that payments for software are final and that I lose my 14-day right of withdrawal once my download link is issued.</span></label>'
+      + '<label class="pos-ack"><input type="checkbox" class="pos-ack-box"/><span><strong>This is experimental software.</strong> pearOS UltraC0re is a Developer Preview and a work in progress. It can break, lose data or stop working, and it is not meant for daily use.</span></label>'
+      + '<label class="pos-ack"><input type="checkbox" class="pos-ack-box"/><span><strong>I know its current limits.</strong> There is no installer and no web browser, rendering is CPU-only (no GPU acceleration in virtual machines), and Wi-Fi, Bluetooth and GPU support are limited.</span></label>'
+      + '<div class="pos-actions" style="margin-top:14px"><button type="button" class="pos-secondary-btn" id="pos-ack-back">Back</button><button type="button" class="pos-go-btn" id="pos-ack-continue" disabled>Continue to payment</button></div>'
+      + '</div>';
+  }
+
   function bsdPickerHtml(href){
     var s=currencySymbol;
     var arch=/arm64/i.test(href)?'ARM64':(/amd64/i.test(href)?'AMD64':'');
     return '<div class="pos-picker">'
+      + '<div class="pos-step">Step 3 of 3 &middot; Payment</div>'
       + '<h3>pearOS UltraC0re'+(arch?' ('+arch+')':'')+' <span class="pos-badge-inline">Developer Preview</span></h3>'
       + '<p>This build is paid-only and unthrottled at full CDN speed. It is a Developer Preview and not ready for daily use. Minimum '+fmtAmt(bsdMinCents)+'.</p>'
       + '<div class="pos-amt-row">'
@@ -131,18 +208,85 @@
     var stripe=Stripe(STRIPE_PK);
     var activeCheckout=null;
     var pendingHref=null;
+    var bsdStep=0; // 0 = terms, 1 = acknowledgement, 2 = payment (BSD only)
+    var card=overlay.querySelector('.pos-modal-card');
 
     function closeModal(){
       overlay.hidden=true;
+      bsdStep=0;
+      card.classList.remove('pos-wide');
       if(activeCheckout){ activeCheckout.destroy(); activeCheckout=null; }
       pendingHref=null;
     }
     closeBtn.addEventListener('click',closeModal);
     overlay.addEventListener('click',function(e){ if(e.target===overlay) closeModal(); });
 
+    // BSD only: terms (Agree unlocks after scrolling to the end), then an
+    // acknowledgement page (software / no refunds / experimental), then the
+    // usual amount picker and Stripe.
+    function showBsdTerms(href){
+      pendingHref=href;
+      bsdStep=0;
+      card.classList.add('pos-wide');
+      body.innerHTML=bsdTermsHtml(href);
+      overlay.hidden=false;
+      var box=body.querySelector('#pos-terms-box');
+      var agree=body.querySelector('#pos-terms-agree');
+      var hint=body.querySelector('#pos-terms-hint');
+      function unlock(){
+        agree.disabled=false;
+        hint.textContent='Thanks for reading — you can agree now.';
+        hint.className='pos-terms-hint done';
+      }
+      function check(){
+        if(!agree.disabled) return;
+        if(box.scrollTop+box.clientHeight>=box.scrollHeight-4) unlock();
+      }
+      box.addEventListener('scroll',check);
+      body.querySelector('#pos-terms-cancel').addEventListener('click',closeModal);
+      agree.addEventListener('click',function(){ if(!agree.disabled) showBsdAck(href); });
+      loadSiteTerms().then(function(t){
+        if(bsdStep!==0||overlay.hidden) return;
+        BSD_TERMS_VERSION=t.version;
+        box.innerHTML=t.html;
+        box.scrollTop=0;
+        check(); // short content / tall screen: nothing to scroll
+      }).catch(function(){
+        // Couldn't load /terms/: send them to the page itself, and unlock
+        // only once they have opened it.
+        box.innerHTML='<p>We could not load the terms here. Please read them on the <a href="https://pearos.xyz/terms/" target="_blank" rel="noopener" id="pos-terms-open">Terms of Use page</a>, then come back and agree.</p>';
+        var open=box.querySelector('#pos-terms-open');
+        if(open) open.addEventListener('click',function(){ unlock(); });
+      });
+    }
+
+    function showBsdAck(href){
+      bsdStep=1;
+      body.innerHTML=bsdAckHtml();
+      var boxes=body.querySelectorAll('.pos-ack-box');
+      var go=body.querySelector('#pos-ack-continue');
+      function update(){
+        var all=true;
+        boxes.forEach(function(b){
+          b.closest('.pos-ack').classList.toggle('checked',b.checked);
+          if(!b.checked) all=false;
+        });
+        go.disabled=!all;
+      }
+      boxes.forEach(function(b){ b.addEventListener('change',update); });
+      body.querySelector('#pos-ack-back').addEventListener('click',function(){ showBsdTerms(href); });
+      go.addEventListener('click',function(){
+        if(go.disabled) return;
+        bsdStep=2;
+        showPicker(href);
+      });
+    }
+
     function showPicker(href){
       pendingHref=href;
       var bsd=isBsdHref(href);
+      if(bsd&&bsdStep<2){ showBsdTerms(href); return; }
+      card.classList.remove('pos-wide');
       body.innerHTML=pickerHtml(href);
       overlay.hidden=false;
 
@@ -234,7 +378,7 @@
       fetch(CHECKOUT_ENDPOINT,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({amount_cents:amountCents, file:fileFromHref(pendingHref)})
+        body:JSON.stringify({amount_cents:amountCents, file:fileFromHref(pendingHref), terms:isBsdHref(pendingHref)?BSD_TERMS_VERSION:undefined, ack:isBsdHref(pendingHref)?BSD_ACK_VERSION:undefined})
       }).then(function(r){ return r.json(); }).then(function(data){
         if(!data||!data.client_secret){
           body.innerHTML='<div class="pos-loading">Something went wrong. Please try again.</div>';
