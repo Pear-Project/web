@@ -204,8 +204,8 @@
     if(isBsdHref(href)) return bsdPickerHtml(href);
     var s=currencySymbol;
     return '<div class="pos-picker">'
-      + '<h3>Support independent development</h3>'
-      + '<p>Uncap maximum Cloudflare CDN download speeds and directly fund full-time development, updates, and infrastructure for pearOS.</p>'
+      + '<h3>Support pearOS and download at full speed</h3>'
+      + '<p>Pay what you want (minimum '+fmtAmt(minCents)+') and get an unlimited-speed download link for 4 hours. Your payment also funds development, hosting, and releases. Prefer not to? Download free at 2 MB/s.</p>'
       + '<div class="pos-amt-row">'
       + '<button type="button" class="pos-amt-btn" data-amount="'+presets[0]+'">'+fmtAmt(presets[0])+'</button>'
       + '<button type="button" class="pos-amt-btn recommended selected" data-amount="'+presets[1]+'"><span class="pos-badge">Popular</span>'+fmtAmt(presets[1])+'</button>'
@@ -216,6 +216,7 @@
       + '<button type="button" class="pos-go-btn" id="pos-custom-go">Go</button>'
       + '</div>'
       + '<p class="pos-error" id="pos-error" hidden></p>'
+      + '<p style="margin:0 0 10px;font-size:.72rem;line-height:1.45;color:var(--muted-foreground)">This is a payment for premium access, a digital service delivered immediately. By paying you ask for immediate access and acknowledge that you lose the 14-day right of withdrawal once the link is issued. See the <a href="https://pearos.xyz/terms/" target="_blank" rel="noopener" style="text-decoration:underline">Terms</a> and <a href="https://pearos.xyz/refund/" target="_blank" rel="noopener" style="text-decoration:underline">Refund Policy</a>.</p>'
       + '<button type="button" class="pos-skip" id="pos-skip-btn">No thanks, download free (2 MB/s)</button>'
       + '</div>';
   }
