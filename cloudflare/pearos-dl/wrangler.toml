@@ -39,7 +39,7 @@ MAIL_FROM = "alex@pear-software.com"
 MAIL_FROM_NAME = "pearOS"
 # Stripe Managed Payments (merchant of record): "off" | "bsd" (BSD sales only; "on" is the
 # same) | "all" (BSD sales + the paid full-speed download unlock). Off = our own sale.
-MANAGED_PAYMENTS = "off"
+MANAGED_PAYMENTS = "all"
 
 [observability]
 enabled = true
