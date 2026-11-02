@@ -217,6 +217,32 @@
   </table>
 </div>
 
+<div class="mt-12" id="bsd-section">
+  <div class="mb-3 flex items-center justify-between flex-wrap gap-3">
+    <h2 class="text-lg font-semibold">BSD UltraC0re <span class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" style="background:color-mix(in oklab, var(--destructive) 15%, transparent);color:var(--destructive)">Developer Preview</span></h2>
+    <a class="text-primary text-sm font-semibold hover:underline" href="../bsd/">View BSD Build &rarr;</a>
+  </div>
+  <p class="text-muted-foreground mb-4 text-sm">The paid build, tracked on its own: paid downloads and sales only (friends &amp; family downloads aren&rsquo;t counted here).</p>
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    <div class="stat-card"><div class="stat-label">Paid downloads</div><div class="stat-value" id="bsd-all">—</div><div class="text-muted-foreground mt-1 text-xs">All-time</div></div>
+    <div class="stat-card"><div class="stat-label">Last 30 days</div><div class="stat-value" id="bsd-30d">—</div></div>
+    <div class="stat-card"><div class="stat-label">Last 24 hours</div><div class="stat-value" id="bsd-24h">—</div></div>
+    <div class="stat-card"><div class="stat-label">BSD revenue</div><div class="stat-value" id="bsd-revenue">—</div><div class="text-muted-foreground mt-1 text-xs" id="bsd-revenue-sub"></div></div>
+  </div>
+  <div class="mt-6 overflow-x-auto rounded-2xl border border-border">
+    <table class="stats-table">
+      <thead><tr><th>Architecture</th><th>All-time</th><th>Last 30 days</th><th>Last 24 hours</th></tr></thead>
+      <tbody id="bsd-arch-body"><tr><td colspan="4" class="text-muted-foreground text-center py-8">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="mt-4 overflow-x-auto rounded-2xl border border-border">
+    <table class="stats-table">
+      <thead><tr><th>Sales by currency</th><th>Last 30 days</th><th>All-time</th></tr></thead>
+      <tbody id="bsd-sales-body"><tr><td colspan="3" class="text-muted-foreground text-center py-8">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
 <div class="mt-10">
   <div class="mb-3 flex items-center justify-between flex-wrap gap-3">
     <h2 class="text-lg font-semibold" id="rev-chart-title">Donations revenue</h2>
@@ -1341,6 +1367,53 @@
     updateRevChartAndTable();
   }).catch(function(){});
 
+  // BSD UltraC0re, tracked on its own (it's a paid product, not a donation).
+  // Downloads come from the same by_file / daily / hourly rows as everything
+  // else, paid tier only; sales come from donations.bsd (the Worker's /revenue
+  // splits them out of the Stripe charges it tags at checkout).
+  function renderBsdSection(stats){
+    function isBsdPaid(r){ return /UltraC0re/i.test(r.file)&&r.tier==='paid'; }
+    function arch(file){ return /arm64/i.test(file)?'ARM64':'AMD64'; }
+    var counts={AMD64:{all:0,d30:0,h24:0},ARM64:{all:0,d30:0,h24:0}};
+    var now=Date.now();
+    (stats.by_file||[]).filter(isBsdPaid).forEach(function(r){ counts[arch(r.file)].all+=Number(r.downloads)||0; });
+    (stats.daily||[]).filter(isBsdPaid).forEach(function(r){
+      if(new Date(r.date+'T00:00:00Z').getTime()>=now-30*86400000) counts[arch(r.file)].d30+=Number(r.downloads)||0;
+    });
+    (stats.hourly||[]).filter(isBsdPaid).forEach(function(r){
+      if(new Date(String(r.hour).replace(' ','T')+'Z').getTime()>=now-86400000) counts[arch(r.file)].h24+=Number(r.downloads)||0;
+    });
+    var sum=function(k){ return counts.AMD64[k]+counts.ARM64[k]; };
+    document.getElementById('bsd-all').textContent=fmt(sum('all'));
+    document.getElementById('bsd-30d').textContent=fmt(sum('d30'));
+    document.getElementById('bsd-24h').textContent=fmt(sum('h24'));
+    document.getElementById('bsd-arch-body').innerHTML=['AMD64','ARM64'].map(function(a){
+      var c=counts[a];
+      return '<tr><td>BSD UltraC0re ('+a+')</td><td>'+fmt(c.all)+'</td><td>'+fmt(c.d30)+'</td><td>'+fmt(c.h24)+'</td></tr>';
+    }).join('');
+
+    var bsd=(stats.donations&&stats.donations.bsd)||{};
+    var allTime=bsd.all_time||{}, last30=bsd.last_30d||{};
+    var currencies=Object.keys(allTime);
+    var orders=0;
+    currencies.forEach(function(c){ orders+=allTime[c].count||0; });
+    var totalEur=sumInEurCents(allTime);
+    document.getElementById('bsd-revenue').textContent=orders?formatMoney(totalEur,'eur'):'—';
+    document.getElementById('bsd-revenue-sub').textContent=orders
+      ? (orders+(orders===1?' order':' orders')+' · avg '+formatMoney(totalEur/orders,'eur')+' · approx. EUR')
+      : (bsd.all_time?'No sales yet.':'Not available yet.');
+    var tbody=document.getElementById('bsd-sales-body');
+    if(!currencies.length){
+      tbody.innerHTML='<tr><td colspan="3" class="text-muted-foreground text-center py-8">'+(bsd.all_time?'No BSD sales yet.':'Sales data not available yet -- check back after the next sync.')+'</td></tr>';
+      return;
+    }
+    currencies.sort(function(a,b){ return (allTime[b].amount_cents||0)-(allTime[a].amount_cents||0); });
+    tbody.innerHTML=currencies.map(function(c){
+      var a=allTime[c], d=last30[c]||{amount_cents:0,count:0};
+      return '<tr><td>'+c.toUpperCase()+'</td><td>'+formatMoney(d.amount_cents||0,c)+' <span class="text-muted-foreground text-xs">('+(d.count||0)+')</span></td><td>'+formatMoney(a.amount_cents||0,c)+' <span class="text-muted-foreground text-xs">('+(a.count||0)+')</span></td></tr>';
+    }).join('');
+  }
+
   fetch('../assets/data/download-stats.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(stats){
     document.getElementById('stat-all-time').textContent=fmt(stats.total_all_time);
     document.getElementById('stat-30d').textContent=fmt(stats.last_30d);
@@ -1365,6 +1438,7 @@
 
     renderConversionStat();
     updateRevChartAndTable();
+    renderBsdSection(stats);
 
     if(stats.generated_at){
       var d=new Date(stats.generated_at);
