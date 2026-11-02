@@ -68,11 +68,29 @@
     var uiRow = res.ui
       ? row('UI sanity (menu bar + dock)', res.ui.ok, 'OK · ' + res.ui.top.toFixed(0) + '% / ' + res.ui.dock.toFixed(0) + '%', 'Differs · ' + res.ui.top.toFixed(0) + '% / ' + res.ui.dock.toFixed(0) + '%')
       : '<tr><td>UI sanity</td><td>not run</td></tr>';
-    var statusHtml = '<table class="bg-st">' +
+    var sc = res.score || null;
+    function scoreRow(name, v) {
+      if (v === null || v === undefined) return '';
+      return '<tr><td>' + name + '</td><td class="' + (v >= 100 ? 'bg-ok' : (v >= 50 ? '' : 'bg-no')) + '">' + v + ' / 100</td></tr>';
+    }
+    var scoreHtml = sc
+      ? '<table class="bg-st"><tr><td><strong>Success score</strong></td><td class="' + (sc.total >= 90 ? 'bg-ok' : (sc.total >= 60 ? '' : 'bg-no')) + '" style="font-size:1.1rem">' + sc.total + ' / 100</td></tr>' +
+        scoreRow('Boot test', sc.boot) + scoreRow('UI sanity', sc.ui) + scoreRow('Installable', sc.install) + scoreRow('Usability', sc.usability) + '</table>'
+      : '';
+    var checks = (sc && sc.checks) || {};
+    var checksHtml = Object.keys(checks).length
+      ? '<table class="bg-st">' + Object.keys(checks).map(function (k) {
+          var c = checks[k];
+          return '<tr><td>' + esc(k) + '</td><td class="' + (c.ok ? 'bg-ok' : 'bg-no') + '">' + (c.ok ? 'OK' : 'Failed') + (c.detail ? ' <span style="font-weight:400;font-size:.75rem">· ' + esc(c.detail) + '</span>' : '') + '</td></tr>';
+        }).join('') + '</table>'
+      : '';
+    var statusHtml = scoreHtml + '<table class="bg-st">' +
       row('Boot', res.booted, 'OK', 'Failed') + uiRow +
       row('Installer', res.installer, 'Opens', 'Does not open') +
-      row('Installation', res.installer && ok, 'Possible', 'Not possible') +
-      '<tr><td>Last build</td><td>' + esc(res.iso || '') + (built ? ' · ' + built : '') + '</td></tr></table>' +
+      (res.install
+        ? row('Installation (end to end)', res.install.finished && res.install.booted, 'Installs and boots' + (res.install.minutes ? ' · ' + Math.round(res.install.minutes) + ' min' : ''), 'Fails')
+        : row('Installation', res.installer && ok, 'Possible', 'Not possible')) +
+      '<tr><td>Last build</td><td>' + esc(res.iso || '') + (built ? ' · ' + built : '') + '</td></tr></table>' + checksHtml +
       (ok ? '' : '<p class="bg-no" style="padding:.6rem .8rem;font-size:.8rem;border-top:1px solid var(--border)">' +
         esc((res.failure && res.failure.reason) || res.verdict || 'Test failed').replace(/\*\*/g, '') + '</p>');
 
