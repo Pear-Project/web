@@ -1,6 +1,10 @@
 {
   "nicecore": [
     {
+      "title": "02 Nov 2026",
+      "html": "<h2>information</h2>\n<p>https://pearos.xyz | https://nicec0re.pearos.xyz</p>\n<ul>\n<li><strong>26.11 works again</strong>: it boots, installs and starts the desktop. Every ISO is now booted, installed onto a virtual disk and used (login, Konsole, <code>pacman -Syyu</code>, Finder, Seafari, Calculator, Notes, Kate) before it is published; the result and screenshots are on the NiceC0re page</li>\n<li>Fixed the black screen after <code>pacman -Syu</code> / on the first 26.11 builds: the old lock screen was not compatible with Plasma 6.8 and was replaced by the upstream KDE one</li>\n<li>Fixed the Dock and the menu bar (app menu) not working after the Plasma 6.8 update</li>\n<li>Fixed the slow / blocked start of the desktop on some boots (the mirrorlist refresh and firmware check no longer hold up the login screen)</li>\n<li>Fixed <code>sudo pacman -Syu --noconfirm</code> failing on a fresh install with a zlib / zlib-ng-compat conflict</li>\n<li>Fixed the first-login Light / Dark choice: choosing Light now also sets the light wallpaper</li>\n<li>Liquid Gel rebuilt for KWin 6.8.0 - 6.8.2</li>\n<li>New: older pearOS versions are kept on archive.org, with an \"Old versions\" list on every download page and their download counts on the Stats page</li>\n</ul>\n<h3>Known bugs:</h3>\n<ul>\n<li>Light mode only changes windows and apps, the menu bar, Dock and widgets stay dark</li>\n<li>Some NVIDIA users report graphical glitches (investigating)</li>\n<li>Other bugs: Please use the Issues tab in this repo. Thank you</li>\n</ul>"
+    },
+    {
       "title": "09 Aug 2026",
       "html": "<h2>information</h2>\n<p>https://pearos.xyz | https://nicec0re.pearos.xyz</p>\n<ul>\n<li>Automatic build</li>\n<li>Bug Fixes</li>\n</ul>"
     },
