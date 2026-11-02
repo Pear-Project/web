@@ -288,18 +288,20 @@ const EUROZONE = new Set([
   "IT", "LT", "LU", "LV", "MT", "NL", "PT", "SI", "SK",
 ]);
 
+// Premium access (the paid full-speed unlock) minimum is ~3 USD: with Managed Payments the
+// buyer's tax comes out of the price and Stripe's fixed fee is ~0.25, so $1 netted ~$0.58.
 //
 // `bsd` is the same shape for the paid-only BSD (UltraC0re) builds: the
 // first preset IS the floor (30.99 in USD/EUR/GBP), nobody can pay less.
 // INR/BRL use the same rough rates as above (~84 and ~5.0 per USD).
 const CURRENCY_CONFIG = {
-  usd: { symbol: "$", presets: [299, 499, 999], minCents: 100, bsd: { presets: [3099, 4999, 7999], minCents: 3099 } },
-  eur: { symbol: "€", presets: [299, 499, 999], minCents: 100, bsd: { presets: [3099, 4999, 7999], minCents: 3099 } },
-  gbp: { symbol: "£", presets: [299, 499, 999], minCents: 100, bsd: { presets: [3099, 4999, 7999], minCents: 3099 } },
-  // ~85 INR/USD -- 249/449/899 rupees, minimum ~1 USD equivalent
-  inr: { symbol: "₹", presets: [24900, 44900, 89900], minCents: 8500, bsd: { presets: [259900, 419900, 669900], minCents: 259900 } },
-  // ~5.3 BRL/USD -- 14.99/24.99/49.99 reais, minimum ~1 USD equivalent
-  brl: { symbol: "R$", presets: [1499, 2499, 4999], minCents: 530, bsd: { presets: [15499, 24999, 39999], minCents: 15499 } },
+  usd: { symbol: "$", presets: [399, 599, 999], minCents: 299, bsd: { presets: [3099, 4999, 7999], minCents: 3099 } },
+  eur: { symbol: "€", presets: [399, 599, 999], minCents: 299, bsd: { presets: [3099, 4999, 7999], minCents: 3099 } },
+  gbp: { symbol: "£", presets: [399, 599, 999], minCents: 299, bsd: { presets: [3099, 4999, 7999], minCents: 3099 } },
+  // ~85 INR/USD -- 349/499/899 rupees, minimum 249 (~3 USD equivalent)
+  inr: { symbol: "₹", presets: [34900, 49900, 89900], minCents: 24900, bsd: { presets: [259900, 419900, 669900], minCents: 259900 } },
+  // ~5.3 BRL/USD -- 20.99/31.99/52.99 reais, minimum 15.99 (~3 USD equivalent)
+  brl: { symbol: "R$", presets: [2099, 3199, 5299], minCents: 1599, bsd: { presets: [15499, 24999, 39999], minCents: 15499 } },
 };
 
 // BSD builds are paid-only (no free tier, no throttle bypass question) --

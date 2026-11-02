@@ -16,8 +16,8 @@
   // rounded preset amounts from the server instead. Defaults to USD
   // presets until the (very fast, same-edge) lookup resolves.
   var currencySymbol='$';
-  var presets=[299,499,999];
-  var minCents=100;
+  var presets=[399,599,999];
+  var minCents=299;
   // Paid-only BSD (UltraC0re) builds have their own, much higher floor and
   // presets, in the same currency -- also served by /currency.
   var bsdPresets=[3099,4999,7999];
