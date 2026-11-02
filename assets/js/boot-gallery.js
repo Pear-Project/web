@@ -3,7 +3,7 @@
  * a status table and a clickable timeline. If anything fails to load, the
  * original screenshot stays. */
 (function () {
-  var RAW = 'https://raw.githubusercontent.com/pearOS-archlinux/iso/main/seq/';
+  var RAW = '';
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c];
@@ -46,13 +46,44 @@
     '.bg-st td:last-child{text-align:right;font-weight:600}' +
     '.bg-ok{color:#16a34a}.bg-no{color:var(--destructive)}';
 
+  // Each build page reads its own test results: Arch (NiceC0re) and Debian (Goldwing).
+  function pageConfig() {
+    var p = location.pathname;
+    if (p.indexOf('nicecore') >= 0) {
+      return {
+        raw: 'https://raw.githubusercontent.com/pearOS-archlinux/iso/main/seq/',
+        host: function () {
+          var img = document.querySelector('img[src$="pearos-desktop.webp"]');
+          return img ? img.parentElement : null;
+        }
+      };
+    }
+    if (p.indexOf('/debian') >= 0) {
+      return {
+        raw: 'https://raw.githubusercontent.com/Pear-Project/iso/main/seq/',
+        host: function () {
+          var t = document.querySelector('tbody[id$="-versions-table"]');
+          var sec = t && t.closest('section');
+          if (!sec) return null;
+          var holder = document.createElement('div');
+          holder.className = 'container max-w-4xl bg-holder';
+          holder.style.display = 'none';
+          sec.parentNode.insertBefore(holder, sec);
+          return holder;
+        }
+      };
+    }
+    return null;
+  }
+
   function init() {
-    if (location.pathname.indexOf('nicecore') < 0) return;
-    var img = document.querySelector('img[src$="pearos-desktop.webp"]');
-    if (!img) return;
-    var host = img.parentElement;
+    var cfg = pageConfig();
+    if (!cfg) return;
+    RAW = cfg.raw;
+    // Fetch first, so a page without results is left exactly as it was.
     fetch(RAW + 'result.json', {cache: 'no-cache'}).then(function (r) { return r.json(); }).then(function (res) {
-      build(host, res);
+      var host = cfg.host();
+      if (host) build(host, res);
     }).catch(function () {});
   }
 
@@ -115,7 +146,7 @@
       '<div class="bg-tl"><div class="bg-time"><b class="bg-t-cur">0:00</b> / <span class="bg-t-tot"></span><span class="bg-chap"></span></div>' +
       '<div class="bg-sb" tabindex="0" role="slider" aria-label="Boot test timeline"><span class="bg-knob"></span>' +
       '<div class="bg-tip"><img alt=""><span></span></div></div><div class="bg-chaps"></div></div>' + statusHtml;
-    host.replaceWith(el);
+    if (host.classList.contains('bg-holder')) { host.style.display = ''; host.appendChild(el); } else host.replaceWith(el);
 
     var shot = el.querySelector('.bg-screen img'), cap = el.querySelector('.bg-cap');
     var playBtn = el.querySelector('[data-a=play]');
