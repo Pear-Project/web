@@ -1,4 +1,4 @@
-import { sendMail, bsdConfirmationText } from "./mail.js";
+import { sendMail, bsdConfirmation } from "./mail.js";
 
 // pearOS download gateway: throttles free downloads to N MB/s, and issues/
 // verifies signed URLs (via Stripe) that bypass the throttle for 4 hours.
@@ -164,11 +164,8 @@ async function sendBsdConfirmation(env, session, meta, file, to, country) {
     }
   };
   try {
-    await sendMail(env, {
-      to,
-      subject: "Your pearOS UltraC0re purchase - confirmation",
-      text: bsdConfirmationText(session, meta, file, country),
-    });
+    const { text, html } = bsdConfirmation(session, meta, file, country);
+    await sendMail(env, { to, subject: "Your pearOS UltraC0re purchase - confirmation", text, html });
     await stamp("sent");
   } catch (e) {
     await stamp("failed: " + String((e && e.message) || e).slice(0, 80));

@@ -19,16 +19,16 @@ const host = process.env.SMTP_HOST || "mail.privateemail.com";
 const user = process.env.SMTP_USER || "alex@pear-software.com";
 
 const src = readFileSync(new URL("../src/mail.js", import.meta.url), "utf8").replace(/^import .*cloudflare:sockets.*$/m, "");
-const { buildMessage, smtpConversation, bsdConfirmationText } = await import("data:text/javascript;base64," + Buffer.from(src).toString("base64"));
+const { buildMessage, smtpConversation, bsdConfirmation } = await import("data:text/javascript;base64," + Buffer.from(src).toString("base64"));
 
 const now = new Date().toISOString();
 const session = { currency: "eur", amount_total: 3099, payment_intent: "pi_3SAMPLE00000000EXAMPLE" };
 const meta = { terms_version: "tos-2026-11-02", ack_version: "ack-2026-11-02", terms_accepted_at: now, link_first_issued_at: now };
-const text = "[SAMPLE - this is not a real order]\n\n" + bsdConfirmationText(session, meta, "pearOS-UltraC0re-amd64-26.10.iso.xz", country);
+const { text, html } = bsdConfirmation(session, meta, "pearOS-UltraC0re-amd64-26.10.iso.xz", country, { sample: true });
 
 const socket = tls.connect({ host, port: 465, servername: host });
 await new Promise((res, rej) => { socket.once("secureConnect", res); socket.once("error", rej); });
-const message = buildMessage({ from: user, fromName: "pearOS", to, subject: "[SAMPLE] Your pearOS UltraC0re purchase - confirmation", text, domain: user.split("@")[1] });
+const message = buildMessage({ from: user, fromName: "pearOS", to, subject: "[SAMPLE] Your pearOS UltraC0re purchase - confirmation", text, html, domain: user.split("@")[1] });
 try {
   await smtpConversation(Readable.toWeb(socket), Writable.toWeb(socket), { user, pass, from: user, to, message, helo: "iso.pearos.xyz" });
   console.log("sample sent to", to);

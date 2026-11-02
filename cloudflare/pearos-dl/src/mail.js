@@ -17,9 +17,10 @@ function wrap76(s) {
   return s.replace(/(.{76})/g, "$1\r\n");
 }
 
-// Builds the RFC 5322 message: plain text, UTF-8, base64 body (no line-length
-// or encoding surprises). `subject` must be ASCII.
-export function buildMessage({ from, fromName, to, replyTo, subject, text, domain }) {
+// Builds the RFC 5322 message. With `html` it is multipart/alternative (a plain
+// text part first, then the HTML part); otherwise plain text only. Bodies are
+// UTF-8 + base64 (no line-length or encoding surprises). `subject` must be ASCII.
+export function buildMessage({ from, fromName, to, replyTo, subject, text, html, domain }) {
   const id = `${crypto.randomUUID()}@${domain}`;
   const headers = [
     `From: ${fromName} <${from}>`,
@@ -29,10 +30,18 @@ export function buildMessage({ from, fromName, to, replyTo, subject, text, domai
     `Date: ${new Date().toUTCString().replace("GMT", "+0000")}`,
     `Message-ID: <${id}>`,
     "MIME-Version: 1.0",
-    "Content-Type: text/plain; charset=utf-8",
-    "Content-Transfer-Encoding: base64",
   ];
-  return headers.join("\r\n") + "\r\n\r\n" + wrap76(b64(text.replace(/\r?\n/g, "\r\n")));
+  const part = (type, body) =>
+    `Content-Type: ${type}; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n` + wrap76(b64(body.replace(/\r?\n/g, "\r\n")));
+  if (!html) return headers.join("\r\n") + "\r\n" + part("text/plain", text);
+  const boundary = "=_pearos_" + crypto.randomUUID().replace(/-/g, "");
+  headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
+  return (
+    headers.join("\r\n") + "\r\n\r\n" +
+    `--${boundary}\r\n` + part("text/plain", text) + "\r\n" +
+    `--${boundary}\r\n` + part("text/html", html) + "\r\n" +
+    `--${boundary}--`
+  );
 }
 
 // Speaks SMTP over an already-open duplex stream pair. Exported for testing.
@@ -103,11 +112,11 @@ function withTimeout(promise, ms) {
 }
 
 // Sends one message. Throws on any failure; callers decide what to do.
-export async function sendMail(env, { to, subject, text }) {
+export async function sendMail(env, { to, subject, text, html }) {
   const user = env.SMTP_USER;
   const from = env.MAIL_FROM || user;
   const domain = from.split("@")[1] || "pearos.xyz";
-  const message = buildMessage({ from, fromName: env.MAIL_FROM_NAME || "pearOS", to, subject, text, domain });
+  const message = buildMessage({ from, fromName: env.MAIL_FROM_NAME || "pearOS", to, subject, text, html, domain });
   const socket = connect(
     { hostname: env.SMTP_HOST, port: parseInt(env.SMTP_PORT, 10) || 465 },
     { secureTransport: "on", allowHalfOpen: false }
@@ -133,72 +142,197 @@ export async function sendMail(env, { to, subject, text }) {
   }
 }
 
-// Text of the BSD purchase confirmation (English; Romanian added for RO buyers).
-export function bsdConfirmationText(session, meta, file, country) {
+// ---------------------------------------------------------------------------
+// BSD purchase confirmation: one set of strings (per language), rendered both
+// as plain text and as HTML in the site's light theme.
+// ---------------------------------------------------------------------------
+
+const SITE = "https://pearos.xyz";
+
+function confirmationParts(session, meta, file, lang) {
+  const ro = lang === "ro";
   const cur = String(session.currency || "").toUpperCase();
   const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
   const when = (iso) => (iso ? String(iso).replace("T", " ").replace(/\.\d+Z$/, " UTC") : "-");
-  const ref = String(session.payment_intent || "").slice(-8);
-  const en = `Thank you for your purchase.
+  const ref = "..." + String(session.payment_intent || "").slice(-8);
+  const file_ = String(file || "");
+  const u = (path) => SITE + (ro ? path.replace(/\/$/, "/ro/") : path);
+  if (!ro) {
+    return {
+      lang: "en",
+      pill: "Developer Preview",
+      title: "Thank you for your purchase.",
+      intro: "This email confirms your order and, on a durable medium, what you agreed to before paying.",
+      orderTitle: "Your order",
+      rows: [
+        ["Seller", "Pear Software and Services S.R.L. (CUI 50888207), 133 Dacia Blvd, Floor D, Sector 2, Bucharest 020056, Romania"],
+        ["Product", `pearOS UltraC0re (${file_}) - digital software, Developer Preview`],
+        ["Amount paid", `${amount} ${cur}. This is the final price; the seller is not registered for VAT.`],
+        ["Payment reference", ref],
+        ["Download link issued", when(meta.link_first_issued_at)],
+      ],
+      acceptTitle: "What you accepted before paying",
+      acceptWhen: when(meta.terms_accepted_at),
+      docs: [
+        [`Terms of Use (version ${meta.terms_version || "-"})`, u("/terms/")],
+        ["Refund Policy", u("/refund/")],
+      ],
+      ackIntro: `You confirmed that (version ${meta.ack_version || "-"}):`,
+      acks: [
+        "This is software, not a physical product, and payments for software are final and non-refundable. You expressly requested immediate delivery of this digital content and understand that you lose your 14-day right of withdrawal once the download link is issued.",
+        "pearOS UltraC0re is experimental: a Developer Preview and a work in progress that can break, lose data or stop working.",
+        "Its current limits: no installer, no web browser, CPU-only rendering (no GPU acceleration in virtual machines), and limited Wi-Fi, Bluetooth and GPU support.",
+      ],
+      useTitle: "Using the build",
+      useItems: [
+        "The download is an .iso.xz archive: extract it first (xz -d, or 7-Zip on Windows).",
+        "Your download link is valid for 4 hours.",
+      ],
+      loginLabel: "Login",
+      account: "Account",
+      password: "Password",
+      help: "If something is wrong with your order, reply to this email or write to alex@pear-software.com. Your rights if the file cannot be delivered or does not work are described in the Refund Policy.",
+      links: [["Terms of Use", u("/terms/")], ["Refund Policy", u("/refund/")], ["Privacy Policy", u("/privacy/")]],
+    };
+  }
+  return {
+    lang: "ro",
+    pill: "Developer Preview",
+    title: "Îți mulțumim pentru achiziție.",
+    intro: "Acest email confirmă comanda ta și, pe suport durabil, ce ai acceptat înainte de plată.",
+    orderTitle: "Comanda ta",
+    rows: [
+      ["Vânzător", "Pear Software and Services S.R.L. (CUI 50888207), Bld. Dacia nr. 133, Et. D, Sector 2, București 020056, România"],
+      ["Produs", `pearOS UltraC0re (${file_}) - software digital, versiune preliminară pentru dezvoltatori`],
+      ["Suma plătită", `${amount} ${cur}. Este prețul final; vânzătorul nu este înregistrat în scopuri de TVA.`],
+      ["Referință plată", ref],
+      ["Link de descărcare emis", when(meta.link_first_issued_at)],
+    ],
+    acceptTitle: "Ce ai acceptat înainte de plată",
+    acceptWhen: when(meta.terms_accepted_at),
+    docs: [
+      [`Termeni de utilizare (versiunea ${meta.terms_version || "-"})`, u("/terms/")],
+      ["Politica de rambursare", u("/refund/")],
+    ],
+    ackIntro: `Ai confirmat că (versiunea ${meta.ack_version || "-"}):`,
+    acks: [
+      "Este software, nu un produs fizic, iar plățile pentru software sunt definitive și nerambursabile. Ai cerut expres livrarea imediată a acestui conținut digital și înțelegi că pierzi dreptul de retragere de 14 zile odată ce linkul de descărcare este emis.",
+      "pearOS UltraC0re este experimental: o versiune preliminară și o lucrare în curs, care se poate bloca, poate pierde date sau poate înceta să funcționeze.",
+      "Limitele lui actuale: fără installer, fără browser web, redare doar pe CPU (fără accelerare GPU în mașini virtuale) și suport limitat pentru Wi-Fi, Bluetooth și GPU.",
+    ],
+    useTitle: "Folosirea build-ului",
+    useItems: [
+      "Descărcarea este o arhivă .iso.xz: extrage-o mai întâi (xz -d sau 7-Zip pe Windows).",
+      "Linkul de descărcare este valabil 4 ore.",
+    ],
+    loginLabel: "Autentificare",
+    account: "Cont",
+    password: "Parolă",
+    help: "Dacă ceva nu este în regulă cu comanda, răspunde la acest email sau scrie la alex@pear-software.com. Drepturile tale în cazul în care fișierul nu poate fi livrat sau nu funcționează sunt descrise în Politica de rambursare.",
+    links: [["Termeni de utilizare", u("/terms/")], ["Politica de rambursare", u("/refund/")], ["Politica de confidențialitate", u("/privacy/")]],
+  };
+}
 
-This email confirms your order and, on a durable medium, what you agreed to before paying.
+function partsToText(p) {
+  const out = [p.title, "", p.intro, "", p.orderTitle.toUpperCase()];
+  for (const [k, v] of p.rows) out.push(`- ${k}: ${v}`);
+  out.push("", `${p.acceptTitle.toUpperCase()} (${p.acceptWhen})`);
+  for (const [k, url] of p.docs) out.push(`- ${k}: ${url}`);
+  out.push(`- ${p.ackIntro}`);
+  p.acks.forEach((a, i) => out.push(`  ${i + 1}. ${a}`));
+  out.push("", p.useTitle.toUpperCase());
+  for (const it of p.useItems) out.push(`- ${it}`);
+  out.push(`- ${p.loginLabel}: ${p.account.toLowerCase()} "alex", ${p.password.toLowerCase()} "pear".`);
+  out.push("", p.help, "", "Pear Software and Services", SITE);
+  return out.join("\n");
+}
 
-ORDER
-- Seller: Pear Software and Services S.R.L. (CUI 50888207), 133 Dacia Blvd, Floor D, Sector 2, Bucharest 020056, Romania
-- Product: pearOS UltraC0re (${file}) - digital software, Developer Preview
-- Amount paid: ${amount} ${cur}. This is the final price; the seller is not registered for VAT.
-- Payment reference: ...${ref}
-- Download link issued: ${when(meta.link_first_issued_at)}
+function esc(x) {
+  return String(x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
 
-WHAT YOU ACCEPTED BEFORE PAYING (${when(meta.terms_accepted_at)})
-- Our Terms of Use (version ${meta.terms_version || "-"}): https://pearos.xyz/terms/
-- Our Refund Policy: https://pearos.xyz/refund/
-- You confirmed that (version ${meta.ack_version || "-"}):
-  1. This is software, not a physical product, and payments for software are final and non-refundable. You expressly requested immediate delivery of this digital content and understand that you lose your 14-day right of withdrawal once the download link is issued.
-  2. pearOS UltraC0re is experimental: a Developer Preview and a work in progress that can break, lose data or stop working.
-  3. Its current limits: no installer, no web browser, CPU-only rendering (no GPU acceleration in virtual machines), and limited Wi-Fi, Bluetooth and GPU support.
+// Colours are the site's light theme (assets/css): background #fcfcf7, ink #1a2018,
+// muted #5f655e, card #fff, hairline border, destructive #ea384d.
+const C = { bg: "#fcfcf7", ink: "#1a2018", muted: "#5f655e", card: "#ffffff", line: "#e6e7e1", soft: "#f3f3ee", accent: "#edf2ec", red: "#ea384d", redSoft: "#fdeef0", redLine: "#f4b9c1" };
+const FONT = "'Plus Jakarta Sans','Inter',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif";
+const MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace";
 
-USING THE BUILD
-- The download is an .iso.xz archive: extract it first (xz -d, or 7-Zip on Windows).
-- Login: account "alex", password "pear".
-- Your download link is valid for 4 hours.
+function partsToHtmlSection(p, first) {
+  const link = (t, url) => `<a href="${esc(url)}" style="color:${C.ink};text-decoration:underline">${esc(t)}</a>`;
+  const card = (inner, extra = "") =>
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px"><tr><td style="background:${C.card};border:1px solid ${C.line};border-radius:12px;padding:22px 24px;${extra}">${inner}</td></tr></table>`;
+  const h2 = (t) => `<div style="font-family:${FONT};font-size:15px;font-weight:700;color:${C.ink};margin:0 0 12px;letter-spacing:-.01em">${esc(t)}</div>`;
+  const rows = p.rows
+    .map(
+      ([k, v], i) =>
+        `<tr><td style="font-family:${FONT};font-size:12px;color:${C.muted};text-transform:uppercase;letter-spacing:.04em;padding:9px 12px 9px 0;vertical-align:top;width:34%;${i ? `border-top:1px solid ${C.line};` : ""}">${esc(k)}</td><td style="font-family:${FONT};font-size:14px;color:${C.ink};padding:9px 0;line-height:1.5;vertical-align:top;${i ? `border-top:1px solid ${C.line};` : ""}">${esc(v)}</td></tr>`
+    )
+    .join("");
+  const acks = p.acks
+    .map(
+      (a, i) =>
+        `<tr><td style="vertical-align:top;padding:0 10px 10px 0;width:22px"><div style="width:22px;height:22px;border-radius:11px;background:${C.accent};border:1px solid ${C.line};text-align:center;font-family:${FONT};font-size:12px;line-height:22px;font-weight:700;color:${C.ink}">${i + 1}</div></td><td style="font-family:${FONT};font-size:14px;line-height:1.55;color:${C.ink};padding:0 0 10px">${esc(a)}</td></tr>`
+    )
+    .join("");
+  const docs = p.docs.map(([k, url]) => `<li style="margin:0 0 4px">${link(k, url)}</li>`).join("");
+  const use = p.useItems.map((i) => `<li style="margin:0 0 6px">${esc(i)}</li>`).join("");
+  return (
+    (first
+      ? ""
+      : `<div style="height:1px;background:${C.line};margin:34px 0 30px"></div>`) +
+    `<div style="font-family:${FONT};margin:0 0 6px"><span style="display:inline-block;background:${C.redSoft};color:${C.red};border-radius:999px;padding:3px 11px;font-size:12px;font-weight:700">${esc(p.pill)}</span></div>` +
+    `<h1 style="font-family:${FONT};font-size:30px;line-height:1.15;font-weight:700;letter-spacing:-.02em;color:${C.ink};margin:10px 0 8px">${esc(p.title)}</h1>` +
+    `<p style="font-family:${FONT};font-size:15px;line-height:1.6;color:${C.muted};margin:0 0 22px">${esc(p.intro)}</p>` +
+    card(h2(p.orderTitle) + `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>`) +
+    card(
+      h2(p.acceptTitle) +
+        `<div style="font-family:${FONT};font-size:12px;color:${C.muted};margin:-6px 0 12px">${esc(p.acceptWhen)}</div>` +
+        `<ul style="font-family:${FONT};font-size:14px;line-height:1.55;color:${C.ink};margin:0 0 14px;padding-left:20px">${docs}</ul>` +
+        `<div style="font-family:${FONT};font-size:14px;font-weight:600;color:${C.ink};margin:0 0 10px">${esc(p.ackIntro)}</div>` +
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${acks}</table>`,
+      `background:${C.redSoft};border-color:${C.redLine};`
+    ) +
+    card(
+      h2(p.useTitle) +
+        `<ul style="font-family:${FONT};font-size:14px;line-height:1.55;color:${C.ink};margin:0 0 16px;padding-left:20px">${use}</ul>` +
+        `<table role="presentation" cellpadding="0" cellspacing="0"><tr>` +
+        `<td style="padding:0 10px 0 0"><div style="background:${C.soft};border:1px solid ${C.line};border-radius:10px;padding:10px 18px;text-align:center"><div style="font-family:${FONT};font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${C.muted}">${esc(p.account)}</div><div style="font-family:${MONO};font-size:22px;font-weight:700;color:${C.ink};letter-spacing:.06em">alex</div></div></td>` +
+        `<td><div style="background:${C.soft};border:1px solid ${C.line};border-radius:10px;padding:10px 18px;text-align:center"><div style="font-family:${FONT};font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${C.muted}">${esc(p.password)}</div><div style="font-family:${MONO};font-size:22px;font-weight:700;color:${C.ink};letter-spacing:.06em">pear</div></div></td>` +
+        `</tr></table>`
+    ) +
+    `<p style="font-family:${FONT};font-size:14px;line-height:1.6;color:${C.muted};margin:6px 0 0">${esc(p.help)}</p>`
+  );
+}
 
-If something is wrong with your order, reply to this email or write to alex@pear-software.com. Your rights if the file cannot be delivered or does not work are described in the Refund Policy.
+function renderHtml(sections, banner) {
+  const ps = sections;
+  const footerLinks = ps[0].links.map(([t, url]) => `<a href="${esc(url)}" style="color:${C.muted};text-decoration:underline">${esc(t)}</a>`).join(" &nbsp;&middot;&nbsp; ");
+  return (
+    `<!doctype html><html lang="${ps[0].lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only"><title>pearOS UltraC0re</title></head>` +
+    `<body style="margin:0;padding:0;background:${C.bg};color:${C.ink}">` +
+    `<div style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(ps[0].intro)}</div>` +
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg}"><tr><td align="center" style="padding:28px 14px 40px">` +
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">` +
+    // header, like the site's: pear + name
+    `<tr><td style="padding:0 2px 22px"><table role="presentation" cellpadding="0" cellspacing="0"><tr>` +
+    `<td style="vertical-align:middle;padding-right:10px"><img src="${SITE}/assets/images/email-pear.png" width="22" height="34" alt="" style="display:block;border:0"></td>` +
+    `<td style="vertical-align:middle;font-family:${FONT};font-size:18px;font-weight:700;letter-spacing:-.01em;color:${C.ink}">Pear Software and Services</td></tr></table></td></tr>` +
+    (banner
+      ? `<tr><td style="padding:0 0 16px"><div style="font-family:${FONT};font-size:13px;font-weight:700;color:${C.red};border:1px dashed ${C.red};border-radius:10px;padding:10px 14px;text-align:center">${esc(banner)}</div></td></tr>`
+      : "") +
+    `<tr><td>${ps.map((p, i) => partsToHtmlSection(p, i === 0)).join("")}</td></tr>` +
+    `<tr><td style="padding:30px 2px 0;border-top:0"><div style="height:1px;background:${C.line};margin:0 0 18px"></div>` +
+    `<div style="font-family:${FONT};font-size:12px;line-height:1.7;color:${C.muted}">Pear Software and Services S.R.L. &middot; CUI 50888207 &middot; 133 Dacia Blvd, Floor D, Sector 2, Bucharest 020056, Romania<br>${footerLinks}<br><a href="${SITE}" style="color:${C.muted};text-decoration:underline">pearos.xyz</a></div></td></tr>` +
+    `</table></td></tr></table></body></html>`
+  );
+}
 
-Pear Software and Services
-https://pearos.xyz
-`;
-  if (country !== "RO") return en;
-  const ro = `
-
-----------------------------------------
-Română
-
-Îți mulțumim pentru achiziție.
-
-Acest email confirmă comanda ta și, pe suport durabil, ce ai acceptat înainte de plată.
-
-COMANDĂ
-- Vânzător: Pear Software and Services S.R.L. (CUI 50888207), Bld. Dacia nr. 133, Et. D, Sector 2, București 020056, România
-- Produs: pearOS UltraC0re (${file}) - software digital, versiune preliminară pentru dezvoltatori
-- Suma plătită: ${amount} ${cur}. Este prețul final; vânzătorul nu este înregistrat în scopuri de TVA.
-- Referință plată: ...${ref}
-- Link de descărcare emis: ${when(meta.link_first_issued_at)}
-
-CE AI ACCEPTAT ÎNAINTE DE PLATĂ (${when(meta.terms_accepted_at)})
-- Termenii de utilizare (versiunea ${meta.terms_version || "-"}): https://pearos.xyz/terms/ro/
-- Politica de rambursare: https://pearos.xyz/refund/ro/
-- Ai confirmat că (versiunea ${meta.ack_version || "-"}):
-  1. Este software, nu un produs fizic, iar plățile pentru software sunt definitive și nerambursabile. Ai cerut expres livrarea imediată a acestui conținut digital și înțelegi că pierzi dreptul de retragere de 14 zile odată ce linkul de descărcare este emis.
-  2. pearOS UltraC0re este experimental: o versiune preliminară și o lucrare în curs, care se poate bloca, poate pierde date sau poate înceta să funcționeze.
-  3. Limitele lui actuale: fără installer, fără browser web, redare doar pe CPU (fără accelerare GPU în mașini virtuale) și suport limitat pentru Wi-Fi, Bluetooth și GPU.
-
-FOLOSIREA BUILD-ULUI
-- Descărcarea este o arhivă .iso.xz: extrage-o mai întâi (xz -d sau 7-Zip pe Windows).
-- Autentificare: cont "alex", parola "pear".
-- Linkul de descărcare este valabil 4 ore.
-
-Dacă ceva nu este în regulă cu comanda, răspunde la acest email sau scrie la alex@pear-software.com.
-`;
-  return en + ro;
+// The email: {text, html}. English always; a Romanian section is added for
+// buyers in Romania. `sample` adds a "this is not a real order" banner.
+export function bsdConfirmation(session, meta, file, country, { sample = false } = {}) {
+  const parts = [confirmationParts(session, meta, file, "en")];
+  if (country === "RO") parts.push(confirmationParts(session, meta, file, "ro"));
+  const banner = sample ? "SAMPLE - this is not a real order" : "";
+  const text = (banner ? `[${banner}]\n\n` : "") + parts.map(partsToText).join("\n\n----------------------------------------\n\n");
+  return { text, html: renderHtml(parts, banner) };
 }
