@@ -159,20 +159,83 @@ async function recordBsdDelivery(env, paymentIntentId, file, request) {
 
 // The purchase confirmation required for the withdrawal-right waiver: it
 // repeats, on a durable medium (email), what the buyer agreed to before paying.
+// Charge details (name, countries, receipt) -- best effort.
+async function fetchCharge(env, session) {
+  try {
+    const r = await fetch(`https://api.stripe.com/v1/payment_intents/${encodeURIComponent(session.payment_intent)}?expand[]=latest_charge`, {
+      headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` },
+    });
+    if (r.ok) return (await r.json()).latest_charge || null;
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+// The Stripe invoice (created right after payment): waits a little for its number and PDF.
+async function fetchInvoice(env, session) {
+  if (typeof session.invoice !== "string") return { invoice: null, pdf: null };
+  let invoice = null;
+  let pdf = null;
+  for (let i = 0; i < 6 && !invoice; i++) {
+    try {
+      const r = await fetch(`https://api.stripe.com/v1/invoices/${encodeURIComponent(session.invoice)}`, {
+        headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` },
+      });
+      if (r.ok) {
+        const inv = await r.json();
+        if (inv.number && inv.invoice_pdf) invoice = inv;
+      }
+    } catch {
+      // retry
+    }
+    if (!invoice) await new Promise((res) => setTimeout(res, 2500));
+  }
+  if (invoice) {
+    try {
+      const r = await fetch(invoice.invoice_pdf, { redirect: "follow" });
+      if (r.ok) pdf = new Uint8Array(await r.arrayBuffer());
+    } catch {
+      // the link is still included
+    }
+  }
+  return { invoice, pdf };
+}
+
 async function sendPremiumConfirmation(env, session, meta, file, to, country, link) {
-  let status;
+  const result = {};
   try {
     const { text, html } = premiumConfirmation(session, meta, file, country, { link, managed: env.MANAGED_PAYMENTS === "all" });
     await sendMail(env, { to, subject: "Your pearOS full-speed download link", text, html });
-    status = "sent";
+    result.confirmation_email = "sent";
   } catch (e) {
-    status = "failed: " + String((e && e.message) || e).slice(0, 80);
+    result.confirmation_email = "failed: " + String((e && e.message) || e).slice(0, 80);
   }
+
+  // Our own mailbox, for the books: the sale, the buyer and the invoice PDF (always).
+  try {
+    const charge = await fetchCharge(env, session);
+    const { invoice, pdf } = await fetchInvoice(env, session);
+    const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
+    await sendMail(env, {
+      to: env.ACCOUNTING_EMAIL || env.MAIL_FROM || env.SMTP_USER,
+      subject: `[pearOS] Premium access sale ${amount} ${String(session.currency || "").toUpperCase()}${invoice ? ` - invoice ${invoice.number}` : " - NO INVOICE"}`,
+      text: accountingText({ kind: "premium", session, meta, file, country, charge, invoice, buyerEmail: to, link, managed: env.MANAGED_PAYMENTS === "all" }),
+      attachments: pdf ? [{ filename: `invoice-${invoice.number}.pdf`, type: "application/pdf", bytes: pdf }] : [],
+    });
+    result.accounting_copy = "sent";
+    if (invoice) result.invoice_number = invoice.number;
+  } catch (e) {
+    result.accounting_copy = "failed: " + String((e && e.message) || e).slice(0, 80);
+  }
+
   try {
     await fetch(`https://api.stripe.com/v1/payment_intents/${encodeURIComponent(session.payment_intent)}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ "metadata[confirmation_email]": status, "metadata[confirmation_at]": new Date().toISOString() }).toString(),
+      body: new URLSearchParams(
+        Object.fromEntries(Object.entries({ ...result, confirmation_at: new Date().toISOString() }).map(([k, v]) => [`metadata[${k}]`, v]))
+      ).toString(),
     });
   } catch {
     // nothing more to do
@@ -196,40 +259,8 @@ async function sendBsdConfirmation(env, session, meta, file, to, country, link) 
     }
   };
 
-  // Charge details (name, countries, receipt) for the accounting copy -- best effort.
-  let charge = null;
-  try {
-    const r = await fetch(`${piUrl}?expand[]=latest_charge`, { headers: auth });
-    if (r.ok) charge = (await r.json()).latest_charge || null;
-  } catch {
-    // ignore
-  }
-
-  // The Stripe invoice (created right after payment): wait a little for its number and PDF.
-  let invoice = null;
-  let pdf = null;
-  if (typeof session.invoice === "string") {
-    for (let i = 0; i < 6 && !invoice; i++) {
-      try {
-        const r = await fetch(`https://api.stripe.com/v1/invoices/${encodeURIComponent(session.invoice)}`, { headers: auth });
-        if (r.ok) {
-          const inv = await r.json();
-          if (inv.number && inv.invoice_pdf) invoice = inv;
-        }
-      } catch {
-        // retry
-      }
-      if (!invoice) await new Promise((res) => setTimeout(res, 2500));
-    }
-    if (invoice) {
-      try {
-        const r = await fetch(invoice.invoice_pdf, { redirect: "follow" });
-        if (r.ok) pdf = new Uint8Array(await r.arrayBuffer());
-      } catch {
-        // the link is still included
-      }
-    }
-  }
+  const charge = await fetchCharge(env, session);
+  const { invoice, pdf } = await fetchInvoice(env, session);
   const attachments = pdf ? [{ filename: `invoice-${invoice.number}.pdf`, type: "application/pdf", bytes: pdf }] : [];
 
   // 1) the buyer

@@ -401,17 +401,17 @@ export function bsdConfirmation(session, meta, file, country, { sample = false, 
 }
 
 // Plain-text "new sale" note sent to the shop's own mailbox, for the books.
-export function accountingText({ session, meta, file, country, charge, invoice, buyerEmail, link, managed }) {
+export function accountingText({ kind = "bsd", session, meta, file, country, charge, invoice, buyerEmail, link, managed }) {
   const cur = String(session.currency || "").toUpperCase();
   const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
   const bd = (charge && charge.billing_details) || {};
   const cardCountry = charge && charge.payment_method_details && charge.payment_method_details.card && charge.payment_method_details.card.country;
   const at = (iso) => (iso ? String(iso).replace("T", " ").replace(/\.\d+Z$/, " UTC") : "-");
   const lines = [
-    "New paid BSD sale",
+    kind === "premium" ? "New premium access sale (full-speed download)" : "New paid BSD sale",
     "",
     `Amount: ${amount} ${cur} (${managed ? "tax handled by Stripe as merchant of record (Managed Payments); the payout is net of tax and fees" : "VAT: seller not registered"})`,
-    `Product: pearOS UltraC0re - ${file}`,
+    kind === "premium" ? `Product: pearOS premium access - full-speed download of ${file} (4 hours)` : `Product: pearOS UltraC0re - ${file}`,
     `Paid / link issued: ${at(meta.link_first_issued_at)}`,
     "",
     "Buyer",
@@ -437,9 +437,13 @@ export function accountingText({ session, meta, file, country, charge, invoice, 
     ...(charge && charge.receipt_url ? [`- Receipt: ${charge.receipt_url}`] : []),
     "",
     "Consent on record",
-    `- Terms of Use version: ${meta.terms_version || "-"}`,
-    `- Acknowledgement version: ${meta.ack_version || "-"}`,
-    `- Accepted at: ${at(meta.terms_accepted_at)}`,
+    ...(kind === "premium"
+      ? ["- Notice shown in the download prompt before payment (immediate access; withdrawal right lost once the link is issued); links to Terms and Refund Policy."]
+      : [
+          `- Terms of Use version: ${meta.terms_version || "-"}`,
+          `- Acknowledgement version: ${meta.ack_version || "-"}`,
+          `- Accepted at: ${at(meta.terms_accepted_at)}`,
+        ]),
     ""
   );
   return lines.join("\n");
