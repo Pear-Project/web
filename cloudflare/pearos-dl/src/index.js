@@ -211,6 +211,7 @@ async function sendBsdConfirmation(env, session, meta, file, to, country, link) 
   const result = {};
   try {
     const { text, html } = bsdConfirmation(session, meta, file, country, {
+      managed: env.MANAGED_PAYMENTS === "on",
       link,
       invoice: invoice ? { number: invoice.number, url: invoice.hosted_invoice_url, attached: !!pdf } : null,
     });
@@ -227,7 +228,7 @@ async function sendBsdConfirmation(env, session, meta, file, to, country, link) 
     await sendMail(env, {
       to: acct,
       subject: `[pearOS] BSD sale ${amount} ${String(session.currency || "").toUpperCase()}${invoice ? ` - invoice ${invoice.number}` : " - NO INVOICE"}`,
-      text: accountingText({ session, meta, file, country, charge, invoice, buyerEmail: to, link }),
+      text: accountingText({ session, meta, file, country, charge, invoice, buyerEmail: to, link, managed: env.MANAGED_PAYMENTS === "on" }),
       attachments,
     });
     result.accounting_copy = "sent";
@@ -363,9 +364,19 @@ async function handleCheckout(request, env) {
     "payment_intent_data[description]": bsdBuild ? "pearOS UltraC0re (Developer Preview)" : "pearOS Donation",
   });
   if (validFile) params.set("payment_intent_data[metadata][file]", file);
-  // BSD is a sale, not a donation: have Stripe create an invoice (sequential number, PDF)
+  // MANAGED_PAYMENTS = "on" (wrangler.toml var): BSD sales go through Stripe Managed
+  // Payments (Stripe is the merchant of record: tax, invoices, receipts, disputes).
+  // It needs a tax code on the product, a tax behaviour on the price, and does not
+  // allow invoice_creation. Donations are never sent through it. Off by default.
+  const managed = bsdBuild && env.MANAGED_PAYMENTS === "on";
+  if (managed) {
+    params.set("managed_payments[enabled]", "true");
+    params.set("line_items[0][price_data][product_data][tax_code]", "txcd_10202000"); // Downloadable Software - personal use
+    params.set("line_items[0][price_data][tax_behavior]", "inclusive"); // the price shown is the price paid
+  }
+  // Otherwise BSD is our own sale: have Stripe create an invoice (sequential number, PDF)
   // that goes to the buyer and to our own mailbox.
-  if (bsdBuild) {
+  if (bsdBuild && !managed) {
     params.set("invoice_creation[enabled]", "true");
     params.set("invoice_creation[invoice_data][description]", "pearOS UltraC0re (Developer Preview) - digital software");
     params.set(
@@ -395,11 +406,20 @@ async function handleCheckout(request, env) {
     headers: {
       Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
       "Content-Type": "application/x-www-form-urlencoded",
+      ...(managed ? { "Stripe-Version": "2026-04-22.dahlia" } : {}),
     },
     body: params.toString(),
   });
 
   if (!stripeRes.ok) {
+    if (managed) {
+      // Say why in the Worker logs (e.g. Managed Payments not enabled on the account yet).
+      try {
+        console.error("managed payments checkout failed", stripeRes.status, (await stripeRes.text()).slice(0, 400));
+      } catch {
+        // ignore
+      }
+    }
     return json({ error: "stripe_session_failed" }, 502, request, env);
   }
 

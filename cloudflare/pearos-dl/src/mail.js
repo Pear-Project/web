@@ -208,9 +208,11 @@ function confirmationParts(session, meta, file, lang, extra = {}) {
       intro: "This email confirms your order and, on a durable medium, what you agreed to before paying.",
       orderTitle: "Your order",
       rows: [
-        ["Seller", "Pear Software and Services S.R.L. (CUI 50888207), 133 Dacia Blvd, Floor D, Sector 2, Bucharest 020056, Romania"],
+        extra.managed
+          ? ["Sold by", "Link (Stripe), as merchant of record. Software supplied by Pear Software and Services S.R.L. (CUI 50888207), 133 Dacia Blvd, Floor D, Sector 2, Bucharest 020056, Romania"]
+          : ["Seller", "Pear Software and Services S.R.L. (CUI 50888207), 133 Dacia Blvd, Floor D, Sector 2, Bucharest 020056, Romania"],
         ["Product", `pearOS UltraC0re (${file_}) - digital software, Developer Preview`],
-        ["Amount paid", `${amount} ${cur}. This is the final price; the seller is not registered for VAT.`],
+        ["Amount paid", extra.managed ? `${amount} ${cur}, tax included as shown on your receipt from Link.` : `${amount} ${cur}. This is the final price; the seller is not registered for VAT.`],
         ["Payment reference", ref],
         ["Download link issued", when(meta.link_first_issued_at)],
         ...(validUntil ? [["Link valid until", validUntil]] : []),
@@ -250,9 +252,11 @@ function confirmationParts(session, meta, file, lang, extra = {}) {
     intro: "Acest email confirmă comanda ta și, pe suport durabil, ce ai acceptat înainte de plată.",
     orderTitle: "Comanda ta",
     rows: [
-      ["Vânzător", "Pear Software and Services S.R.L. (CUI 50888207), Bld. Dacia nr. 133, Et. D, Sector 2, București 020056, România"],
+      extra.managed
+        ? ["Vândut de", "Link (Stripe), în calitate de comerciant înregistrat (merchant of record). Software furnizat de Pear Software and Services S.R.L. (CUI 50888207), Bld. Dacia nr. 133, Et. D, Sector 2, București 020056, România"]
+        : ["Vânzător", "Pear Software and Services S.R.L. (CUI 50888207), Bld. Dacia nr. 133, Et. D, Sector 2, București 020056, România"],
       ["Produs", `pearOS UltraC0re (${file_}) - software digital, versiune preliminară pentru dezvoltatori`],
-      ["Suma plătită", `${amount} ${cur}. Este prețul final; vânzătorul nu este înregistrat în scopuri de TVA.`],
+      ["Suma plătită", extra.managed ? `${amount} ${cur}, taxele incluse, așa cum apar pe chitanța de la Link.` : `${amount} ${cur}. Este prețul final; vânzătorul nu este înregistrat în scopuri de TVA.`],
       ["Referință plată", ref],
       ["Link de descărcare emis", when(meta.link_first_issued_at)],
       ...(validUntil ? [["Link valabil până la", validUntil]] : []),
@@ -387,8 +391,8 @@ function renderHtml(sections, banner) {
 
 // The email: {text, html}. English always; a Romanian section is added for
 // buyers in Romania. `sample` adds a "this is not a real order" banner.
-export function bsdConfirmation(session, meta, file, country, { sample = false, link = null, invoice = null } = {}) {
-  const extra = { link, tz: link && link.tz, invoice };
+export function bsdConfirmation(session, meta, file, country, { sample = false, link = null, invoice = null, managed = false } = {}) {
+  const extra = { link, tz: link && link.tz, invoice, managed };
   const parts = [confirmationParts(session, meta, file, "en", extra)];
   if (country === "RO") parts.push(confirmationParts(session, meta, file, "ro", extra));
   const banner = sample ? "SAMPLE - this is not a real order" : "";
@@ -397,7 +401,7 @@ export function bsdConfirmation(session, meta, file, country, { sample = false, 
 }
 
 // Plain-text "new sale" note sent to the shop's own mailbox, for the books.
-export function accountingText({ session, meta, file, country, charge, invoice, buyerEmail, link }) {
+export function accountingText({ session, meta, file, country, charge, invoice, buyerEmail, link, managed }) {
   const cur = String(session.currency || "").toUpperCase();
   const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
   const bd = (charge && charge.billing_details) || {};
@@ -406,7 +410,7 @@ export function accountingText({ session, meta, file, country, charge, invoice, 
   const lines = [
     "New paid BSD sale",
     "",
-    `Amount: ${amount} ${cur} (VAT: seller not registered)`,
+    `Amount: ${amount} ${cur} (${managed ? "tax handled by Stripe as merchant of record (Managed Payments); the payout is net of tax and fees" : "VAT: seller not registered"})`,
     `Product: pearOS UltraC0re - ${file}`,
     `Paid / link issued: ${at(meta.link_first_issued_at)}`,
     "",
