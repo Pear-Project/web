@@ -163,6 +163,7 @@
       if (/^Calamares: (installing|installation finished)/.test(note)) return 'Installing';
       if (/^Calamares/.test(note)) return 'Installer';
       if (/^Konsole/.test(note)) return 'Terminal';
+      if (/^After the update/.test(note)) return 'After update';
       if (/^App:/.test(note)) return 'Apps';
       if (/desktop ready|installer loading|Language screen|Recovery screen/.test(note)) return 'Welcome app';
       return null;
