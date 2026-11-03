@@ -425,6 +425,8 @@
 })();</script><script>(function(){
   function editionName(file){
     if(/NiceC0re/i.test(file)) return 'NiceC0re (Arch)';
+    // The Raspberry Pi image is also named Goldwing (Debian base): match it first.
+    if(/Goldwing-Pi|arm64\.img|raspberry/i.test(file)) return 'Raspberry Pi (ARM64)';
     if(/Goldwing/i.test(file)) return 'Debian (Goldwing)';
     if(/UltraC0re.*arm64/i.test(file)) return 'BSD UltraC0re (ARM64)';
     if(/UltraC0re/i.test(file)) return 'BSD UltraC0re (AMD64)';
@@ -497,8 +499,11 @@
   var CHART_SERIES=[
     {id:'nicecore_free', match:/NiceC0re/i, tier:'free', label:'NiceC0re — Free', color:'var(--muted-foreground)'},
     {id:'nicecore_paid', match:/NiceC0re/i, tier:'paid', label:'NiceC0re — Paid', color:'var(--primary)'},
-    {id:'debian_free', match:/Goldwing/i, tier:'free', label:'Debian — Free', color:'#3b82f6'},
-    {id:'debian_paid', match:/Goldwing/i, tier:'paid', label:'Debian — Paid', color:'#f59e0b'},
+    {id:'debian_free', match:/Goldwing(?!-Pi)/i, tier:'free', label:'Debian — Free', color:'#3b82f6'},
+    {id:'debian_paid', match:/Goldwing(?!-Pi)/i, tier:'paid', label:'Debian — Paid', color:'#f59e0b'},
+    // Raspberry Pi (ARM64), Debian-based; its image is .img.xz, served by the same Worker.
+    {id:'pi_free', match:/Goldwing-Pi|arm64\.img|raspberry/i, tier:'free', label:'Raspberry Pi — Free', color:'#10b981'},
+    {id:'pi_paid', match:/Goldwing-Pi|arm64\.img|raspberry/i, tier:'paid', label:'Raspberry Pi — Paid', color:'#14b8a6'},
     // BSD (UltraC0re) is paid-only, so one line per architecture instead of
     // a free/paid pair.
     {id:'bsd_amd64_paid', match:/UltraC0re.*amd64/i, tier:'paid', label:'BSD AMD64 — Paid', color:'#ef4444'},

@@ -57,7 +57,7 @@ async function handleVerify(request, env, ctx) {
   if (!session_id || !file) {
     return json({ error: "missing_session_id_or_file" }, 400, request, env);
   }
-  if (file.includes("..") || !/^[\w.\-]+\.iso(?:\.xz)?$/.test(file)) {
+  if (file.includes("..") || !/^[\w.\-]+\.(?:iso|img)(?:\.xz)?$/.test(file)) {
     return json({ error: "invalid_file" }, 400, request, env);
   }
 
@@ -310,7 +310,7 @@ async function handleFreepoint(request, env) {
   }
 
   const file = body && body.file;
-  if (typeof file !== "string" || file.includes("..") || !/^[\w.\-]+\.iso(?:\.xz)?$/.test(file)) {
+  if (typeof file !== "string" || file.includes("..") || !/^[\w.\-]+\.(?:iso|img)(?:\.xz)?$/.test(file)) {
     return json({ error: "invalid_file" }, 400, request, env);
   }
   if (isBsdFile(file)) {
@@ -403,7 +403,7 @@ async function handleCheckout(request, env) {
   }
 
   const file = body && body.file;
-  const validFile = typeof file === "string" && /^[\w.\-]+\.iso(?:\.xz)?$/.test(file);
+  const validFile = typeof file === "string" && /^[\w.\-]+\.(?:iso|img)(?:\.xz)?$/.test(file);
   const returnUrl = validFile
     ? `https://pearos.xyz/thank-you/?session_id={CHECKOUT_SESSION_ID}&file=${encodeURIComponent(file)}`
     : "https://pearos.xyz/thank-you/?session_id={CHECKOUT_SESSION_ID}";
@@ -692,7 +692,7 @@ async function handleDownload(request, env, url) {
   // Count a download once, at the start of the file -- not on HEAD (no
   // bytes served) and not on a mid-file range resume (would double-count
   // a single browser download that retries/resumes partway through).
-  if (env.DOWNLOADS && /\.iso(?:\.xz)?$/i.test(key) && (!isRangeRequest || rangeStart === 0)) {
+  if (env.DOWNLOADS && /\.(?:iso|img)(?:\.xz)?$/i.test(key) && (!isRangeRequest || rangeStart === 0)) {
     const country = (request.cf && request.cf.country) || "XX";
     let referrerHost = "direct";
     const referer = request.headers.get("referer");
@@ -802,7 +802,7 @@ async function serveFromUpstream(request, env, key, upstreamUrl, accessTier, unl
   const cr = upstream.headers.get("content-range"); // "bytes 0-9/1000"
   const startsAtZero = upstream.status === 200 || (cr && /^bytes 0-/.test(cr));
   const totalSize = cr ? parseInt(cr.split("/")[1], 10) : parseInt(upstream.headers.get("content-length"), 10);
-  if (env.DOWNLOADS && /\.iso(?:\.xz)?$/i.test(key) && startsAtZero && Number.isFinite(totalSize)) {
+  if (env.DOWNLOADS && /\.(?:iso|img)(?:\.xz)?$/i.test(key) && startsAtZero && Number.isFinite(totalSize)) {
     const country = (request.cf && request.cf.country) || "XX";
     let referrerHost = "direct";
     const referer = request.headers.get("referer");

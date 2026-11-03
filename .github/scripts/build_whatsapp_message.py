@@ -33,6 +33,9 @@ def edition_name(file):
     f = file.lower()
     if "nicec0re" in f:
         return "NiceC0re (Arch)"
+    # The Raspberry Pi image is also named Goldwing (Debian base): match it first.
+    if "goldwing-pi" in f or "arm64.img" in f or "raspberry" in f:
+        return "Raspberry Pi (ARM64)"
     if "goldwing" in f:
         return "Debian (Goldwing)"
     if "ultrac0re" in f:

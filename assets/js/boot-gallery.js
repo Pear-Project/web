@@ -73,6 +73,21 @@
         }
       };
     }
+    if (p.indexOf('/aarch64') >= 0) {
+      return {
+        raw: 'https://raw.githubusercontent.com/Pear-Project/iso/main/seq-pi/',
+        host: function () {
+          var t = document.querySelector('tbody[id$="-versions-table"]');
+          var sec = t && t.closest('section');
+          if (!sec) return null;
+          var holder = document.createElement('div');
+          holder.className = 'container max-w-4xl bg-holder';
+          holder.style.display = 'none';
+          sec.parentNode.insertBefore(holder, sec);
+          return holder;
+        }
+      };
+    }
     return null;
   }
 
