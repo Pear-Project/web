@@ -427,6 +427,8 @@ export function accountingText({ kind = "bsd", session, meta, file, country, cha
   ];
   if (invoice) {
     lines.push(`- Number: ${invoice.number}`, `- PDF: attached to this email (${invoice.invoice_pdf})`, `- Online: ${invoice.hosted_invoice_url}`);
+  } else if (managed) {
+    lines.push("- Managed Payments: the buyer's invoice/receipt is issued by Link (Stripe) and emailed to the buyer; it is not in your Stripe Billing > Invoices.", "- Your own document is the monthly self-billed invoice from Stripe (Settings > Compliance and Documents, issued 1st-10th of the month).");
   } else {
     lines.push("- NO INVOICE was available when this email was sent. Look for it in Stripe (Billing > Invoices) or issue one manually.");
   }

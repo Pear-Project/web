@@ -159,6 +159,10 @@ async function recordBsdDelivery(env, paymentIntentId, file, request) {
 
 // The purchase confirmation required for the withdrawal-right waiver: it
 // repeats, on a durable medium (email), what the buyer agreed to before paying.
+function isManaged(env) {
+  return ["on", "bsd", "all"].includes(String(env.MANAGED_PAYMENTS || "off"));
+}
+
 // Charge details (name, countries, receipt) -- best effort.
 async function fetchCharge(env, session) {
   try {
@@ -205,7 +209,7 @@ async function fetchInvoice(env, session) {
 async function sendPremiumConfirmation(env, session, meta, file, to, country, link) {
   const result = {};
   try {
-    const { text, html } = premiumConfirmation(session, meta, file, country, { link, managed: env.MANAGED_PAYMENTS === "all" });
+    const { text, html } = premiumConfirmation(session, meta, file, country, { link, managed: isManaged(env) });
     await sendMail(env, { to, subject: "Your pearOS full-speed download link", text, html });
     result.confirmation_email = "sent";
   } catch (e) {
@@ -219,8 +223,8 @@ async function sendPremiumConfirmation(env, session, meta, file, to, country, li
     const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
     await sendMail(env, {
       to: env.ACCOUNTING_EMAIL || env.MAIL_FROM || env.SMTP_USER,
-      subject: `[pearOS] Premium access sale ${amount} ${String(session.currency || "").toUpperCase()}${invoice ? ` - invoice ${invoice.number}` : " - NO INVOICE"}`,
-      text: accountingText({ kind: "premium", session, meta, file, country, charge, invoice, buyerEmail: to, link, managed: env.MANAGED_PAYMENTS === "all" }),
+      subject: `[pearOS] Premium access sale ${amount} ${String(session.currency || "").toUpperCase()}${invoice ? ` - invoice ${invoice.number}` : isManaged(env) ? " - invoiced by Link (Managed Payments)" : " - NO INVOICE"}`,
+      text: accountingText({ kind: "premium", session, meta, file, country, charge, invoice, buyerEmail: to, link, managed: isManaged(env) }),
       attachments: pdf ? [{ filename: `invoice-${invoice.number}.pdf`, type: "application/pdf", bytes: pdf }] : [],
     });
     result.accounting_copy = "sent";
@@ -267,7 +271,7 @@ async function sendBsdConfirmation(env, session, meta, file, to, country, link) 
   const result = {};
   try {
     const { text, html } = bsdConfirmation(session, meta, file, country, {
-      managed: env.MANAGED_PAYMENTS === "on",
+      managed: isManaged(env),
       link,
       invoice: invoice ? { number: invoice.number, url: invoice.hosted_invoice_url, attached: !!pdf } : null,
     });
@@ -283,8 +287,8 @@ async function sendBsdConfirmation(env, session, meta, file, to, country, link) 
     const amount = Number.isFinite(session.amount_total) ? (session.amount_total / 100).toFixed(2) : "?";
     await sendMail(env, {
       to: acct,
-      subject: `[pearOS] BSD sale ${amount} ${String(session.currency || "").toUpperCase()}${invoice ? ` - invoice ${invoice.number}` : " - NO INVOICE"}`,
-      text: accountingText({ session, meta, file, country, charge, invoice, buyerEmail: to, link, managed: env.MANAGED_PAYMENTS === "on" }),
+      subject: `[pearOS] BSD sale ${amount} ${String(session.currency || "").toUpperCase()}${invoice ? ` - invoice ${invoice.number}` : isManaged(env) ? " - invoiced by Link (Managed Payments)" : " - NO INVOICE"}`,
+      text: accountingText({ session, meta, file, country, charge, invoice, buyerEmail: to, link, managed: isManaged(env) }),
       attachments,
     });
     result.accounting_copy = "sent";
