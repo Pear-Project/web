@@ -212,7 +212,7 @@
 
 <div class="mt-10 overflow-x-auto rounded-2xl border border-border">
   <table class="stats-table">
-    <thead><tr><th>Edition</th><th>Free</th><th>Paid</th><th>Total</th></tr></thead>
+    <thead><tr><th>Edition / version</th><th>Free</th><th>Paid</th><th>Total</th></tr></thead>
     <tbody id="stats-table-body"><tr><td colspan="4" class="text-muted-foreground text-center py-8">Loading…</td></tr></tbody>
   </table>
 </div>
@@ -574,21 +574,44 @@
   // Fixed list of recognized editions (populated once from the all-time
   // data) so the table always shows every edition even when one has zero
   // downloads in the currently selected range, instead of a row vanishing.
+  // The planned editions are always listed, even before their first download.
+  var FIXED_EDITIONS=['NiceC0re (Arch)','Debian (Goldwing)','Raspberry Pi (ARM64)'];
   var ALL_EDITION_NAMES=[];
+  var ALL_FILES={}; // every versioned file ever seen, so a version row never vanishes either
+
+  // "iso/pearOS-NiceC0re-2026.11-x86_64.iso" -> "2026.11 x86_64"
+  function versionLabel(file){
+    var base=String(file).split('/').pop().replace(/\.(iso|img)(\.xz)?$/i,'');
+    var parts=base.split('-').filter(function(p){ return !/^(pearOS|NiceC0re|Goldwing|UltraC0re)$/i.test(p); });
+    return parts.join(' ')||base;
+  }
 
   // The Downloads-by-edition table below the chart follows the same
   // 1D/30D/90D/Custom selection instead of always showing all-time totals.
+  // One header row per edition (its total) and one row per version under it.
   function renderEditionTable(){
     var tbody=document.getElementById('stats-table-body');
-    var byEdition={};
-    ALL_EDITION_NAMES.forEach(function(name){ byEdition[name]={free:0,paid:0}; });
+    var byEdition={}, versions={};
+    function ensure(name){
+      if(!byEdition[name]){ byEdition[name]={free:0,paid:0}; versions[name]={}; }
+    }
+    function ensureFile(name,file){
+      if(!versions[name][file]) versions[name][file]={free:0,paid:0};
+    }
+    FIXED_EDITIONS.concat(ALL_EDITION_NAMES).forEach(ensure);
+    Object.keys(ALL_FILES).forEach(function(file){
+      var name=editionName(file);
+      if(!name) return;
+      ensure(name); ensureFile(name,file);
+    });
     getRangeRows().rows.forEach(function(row){
       var name=editionName(row.file);
       if(!name) return;
-      if(!byEdition[name]) byEdition[name]={free:0,paid:0};
+      ensure(name); ensureFile(name,row.file);
       var n=Number(row.downloads)||0;
       var tierKey=row.tier==='paid'?'paid':'free';
       byEdition[name][tierKey]+=n;
+      versions[name][row.file][tierKey]+=n;
     });
 
     var names=Object.keys(byEdition);
@@ -599,7 +622,16 @@
     tbody.innerHTML=names.map(function(name){
       var row=byEdition[name];
       var total=row.free+row.paid;
-      return '<tr><td class="font-medium">'+name+'</td><td>'+fmt(row.free)+'</td><td>'+fmt(row.paid)+'</td><td class="font-medium">'+fmt(total)+'</td></tr>';
+      var out='<tr style="background:color-mix(in oklab, var(--muted) 45%, transparent)"><td class="font-medium">'+name+'</td><td class="font-medium">'+fmt(row.free)+'</td><td class="font-medium">'+fmt(row.paid)+'</td><td class="font-medium">'+fmt(total)+'</td></tr>';
+      var files=Object.keys(versions[name]).sort().reverse();
+      if(!files.length){
+        out+='<tr><td class="text-muted-foreground" style="padding-left:1.75rem" colspan="4">No version published yet</td></tr>';
+      }
+      files.forEach(function(file){
+        var v=versions[name][file];
+        out+='<tr><td class="text-muted-foreground" style="padding-left:1.75rem">'+versionLabel(file)+'</td><td>'+fmt(v.free)+'</td><td>'+fmt(v.paid)+'</td><td>'+fmt(v.free+v.paid)+'</td></tr>';
+      });
+      return out;
     }).join('');
   }
 
@@ -1392,13 +1424,15 @@
     function isBsdPaid(r){ return /UltraC0re/i.test(r.file)&&r.tier==='paid'; }
     function arch(file){ return /arm64/i.test(file)?'ARM64':'AMD64'; }
     var counts={AMD64:{all:0,d30:0,h24:0},ARM64:{all:0,d30:0,h24:0}};
+    var perFile={}; // file -> {all,d30,h24}
+    function pf(file){ return perFile[file]||(perFile[file]={all:0,d30:0,h24:0}); }
     var now=Date.now();
-    (stats.by_file||[]).filter(isBsdPaid).forEach(function(r){ counts[arch(r.file)].all+=Number(r.downloads)||0; });
+    (stats.by_file||[]).filter(isBsdPaid).forEach(function(r){ counts[arch(r.file)].all+=Number(r.downloads)||0; pf(r.file).all+=Number(r.downloads)||0; });
     (stats.daily||[]).filter(isBsdPaid).forEach(function(r){
-      if(new Date(r.date+'T00:00:00Z').getTime()>=now-30*86400000) counts[arch(r.file)].d30+=Number(r.downloads)||0;
+      if(new Date(r.date+'T00:00:00Z').getTime()>=now-30*86400000){ counts[arch(r.file)].d30+=Number(r.downloads)||0; pf(r.file).d30+=Number(r.downloads)||0; }
     });
     (stats.hourly||[]).filter(isBsdPaid).forEach(function(r){
-      if(new Date(String(r.hour).replace(' ','T')+'Z').getTime()>=now-86400000) counts[arch(r.file)].h24+=Number(r.downloads)||0;
+      if(new Date(String(r.hour).replace(' ','T')+'Z').getTime()>=now-86400000){ counts[arch(r.file)].h24+=Number(r.downloads)||0; pf(r.file).h24+=Number(r.downloads)||0; }
     });
     var sum=function(k){ return counts.AMD64[k]+counts.ARM64[k]; };
     document.getElementById('bsd-all').textContent=fmt(sum('all'));
@@ -1406,7 +1440,14 @@
     document.getElementById('bsd-24h').textContent=fmt(sum('h24'));
     document.getElementById('bsd-arch-body').innerHTML=['AMD64','ARM64'].map(function(a){
       var c=counts[a];
-      return '<tr><td>BSD UltraC0re ('+a+')</td><td>'+fmt(c.all)+'</td><td>'+fmt(c.d30)+'</td><td>'+fmt(c.h24)+'</td></tr>';
+      var out='<tr style="background:color-mix(in oklab, var(--muted) 45%, transparent)"><td class="font-medium">BSD UltraC0re ('+a+')</td><td class="font-medium">'+fmt(c.all)+'</td><td class="font-medium">'+fmt(c.d30)+'</td><td class="font-medium">'+fmt(c.h24)+'</td></tr>';
+      var files=Object.keys(perFile).filter(function(f){ return arch(f)===a; }).sort().reverse();
+      if(!files.length) out+='<tr><td class="text-muted-foreground" style="padding-left:1.75rem" colspan="4">No version published yet</td></tr>';
+      files.forEach(function(f){
+        var v=perFile[f];
+        out+='<tr><td class="text-muted-foreground" style="padding-left:1.75rem">'+versionLabel(f)+'</td><td>'+fmt(v.all)+'</td><td>'+fmt(v.d30)+'</td><td>'+fmt(v.h24)+'</td></tr>';
+      });
+      return out;
     }).join('');
 
     var bsd=(stats.donations&&stats.donations.bsd)||{};
@@ -1453,6 +1494,7 @@
     (stats.by_file||[]).forEach(function(row){
       var name=editionName(row.file);
       if(name && !editionNamesSeen[name]){ editionNamesSeen[name]=true; ALL_EDITION_NAMES.push(name); }
+      if(name) ALL_FILES[row.file]=true;
     });
     updateChartAndTable();
     renderBarList('stats-countries', stats.by_country, function(it){
