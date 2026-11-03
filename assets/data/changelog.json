@@ -65,7 +65,12 @@
       "html": "<ul>\n<li>The installer no longer lets the user to install on a USB (resoves the 'I accidentally installed pearOS on the bootable usb instead of my HDD' problem)</li>\n<li>The installer no longer lets the user to install pearOS without an internet connection. (resolves the 'I pressed install, but it fails here is the install log alex' problem)</li>\n</ul>"
     }
   ],
-  "debian": null,
+  "debian": [
+    {
+      "title": "03 Nov 2026",
+      "html": "<h2>information</h2>\n<p>https://pearos.xyz | https://pearos.xyz/debian/</p>\n<ul>\n<li>Every Goldwing ISO is now tested before it is published: it is booted, installed onto a virtual disk and then used (first-boot setup, login, Konsole, <code>apt-get dist-upgrade</code>, Pafari, Calculator, Notes, Finder, Kate). The result, a score and the screenshots are on the Goldwing page</li>\n<li>An ISO that does not boot, does not install or whose desktop looks wrong is not published</li>\n</ul>\n<h3>Known bugs:</h3>\n<ul>\n<li>Other bugs: Please use the Issues tab in this repo. Thank you</li>\n</ul>"
+    }
+  ],
   "bsd": null,
   "aarch64": null
 }
