@@ -732,29 +732,29 @@ async function handleDownload(request, env, url) {
 // Only honored for BSD builds (see fallbackUrlFor). It lives in a secret (not the repo, not bsd-versions.json) so the raw
 // GitHub URL -- which would bypass the paywall -- is never public.
 
-// Built-in mappings (public release assets, so nothing secret in them). The
-// GITHUB_FALLBACK secret, if set, is merged on top and wins on a clash.
-// Update the version in both the key and the URL when a new build ships.
-const DEFAULT_FALLBACK = {
-  "iso/pearOS-UltraC0re-amd64-26.11.iso.xz":
-    "https://github.com/pearOS-bsd/iso/releases/download/iso-latest/pearOS-UltraC0re-amd64-26.11.iso.xz",
-};
+// UltraC0re images are served from the `iso-latest` release of pearOS-bsd/iso (public release assets,
+// nothing secret). Any pearOS-UltraC0re-<amd64|arm64>-<version>.iso.xz maps to that release, so a new
+// version or a new architecture needs no change here: the site's table (assets/data/bsd-versions.json,
+// synced hourly from the same release by .github/workflows/sync-bsd.yml) decides what is offered.
+// The GITHUB_FALLBACK secret, if set, still wins for an exact key.
+const BSD_RELEASE_BASE = "https://github.com/pearOS-bsd/iso/releases/download/iso-latest/";
+const BSD_IMAGE_RE = /^iso\/(pearOS-UltraC0re-(?:amd64|arm64)-[0-9][0-9.]*\.iso\.xz)$/;
 
 function fallbackUrlFor(env, key) {
   // BSD (UltraC0re) builds only -- NiceC0re/Goldwing/etc. never fall back,
   // even if a mapping for one were ever added to the secret by mistake.
   if (!isBsdFile(key)) return null;
-  let map = DEFAULT_FALLBACK;
   if (env.GITHUB_FALLBACK) {
     try {
       const fromSecret = JSON.parse(env.GITHUB_FALLBACK);
-      if (fromSecret && typeof fromSecret === "object") map = { ...DEFAULT_FALLBACK, ...fromSecret };
+      const url = fromSecret && typeof fromSecret === "object" ? fromSecret[key] : null;
+      if (typeof url === "string" && url.startsWith("https://github.com/")) return url;
     } catch {
-      // malformed secret: keep the built-in defaults
+      // malformed secret: fall through to the release mapping
     }
   }
-  const url = map[key];
-  return typeof url === "string" && url.startsWith("https://github.com/") ? url : null;
+  const m = BSD_IMAGE_RE.exec(key);
+  return m ? BSD_RELEASE_BASE + m[1] : null;
 }
 
 async function serveFromUpstream(request, env, key, upstreamUrl, accessTier, unlocked) {
