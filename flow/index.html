@@ -231,7 +231,7 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
       desc:'Looks up the Stripe Checkout Session server-side, confirms payment_status is exactly “paid”, then mints a 4-hour full-speed signed URL. Called from the thank-you page after a successful checkout.',
       links:[]},
     {id:'iso-endpoint', col:10.12, row:2.41, cat:'worker', title:'/iso/*', sub:'serve from R2',
-      desc:'Every download ultimately lands here. Requires a valid, unexpired signature (free or paid tier) to proceed at all — unsigned access gets a friendly retry page (browsers) or a plain-text 403 (CLI tools), except for the small health.check probe used by uptime monitors.',
+      desc:'Every download ultimately lands here. Requires a valid, unexpired signature (free or paid tier) to proceed at all — unsigned access gets a friendly retry page (browsers) or a plain-text 403 (CLI tools), except for the small health.check probe used by uptime monitors. UltraC0re (BSD) files are paid-only; when one is not in R2, the Worker streams it from the iso-latest release of pearOS-bsd/iso instead (any pearOS-UltraC0re-<amd64|arm64>-<version>.iso.xz, after the same signature and tier checks, so the GitHub URL is never handed out).',
       links:[]},
 
     {id:'hmac-signing', col:11, row:0.9, cat:'worker', title:'HMAC Signing', sub:'sign(path, exp, tier, secret)',
@@ -251,6 +251,16 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     {id:'analytics-engine', col:12, row:2.1, cat:'automation', title:'Workers Analytics Engine', sub:'download telemetry',
       desc:'Every real download the Worker serves writes one data point here: file, tier (free/paid/friend), country, referrer host, byte count. Queried later over SQL by update-stats.yml.',
       links:[]},
+
+    {id:'bsd-repo', col:-0.95, row:6.3, cat:'build', title:'pearOS-bsd/iso', sub:'GitHub repo · UltraC0re (FreeBSD)',
+      desc:'Source repo for the BSD edition, UltraC0re (moved here from pearOS-bsd/misc). The everyday image is built locally in the dev VM; iso.yml builds the amd64 and arm64 images on demand (or for a v* tag), boots them under QEMU and publishes them as the GitHub Release iso-latest. Nothing is uploaded to R2: the downloads are served from that release.',
+      links:[{label:'Open repo ↗', url:'https://github.com/pearOS-bsd/iso'},{label:'View iso.yml ↗', url:'https://github.com/pearOS-bsd/iso/blob/main/.github/workflows/iso.yml'}]},
+    {id:'bsd-release', col:0.9, row:6.3, cat:'storage', title:'GitHub Release iso-latest', sub:'pearOS-UltraC0re-<arch>-<ver>.iso.xz',
+      desc:'Where the UltraC0re images live: pearOS-UltraC0re-amd64-<version>.iso.xz (and the arm64 one, once there is an arm64 build), plus a .sha256 of the unpacked .iso. GitHub also reports a SHA-256 digest for every asset; that digest (of the .iso.xz people actually download) is the one shown on the site.',
+      links:[{label:'Open release ↗', url:'https://github.com/pearOS-bsd/iso/releases/tag/iso-latest'}]},
+    {id:'sync-bsd', col:2.9, row:6.6, cat:'automation', title:'sync-bsd.yml', sub:'hourly · Pear-Project/web',
+      desc:'Hourly (and manual) sync of the BSD download table. sync_bsd_iso.py reads the iso-latest release through the GitHub API and rewrites bsd-versions.json: for amd64 and arm64 it takes the version, size and SHA-256 digest of pearOS-UltraC0re-<arch>-<version>.iso.xz; an architecture without an image is listed as "Unavailable". If the release cannot be read or has no image, the table is left as it is rather than emptied. Commits only when something changed.',
+      links:[{label:'View workflow ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/workflows/sync-bsd.yml'},{label:'View sync_bsd_iso.py ↗', url:'https://github.com/Pear-Project/web/blob/main/.github/scripts/sync_bsd_iso.py'}]},
 
     {id:'update-stats', col:6.31, row:4.04, cat:'automation', title:'update-stats.yml', sub:'hourly · Pear-Project/web',
       desc:'Queries Analytics Engine over its SQL API — daily counts (90-day window, grouped by edition file + tier) and hourly counts (48h window, same grouping) — then curls pearos-dl\'s own /revenue endpoint for Stripe donation totals (tolerates a 404/non-JSON response by falling back to {}, e.g. before that endpoint\'s first deploy), runs render_chart.py (matplotlib, dark theme matching the site’s own palette) to rebuild the trend-chart PNG, writes download-stats.json, and pushes both back — hourly, offset a few minutes past the hour to dodge GitHub’s most congested cron slot. Checks out with a PAT (not the default token) so its own push correctly triggers whatsapp-report.yml downstream.',
@@ -333,7 +343,8 @@ html,body{height:100%;overflow:hidden;scroll-behavior:auto}
     ['pearos-failover','github-pages'], ['pearos-failover','pages-mirror'],
     ['thank-you-page','patreon'],
     ['web-repo','changelog-page'], ['update-sha','changelog-page'],
-    ['page-scripts','ezoic']
+    ['page-scripts','ezoic'],
+    ['bsd-repo','bsd-release'], ['bsd-release','sync-bsd'], ['sync-bsd','web-repo'], ['iso-endpoint','bsd-release']
   ];
 
   // ---------- layout ----------
