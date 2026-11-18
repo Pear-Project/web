@@ -736,8 +736,8 @@ async function handleDownload(request, env, url) {
 // GITHUB_FALLBACK secret, if set, is merged on top and wins on a clash.
 // Update the version in both the key and the URL when a new build ships.
 const DEFAULT_FALLBACK = {
-  "iso/pearOS-UltraC0re-amd64-26.10.iso.xz":
-    "https://github.com/pearOS-bsd/misc/releases/download/iso-latest/pearOS-UltraC0re-amd64-26.10.iso.xz",
+  "iso/pearOS-UltraC0re-amd64-26.11.iso.xz":
+    "https://github.com/pearOS-bsd/iso/releases/download/iso-latest/pearOS-UltraC0re-amd64-26.11.iso.xz",
 };
 
 function fallbackUrlFor(env, key) {
