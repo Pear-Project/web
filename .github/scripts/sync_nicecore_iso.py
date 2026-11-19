@@ -171,7 +171,10 @@ def archive_to_ia(key, expected_sha256):
                 "--metadata=description:pearOS NiceC0re live ISO (Arch base), https://pearos.xyz",
             ])
             if r.returncode != 0:
-                print(f"[ ERR ]: ia upload failed for {ident}")
+                # e.g. archive.org's spam filter ("appears to be spam ... contact info@archive.org") or a timeout
+                # after the last byte: a workflow annotation, so it is not hidden in a green run
+                print(f"::warning title=NiceC0re not archived::ia upload failed for {ident}; it stays in R2 and "
+                      f"on the site, and is retried on the next run (see the ia output above)")
                 return False
 
         if not ia_upload_verified(ident, path, size, md5):
